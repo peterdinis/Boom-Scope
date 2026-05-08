@@ -45,7 +45,22 @@ export function NoteList() {
         </Link>
       </div>
 
-      {results.length === 0 && status !== "LoadingMore" && status !== "Exhausted" ? (
+      {(results.length === 0 && (status === "LoadingFirstPage" || status === "LoadingMore")) ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Card key={i} className="h-[200px]">
+              <CardHeader>
+                <Skeleton className="h-5 w-2/3" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-2/3" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : results.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed py-12 text-center">
           <div className="rounded-full bg-muted p-3">
             <Search className="size-6 text-muted-foreground" />
@@ -57,7 +72,7 @@ export function NoteList() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {results.map((note) => (
+          {results.map((note: any) => (
             <Link key={note._id} href={`/dashboard/notes/${note._id}` as any}>
               <Card className="group h-full transition-all hover:border-primary/50 hover:shadow-sm">
                 <CardHeader className="pb-3">
@@ -74,10 +89,10 @@ export function NoteList() {
                     <Calendar className="size-3" />
                     <span>{new Date(note._creationTime).toLocaleDateString("sk-SK")}</span>
                   </div>
-                  {note.projectId && (
+                  {note.projectName && (
                     <div className="flex items-center gap-1 rounded-full bg-primary/5 px-2 py-0.5 text-primary">
                       <Folder className="size-3" />
-                      <span className="truncate max-w-[80px]">Projekt</span>
+                      <span className="truncate max-w-[80px]">{note.projectName}</span>
                     </div>
                   )}
                 </CardFooter>
@@ -88,7 +103,7 @@ export function NoteList() {
           {status === "LoadingMore" && (
             <>
               {[1, 2, 3].map((i) => (
-                <Card key={i} className="h-[200px]">
+                <Card key={`more-${i}`} className="h-[200px]">
                   <CardHeader>
                     <Skeleton className="h-5 w-2/3" />
                   </CardHeader>

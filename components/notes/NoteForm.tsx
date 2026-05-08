@@ -50,7 +50,7 @@ export function NoteForm({ initialData }: NoteFormProps) {
         noteId: initialData._id,
         title,
         content,
-        projectId: projectId === ("none" as any) ? undefined : projectId,
+        projectId,
       });
       toast.success("Poznámka bola uložená.");
     } catch (error) {

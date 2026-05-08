@@ -12,7 +12,6 @@ import { Id } from "@/convex/_generated/dataModel";
 import { ChevronLeft, Save, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { UrlObject } from "url";
 
 export default function NewNotePage() {
   const router = useRouter();
@@ -34,7 +33,7 @@ export default function NewNotePage() {
       const id = await createNote({
         title,
         content,
-        projectId: projectId === ("none" as any) ? undefined : projectId,
+        projectId,
       });
       toast.success("Poznámka bola vytvorená.");
       router.push(`/dashboard/notes/${id}` as any);
@@ -50,7 +49,7 @@ export default function NewNotePage() {
     <div className="mx-auto w-full max-w-4xl px-4 py-8 md:px-8 md:py-10">
       <div className="flex flex-col gap-8">
         <div className="flex items-center justify-between gap-4">
-          <Link href={"/dashboard/notes" as unknown as UrlObject}>
+          <Link href={"/dashboard/notes" as any}>
             <Button variant="ghost" size="sm" className="gap-2">
               <ChevronLeft className="size-4" />
               Späť na zoznam

@@ -22,8 +22,8 @@ export function ProjectSelector({ value, onChange, placeholder = "Vybrať projek
 
   return (
     <Select
-      value={value}
-      onValueChange={(val) => onChange(val as Id<"projects">)}
+      value={value || "none"}
+      onValueChange={(val) => onChange(val === "none" ? undefined : val as Id<"projects">)}
     >
       <SelectTrigger className="w-full">
         <SelectValue placeholder={placeholder} />
