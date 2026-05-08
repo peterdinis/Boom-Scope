@@ -1,13 +1,6 @@
 "use client";
 
 import {
-	motion,
-	useMotionValue,
-	useSpring,
-	useTransform,
-	type MotionValue,
-} from "motion/react";
-import {
 	Circle,
 	Image as ImageIcon,
 	MousePointer2,
@@ -20,6 +13,13 @@ import {
 	Type,
 	Undo,
 } from "lucide-react";
+import {
+	type MotionValue,
+	motion,
+	useMotionValue,
+	useSpring,
+	useTransform,
+} from "motion/react";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 

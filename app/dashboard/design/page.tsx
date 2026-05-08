@@ -1,11 +1,11 @@
 "use client";
 
-import { Dock } from "@/components/design/Dock";
-import { cn } from "@/lib/utils";
-import { useRef, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
 import { PanelLeft, PanelRight } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { useRef, useState } from "react";
+import { Dock } from "@/components/design/Dock";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface Element {
 	id: string;
@@ -98,11 +98,11 @@ export default function DesignPage() {
 	return (
 		<div className="relative h-[calc(100vh-3.5rem)] w-full overflow-hidden bg-background cursor-crosshair">
 			{/* Dot Grid Background (Infinite Feel) */}
-			<div 
-				className="absolute inset-0 pointer-events-none opacity-[0.05] dark:opacity-[0.08]" 
+			<div
+				className="absolute inset-0 pointer-events-none opacity-[0.05] dark:opacity-[0.08]"
 				style={{
 					backgroundImage: `radial-gradient(circle, currentColor 0.5px, transparent 0.5px)`,
-					backgroundSize: '32px 32px'
+					backgroundSize: "32px 32px",
 				}}
 			/>
 
@@ -127,9 +127,7 @@ export default function DesignPage() {
 						<h1 className="text-5xl font-bold tracking-tight">
 							Infinite Workspace
 						</h1>
-						<p className="text-sm">
-							Kliknite a ťahajte pre kreslenie
-						</p>
+						<p className="text-sm">Kliknite a ťahajte pre kreslenie</p>
 					</div>
 				</div>
 			)}
@@ -170,18 +168,27 @@ export default function DesignPage() {
 						transition={{ type: "spring", damping: 20, stiffness: 100 }}
 						className={cn(
 							"absolute left-4 top-4 bottom-24 w-64 rounded-2xl border border-border/40",
-							"bg-background/60 backdrop-blur-md shadow-xl p-4 hidden lg:block z-40"
+							"bg-background/60 backdrop-blur-md shadow-xl p-4 hidden lg:block z-40",
 						)}
 					>
 						<div className="flex items-center justify-between mb-4">
-							<h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Vrstvy</h3>
-							<Button variant="ghost" size="icon-xs" onClick={() => setLeftPanelOpen(false)}>
+							<h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+								Vrstvy
+							</h3>
+							<Button
+								variant="ghost"
+								size="icon-xs"
+								onClick={() => setLeftPanelOpen(false)}
+							>
 								<PanelLeft className="size-3.5" />
 							</Button>
 						</div>
 						<div className="space-y-2">
 							{[1, 2, 3, 4].map((i) => (
-								<div key={i} className="h-9 rounded-xl bg-muted/20 border border-border/5" />
+								<div
+									key={i}
+									className="h-9 rounded-xl bg-muted/20 border border-border/5"
+								/>
 							))}
 						</div>
 					</motion.div>
@@ -198,12 +205,18 @@ export default function DesignPage() {
 						transition={{ type: "spring", damping: 20, stiffness: 100 }}
 						className={cn(
 							"absolute right-4 top-4 bottom-24 w-72 rounded-2xl border border-border/40",
-							"bg-background/60 backdrop-blur-md shadow-xl p-4 hidden xl:block z-40"
+							"bg-background/60 backdrop-blur-md shadow-xl p-4 hidden xl:block z-40",
 						)}
 					>
 						<div className="flex items-center justify-between mb-4">
-							<h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Vlastnosti</h3>
-							<Button variant="ghost" size="icon-xs" onClick={() => setRightPanelOpen(false)}>
+							<h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+								Vlastnosti
+							</h3>
+							<Button
+								variant="ghost"
+								size="icon-xs"
+								onClick={() => setRightPanelOpen(false)}
+							>
 								<PanelRight className="size-3.5" />
 							</Button>
 						</div>
@@ -230,7 +243,13 @@ export default function DesignPage() {
 	);
 }
 
-function RenderElement({ element: el, isCurrent }: { element: Element; isCurrent?: boolean }) {
+function RenderElement({
+	element: el,
+	isCurrent,
+}: {
+	element: Element;
+	isCurrent?: boolean;
+}) {
 	const stroke = el.stroke || "currentColor";
 	const fill = el.fill || "none";
 	const strokeWidth = el.type === "pencil" ? 2 : 1.5;
@@ -245,7 +264,10 @@ function RenderElement({ element: el, isCurrent }: { element: Element; isCurrent
 				stroke={stroke}
 				fill={fill}
 				strokeWidth={strokeWidth}
-				className={cn(isCurrent ? "opacity-50" : "opacity-100", "transition-opacity")}
+				className={cn(
+					isCurrent ? "opacity-50" : "opacity-100",
+					"transition-opacity",
+				)}
 			/>
 		);
 	}
@@ -260,14 +282,18 @@ function RenderElement({ element: el, isCurrent }: { element: Element; isCurrent
 				stroke={stroke}
 				fill={fill}
 				strokeWidth={strokeWidth}
-				className={cn(isCurrent ? "opacity-50" : "opacity-100", "transition-opacity")}
+				className={cn(
+					isCurrent ? "opacity-50" : "opacity-100",
+					"transition-opacity",
+				)}
 			/>
 		);
 	}
 
 	if (el.type === "pencil" && el.points) {
 		const d = el.points.reduce(
-			(acc, point, i) => (i === 0 ? `M ${point.x} ${point.y}` : `${acc} L ${point.x} ${point.y}`),
+			(acc, point, i) =>
+				i === 0 ? `M ${point.x} ${point.y}` : `${acc} L ${point.x} ${point.y}`,
 			"",
 		);
 		return (
@@ -278,7 +304,10 @@ function RenderElement({ element: el, isCurrent }: { element: Element; isCurrent
 				strokeWidth={strokeWidth}
 				strokeLinecap="round"
 				strokeLinejoin="round"
-				className={cn(isCurrent ? "opacity-50" : "opacity-100", "transition-opacity")}
+				className={cn(
+					isCurrent ? "opacity-50" : "opacity-100",
+					"transition-opacity",
+				)}
 			/>
 		);
 	}

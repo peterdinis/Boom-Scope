@@ -1,12 +1,12 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { ModeToggle } from "@/components/mode-toggle";
 import { UserMenu } from "@/components/UserMenu";
+import { Button } from "@/components/ui/button";
 import { DashboardMobileNav, type DashboardNavId } from "./dashboard-nav";
 import { useSidebar } from "./sidebar-context";
-import { Button } from "@/components/ui/button";
 
 export function DashboardHeader() {
 	const pathname = usePathname();

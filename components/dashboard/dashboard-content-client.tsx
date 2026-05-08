@@ -3,7 +3,10 @@
 import type { ReactNode } from "react";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardSidebarNav } from "@/components/dashboard/dashboard-nav";
-import { SidebarProvider, useSidebar } from "@/components/dashboard/sidebar-context";
+import {
+	SidebarProvider,
+	useSidebar,
+} from "@/components/dashboard/sidebar-context";
 import { cn } from "@/lib/utils";
 
 function DashboardLayoutContent({ children }: { children: ReactNode }) {

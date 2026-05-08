@@ -15,8 +15,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
-import { cn } from "@/lib/utils";
 import { downloadNoteAsTxt } from "@/lib/notes";
+import { cn } from "@/lib/utils";
 
 export function NoteList() {
 	const [searchTerm, setSearchTerm] = useState("");
