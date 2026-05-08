@@ -45,7 +45,7 @@ const navItems: {
     label: "Poznámky",
     description: "Písať poznámky k projektu",
     icon: FileText,
-    soon: true,
+    href: "/dashboard/notes",
   },
   {
     id: "design",
