@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "sonner";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
+import { ThemeProvider } from "@/components/theme-provider";
 import ConvexClientProvider from "@/components/ConvexClientProvider";
 
 const ralewayHeading = Raleway({subsets:['latin'],variable:'--font-heading'});
@@ -25,20 +26,31 @@ export const metadata: Metadata = {
   description: "Boom Scope app",
 };
 
+// Convex Auth reads cookies in the root layout; avoid a cached shell without auth state.
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <ConvexAuthNextjsServerProvider storage="inMemory">
+    <ConvexAuthNextjsServerProvider>
       <html
-        lang="en"
+        lang="sk"
+        suppressHydrationWarning
         className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", figtree.variable, ralewayHeading.variable)}
       >
         <body className="min-h-full flex flex-col">
-          <ConvexClientProvider>{children}</ConvexClientProvider>
-          <Toaster />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <ConvexClientProvider>{children}</ConvexClientProvider>
+            <Toaster />
+          </ThemeProvider>
         </body>
       </html>
     </ConvexAuthNextjsServerProvider>
