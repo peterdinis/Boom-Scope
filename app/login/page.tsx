@@ -2,7 +2,6 @@
 
 import { useAuthActions } from "@convex-dev/auth/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -17,25 +16,57 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
+import {
+  classifySignInResult,
+  credentialsSchema,
+  firstZodIssueMessage,
+} from "@/lib/auth-forms";
 
 export default function LoginPage() {
   const { signIn } = useAuthActions();
-  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    formData.set("flow", "signIn");
+    const form = event.currentTarget;
+    const parsed = credentialsSchema.safeParse({
+      email: String(new FormData(form).get("email") ?? ""),
+      password: String(new FormData(form).get("password") ?? ""),
+    });
+    if (!parsed.success) {
+      toast.error("Skontrolujte formulár", {
+        description: firstZodIssueMessage(parsed.error),
+      });
+      return;
+    }
+
+    const fd = new FormData();
+    fd.set("email", parsed.data.email);
+    fd.set("password", parsed.data.password);
+    fd.set("flow", "signIn");
+
     setSubmitting(true);
     try {
-      await signIn("password", formData);
+      const result = await signIn("password", fd);
+      const outcome = classifySignInResult(result);
+      if (outcome === "fail") {
+        toast.error("Nesprávny email alebo heslo.", {
+          description:
+            "Skontrolujte údaje alebo sa zaregistrujte. Uistite sa, že nemáte medzery okolo emailu.",
+        });
+        return;
+      }
+      if (outcome === "redirect") {
+        return;
+      }
       toast.success("Vitajte späť!");
-      router.push("/dashboard");
+      // Full navigation so httpOnly cookies + Convex serverState align with the client JWT
+      // (soft router.push can leave useConvexAuth / useQuery without a token).
+      window.location.assign("/dashboard");
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Prihlásenie zlyhalo.";
-      toast.error("Nesprávny email alebo heslo.", { description: message });
+      toast.error("Prihlásenie zlyhalo.", { description: message });
     } finally {
       setSubmitting(false);
     }
@@ -50,7 +81,7 @@ export default function LoginPage() {
             Zadajte svoj email a heslo pre vstup do dashboardu.
           </CardDescription>
         </CardHeader>
-        <form onSubmit={onSubmit}>
+        <form noValidate onSubmit={onSubmit}>
           <CardContent className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <Label htmlFor="email">Email</Label>
@@ -60,7 +91,6 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 placeholder="vy@firma.sk"
-                required
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -70,8 +100,6 @@ export default function LoginPage() {
                 name="password"
                 autoComplete="current-password"
                 placeholder="••••••••"
-                required
-                minLength={8}
               />
             </div>
           </CardContent>

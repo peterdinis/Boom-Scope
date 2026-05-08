@@ -2,7 +2,6 @@
 
 import { useAuthActions } from "@convex-dev/auth/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -17,21 +16,51 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
+import {
+  classifySignInResult,
+  credentialsSchema,
+  firstZodIssueMessage,
+} from "@/lib/auth-forms";
 
 export default function RegisterPage() {
   const { signIn } = useAuthActions();
-  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    formData.set("flow", "signUp");
+    const form = event.currentTarget;
+    const parsed = credentialsSchema.safeParse({
+      email: String(new FormData(form).get("email") ?? ""),
+      password: String(new FormData(form).get("password") ?? ""),
+    });
+    if (!parsed.success) {
+      toast.error("Skontrolujte formulár", {
+        description: firstZodIssueMessage(parsed.error),
+      });
+      return;
+    }
+
+    const fd = new FormData();
+    fd.set("email", parsed.data.email);
+    fd.set("password", parsed.data.password);
+    fd.set("flow", "signUp");
+
     setSubmitting(true);
     try {
-      await signIn("password", formData);
+      const result = await signIn("password", fd);
+      const outcome = classifySignInResult(result);
+      if (outcome === "fail") {
+        toast.error("Registráciu sa nepodarilo dokončiť.", {
+          description:
+            "Tento email môže byť už zaregistrovaný. Skúste sa prihlásiť.",
+        });
+        return;
+      }
+      if (outcome === "redirect") {
+        return;
+      }
       toast.success("Účet bol vytvorený!");
-      router.push("/dashboard");
+      window.location.assign("/dashboard");
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Registrácia zlyhala.";
@@ -52,7 +81,7 @@ export default function RegisterPage() {
             Zaregistrujte sa pomocou emailu a hesla pre prístup do dashboardu.
           </CardDescription>
         </CardHeader>
-        <form onSubmit={onSubmit}>
+        <form noValidate onSubmit={onSubmit}>
           <CardContent className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <Label htmlFor="email">Email</Label>
@@ -62,7 +91,6 @@ export default function RegisterPage() {
                 type="email"
                 autoComplete="email"
                 placeholder="vy@firma.sk"
-                required
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -72,8 +100,6 @@ export default function RegisterPage() {
                 name="password"
                 autoComplete="new-password"
                 placeholder="Aspoň 8 znakov"
-                required
-                minLength={8}
               />
               <p className="text-xs text-muted-foreground">
                 Heslo musí mať minimálne 8 znakov.
