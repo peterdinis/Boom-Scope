@@ -1,11 +1,8 @@
 "use client";
 
-import { useAuthActions } from "@convex-dev/auth/react";
-import { useConvexAuth } from "convex/react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { useConvexAuth, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { UserMenu } from "@/components/UserMenu";
 import {
   Card,
   CardContent,
@@ -15,36 +12,14 @@ import {
 } from "@/components/ui/card";
 
 export default function DashboardPage() {
-  const { signOut } = useAuthActions();
   const { isAuthenticated, isLoading } = useConvexAuth();
-  const router = useRouter();
-  const [signingOut, setSigningOut] = useState(false);
-
-  async function handleSignOut() {
-    setSigningOut(true);
-    try {
-      await signOut();
-      toast.success("Boli ste odhlásený.");
-      router.push("/login");
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Odhlásenie zlyhalo.";
-      toast.error("Nepodarilo sa odhlásiť.", { description: message });
-      setSigningOut(false);
-    }
-  }
+  const viewer = useQuery(api.users.viewer);
 
   return (
     <div className="flex flex-1 flex-col bg-zinc-50 dark:bg-black">
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background/80 px-6 py-4 backdrop-blur">
         <h1 className="font-heading text-lg font-semibold">Boom Scope</h1>
-        <Button
-          variant="outline"
-          onClick={handleSignOut}
-          disabled={signingOut || !isAuthenticated}
-        >
-          {signingOut ? "Odhlasujem…" : "Odhlásiť sa"}
-        </Button>
+        <UserMenu />
       </header>
 
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-6 py-12">
@@ -55,7 +30,9 @@ export default function DashboardPage() {
           <p className="text-muted-foreground">
             {isLoading
               ? "Overujem prihlásenie…"
-              : "Vitajte! Toto je váš chránený priestor."}
+              : viewer?.email
+                ? `Vitajte späť, ${viewer.email}!`
+                : "Vitajte! Toto je váš chránený priestor."}
           </p>
         </div>
 

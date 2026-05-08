@@ -31,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ConvexAuthNextjsServerProvider>
+    <ConvexAuthNextjsServerProvider storage="inMemory">
       <html
         lang="en"
         className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", figtree.variable, ralewayHeading.variable)}
