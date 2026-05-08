@@ -17,7 +17,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import Link from "next/link";
+import { usePathname } from "next/navigation";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
@@ -30,7 +30,7 @@ const navItems: {
   label: string;
   description: string;
   icon: React.ElementType;
-  href?: "/dashboard";
+  href?: "/dashboard" | "/dashboard/notes" | "/dashboard/design" | "/dashboard/generate";
   soon?: boolean;
 }[] = [
   {
@@ -64,14 +64,14 @@ const navItems: {
 ];
 
 function NavLinks({
-  activeId,
   onNavigate,
   className,
 }: {
-  activeId: DashboardNavId;
   onNavigate?: () => void;
   className?: string;
 }) {
+  const pathname = usePathname();
+  
   return (
     <nav
       className={cn("flex flex-col gap-1", className)}
@@ -79,7 +79,10 @@ function NavLinks({
     >
       {navItems.map((item) => {
         const Icon = item.icon;
-        const isActive = item.id === activeId;
+        const isActive = 
+          (item.id === "overview" && pathname === "/dashboard") ||
+          (item.id !== "overview" && item.href && pathname.startsWith(item.href));
+          
         const content = (
           <>
             <Icon
@@ -142,11 +145,7 @@ function NavLinks({
   );
 }
 
-export function DashboardSidebarNav({
-  activeId = "overview",
-}: {
-  activeId?: DashboardNavId;
-}) {
+export function DashboardSidebarNav() {
   return (
     <div className="flex h-full min-h-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
       <div className="flex h-14 shrink-0 items-center border-b border-sidebar-border px-4">
@@ -158,17 +157,13 @@ export function DashboardSidebarNav({
         </Link>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
-        <NavLinks activeId={activeId} />
+        <NavLinks />
       </div>
     </div>
   );
 }
 
-export function DashboardMobileNav({
-  activeId = "overview",
-}: {
-  activeId?: DashboardNavId;
-}) {
+export function DashboardMobileNav() {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -207,7 +202,6 @@ export function DashboardMobileNav({
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto p-3">
             <NavLinks
-              activeId={activeId}
               onNavigate={() => setOpen(false)}
               className="gap-0.5"
             />

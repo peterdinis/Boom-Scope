@@ -113,172 +113,153 @@ function DashboardContent() {
 
   return (
     <motion.div
-      key="dashboard-content"
       variants={contentVariants}
       initial="hidden"
       animate="show"
-      className="flex min-h-0 flex-1 bg-background"
+      className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-4 py-8 md:px-8 md:py-10"
     >
-      <aside className="hidden w-64 shrink-0 md:flex md:flex-col">
-        <DashboardSidebarNav activeId="overview" />
-      </aside>
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <motion.header
-          variants={childVariants}
-          className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/85 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/70 md:px-6"
-        >
-          <DashboardMobileNav activeId="overview" />
-          <div className="hidden min-w-0 flex-1 md:block">
-            <p className="font-heading text-sm font-semibold text-foreground">
-              Prehľad
-            </p>
-            <p className="truncate text-xs text-muted-foreground">
-              Rýchle odkazy na prácu s projektom
-            </p>
-          </div>
-          <div className="ml-auto flex shrink-0 items-center gap-2">
-            <ModeToggle />
-            <UserMenu />
-          </div>
-        </motion.header>
-
-        <motion.main
-          variants={contentVariants}
-          className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-4 py-8 md:px-8 md:py-10"
-        >
-          <motion.section
-            variants={childVariants}
-            className="relative overflow-hidden rounded-2xl border border-border/70 bg-card/50 p-6 md:p-8"
-          >
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_120%_at_0%_0%,oklch(0.65_0.15_242_/_0.18)_0%,transparent_60%),radial-gradient(40%_80%_at_100%_100%,oklch(0.78_0.13_180_/_0.14)_0%,transparent_60%)]"
-            />
-            <div className="relative flex flex-col gap-3">
-              <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-border/60 bg-background/60 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground backdrop-blur">
-                <span className="size-1.5 rounded-full bg-emerald-500" />
-                Pracovný priestor
-              </span>
-              <AnimatePresence mode="wait" initial={false}>
-                {viewerLoading ? (
-                  <motion.div
-                    key="hero-skeleton"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="flex flex-col gap-3"
-                  >
-                    <AnimatedSkeleton className="h-9 w-2/3 max-w-md" />
-                    <AnimatedSkeleton className="h-5 w-full max-w-xl" />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="hero-text"
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="flex flex-col gap-3"
-                  >
-                    <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
-                      {greetingName
-                        ? `Vitajte späť, ${greetingName}`
-                        : "Vitajte v Boom Scope"}
-                    </h1>
-                    <p className="max-w-2xl text-balance text-sm text-muted-foreground md:text-base">
-                      Toto je váš pracovný priestor pre projekt. Robte si
-                      poznámky, navrhujte rozhranie a generujte nové varianty
-                      dizajnu — všetko z jedného miesta.
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </motion.section>
-
-          <motion.section
-            variants={childVariants}
-            className="flex flex-col gap-4"
-          >
-            <div className="flex items-end justify-between gap-4">
-              <div className="flex flex-col gap-1">
-                <h2 className="font-heading text-lg font-semibold tracking-tight text-foreground">
-                  Moduly
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  Zvoľte oblasť, na ktorej chcete pracovať.
+      <motion.section
+        variants={childVariants}
+        className="relative overflow-hidden rounded-2xl border border-border/70 bg-card/50 p-6 md:p-8"
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_120%_at_0%_0%,oklch(0.65_0.15_242_/_0.18)_0%,transparent_60%),radial-gradient(40%_80%_at_100%_100%,oklch(0.78_0.13_180_/_0.14)_0%,transparent_60%)]"
+        />
+        <div className="relative flex flex-col gap-3">
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-border/60 bg-background/60 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground backdrop-blur">
+            <span className="size-1.5 rounded-full bg-emerald-500" />
+            Pracovný priestor
+          </span>
+          <AnimatePresence mode="wait" initial={false}>
+            {viewerLoading ? (
+              <motion.div
+                key="hero-skeleton"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex flex-col gap-3"
+              >
+                <AnimatedSkeleton className="h-9 w-2/3 max-w-md" />
+                <AnimatedSkeleton className="h-5 w-full max-w-xl" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="hero-text"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="flex flex-col gap-3"
+              >
+                <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+                  {greetingName
+                    ? `Vitajte späť, ${greetingName}`
+                    : "Vitajte v Boom Scope"}
+                </h1>
+                <p className="max-w-2xl text-balance text-sm text-muted-foreground md:text-base">
+                  Toto je váš pracovný priestor pre projekt. Robte si
+                  poznámky, navrhujte rozhranie a generujte nové varianty
+                  dizajnu — všetko z jedného miesta.
                 </p>
-              </div>
-            </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.section>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {featureCards.map((card, index) => {
-                const Icon = card.icon;
-                return (
-                  <motion.div
-                    key={card.id}
-                    variants={childVariants}
-                    custom={index}
-                    whileHover={{ y: -2 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
+      <motion.section
+        variants={childVariants}
+        className="flex flex-col gap-4"
+      >
+        <div className="flex items-end justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h2 className="font-heading text-lg font-semibold tracking-tight text-foreground">
+              Moduly
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Zvoľte oblasť, na ktorej chcete pracovať.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {featureCards.map((card, index) => {
+            const Icon = card.icon;
+            const isSoon = card.id !== "notes"; // Only notes is ready
+            const href = card.id === "notes" ? "/dashboard/notes" : "#";
+
+            return (
+              <motion.div
+                key={card.id}
+                variants={childVariants}
+                custom={index}
+                whileHover={!isSoon ? { y: -2 } : undefined}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              >
+                <Link 
+                  href={href}
+                  className={cn(
+                    "block h-full outline-none",
+                    isSoon && "cursor-not-allowed"
+                  )}
+                >
+                  <Card
+                    className={cn(
+                      "group relative flex h-full flex-col overflow-hidden border border-border/70 bg-card/60 ring-1 ring-transparent transition-all duration-200",
+                      !isSoon && "hover:border-border hover:bg-card hover:shadow-sm",
+                      card.ring
+                    )}
                   >
-                    <Card
-                      role="button"
-                      aria-disabled="true"
-                      tabIndex={-1}
+                    <div
+                      aria-hidden
                       className={cn(
-                        "group relative flex h-full cursor-not-allowed flex-col overflow-hidden border border-border/70 bg-card/60 ring-1 ring-transparent transition-all duration-200",
-                        "hover:border-border hover:bg-card hover:shadow-sm",
-                        card.ring
+                        "pointer-events-none absolute inset-0 bg-gradient-to-br opacity-70",
+                        card.accent
                       )}
-                    >
-                      <div
-                        aria-hidden
-                        className={cn(
-                          "pointer-events-none absolute inset-0 bg-gradient-to-br opacity-70",
-                          card.accent
-                        )}
-                      />
-                      <CardHeader className="relative gap-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <div
-                            className={cn(
-                              "flex size-11 shrink-0 items-center justify-center rounded-xl",
-                              card.iconWrap
-                            )}
-                          >
-                            <Icon className="size-5" aria-hidden />
-                          </div>
+                    />
+                    <CardHeader className="relative gap-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div
+                          className={cn(
+                            "flex size-11 shrink-0 items-center justify-center rounded-xl",
+                            card.iconWrap
+                          )}
+                        >
+                          <Icon className="size-5" aria-hidden />
+                        </div>
+                        {isSoon && (
                           <span className="shrink-0 rounded-full border border-border/60 bg-background/60 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground backdrop-blur">
                             Čoskoro
                           </span>
-                        </div>
-                        <CardTitle className="text-lg leading-tight">
-                          {card.title}
-                        </CardTitle>
-                        <CardDescription className="text-pretty">
-                          {card.description}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="relative mt-auto pt-0">
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
-                          Otvoriť modul
+                        )}
+                      </div>
+                      <CardTitle className="text-lg leading-tight">
+                        {card.title}
+                      </CardTitle>
+                      <CardDescription className="text-pretty">
+                        {card.description}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="relative mt-auto pt-0">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
+                        {isSoon ? "Čoskoro k dispozícii" : "Otvoriť modul"}
+                        {!isSoon && (
                           <ArrowUpRight
                             className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                             aria-hidden
                           />
-                        </span>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </motion.section>
-        </motion.main>
-      </div>
+                        )}
+                      </span>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </div>
+      </motion.section>
     </motion.div>
   );
 }
