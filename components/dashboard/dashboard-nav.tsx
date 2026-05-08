@@ -9,14 +9,8 @@ import {
   Title,
   Trigger,
 } from "@radix-ui/react-dialog";
-import {
-  FileText,
-  LayoutDashboard,
-  Menu,
-  Palette,
-  Sparkles,
-  X,
-} from "lucide-react";
+import { FileText, LayoutDashboard, Menu, Palette, Sparkles, X } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 
@@ -30,7 +24,7 @@ const navItems: {
   label: string;
   description: string;
   icon: React.ElementType;
-  href?: "/dashboard" | "/dashboard/notes" | "/dashboard/design" | "/dashboard/generate";
+  href?: any;
   soon?: boolean;
 }[] = [
   {

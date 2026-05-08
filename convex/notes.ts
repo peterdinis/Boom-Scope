@@ -29,17 +29,31 @@ export const list = query({
 
     const result = await q.paginate(args.paginationOpts);
 
-    // Manual filtering for search term (Convex doesn't have native full-text search in basic queries easily without separate search index)
+    // Fetch project names for each note that has a projectId
+    const pageWithProjects = await Promise.all(
+      result.page.map(async (note) => {
+        let projectName = null;
+        if (note.projectId) {
+          const project = await ctx.db.get(note.projectId);
+          projectName = project?.name ?? null;
+        }
+        return { ...note, projectName };
+      })
+    );
+
+    // Manual filtering for search term
+    let filteredPage = pageWithProjects;
     if (args.searchTerm) {
       const lowerSearch = args.searchTerm.toLowerCase();
-      result.page = result.page.filter(
+      filteredPage = pageWithProjects.filter(
         (note) =>
           note.title.toLowerCase().includes(lowerSearch) ||
-          note.content.toLowerCase().includes(lowerSearch)
+          note.content.toLowerCase().includes(lowerSearch) ||
+          (note.projectName && note.projectName.toLowerCase().includes(lowerSearch))
       );
     }
 
-    return result;
+    return { ...result, page: filteredPage };
   },
 });
 

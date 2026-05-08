@@ -12,11 +12,12 @@ import { Id } from "@/convex/_generated/dataModel";
 import { ChevronLeft, Save, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { UrlObject } from "url";
 
 export default function NewNotePage() {
   const router = useRouter();
   const createNote = useMutation(api.notes.create);
-  
+
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("<p></p>");
   const [projectId, setProjectId] = useState<Id<"projects"> | undefined>(undefined);
@@ -36,7 +37,7 @@ export default function NewNotePage() {
         projectId: projectId === ("none" as any) ? undefined : projectId,
       });
       toast.success("Poznámka bola vytvorená.");
-      router.push(`/dashboard/notes/${id}`);
+      router.push(`/dashboard/notes/${id}` as any);
     } catch (error) {
       console.error(error);
       toast.error("Nepodarilo sa vytvoriť poznámku.");
@@ -49,7 +50,7 @@ export default function NewNotePage() {
     <div className="mx-auto w-full max-w-4xl px-4 py-8 md:px-8 md:py-10">
       <div className="flex flex-col gap-8">
         <div className="flex items-center justify-between gap-4">
-          <Link href="/dashboard/notes">
+          <Link href={"/dashboard/notes" as unknown as UrlObject}>
             <Button variant="ghost" size="sm" className="gap-2">
               <ChevronLeft className="size-4" />
               Späť na zoznam
@@ -76,17 +77,17 @@ export default function NewNotePage() {
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <span className="text-sm text-muted-foreground">Priradiť k projektu:</span>
               <div className="w-full sm:w-64">
-                <ProjectSelector 
-                  value={projectId} 
-                  onChange={setProjectId} 
+                <ProjectSelector
+                  value={projectId}
+                  onChange={setProjectId}
                 />
               </div>
             </div>
           </div>
 
-          <NoteEditor 
-            content={content} 
-            onChange={setContent} 
+          <NoteEditor
+            content={content}
+            onChange={setContent}
             placeholder="Začnite písať svoju poznámku..."
           />
         </div>

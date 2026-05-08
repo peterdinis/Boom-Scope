@@ -68,7 +68,7 @@ export function NoteForm({ initialData }: NoteFormProps) {
     try {
       await removeNote({ noteId: initialData._id });
       toast.success("Poznámka bola odstránená.");
-      router.push("/dashboard/notes");
+      router.push("/dashboard/notes" as any);
     } catch (error) {
       console.error(error);
       toast.error("Nepodarilo sa odstrániť poznámku.");
@@ -79,7 +79,7 @@ export function NoteForm({ initialData }: NoteFormProps) {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between gap-4">
-        <Link href="/dashboard/notes">
+        <Link href={"/dashboard/notes" as any}>
           <Button variant="ghost" size="sm" className="gap-2">
             <ChevronLeft className="size-4" />
             Späť

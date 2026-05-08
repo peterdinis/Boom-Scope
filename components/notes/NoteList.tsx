@@ -37,7 +37,7 @@ export function NoteList() {
             className="pl-9"
           />
         </div>
-        <Link href="/dashboard/notes/new">
+        <Link href={"/dashboard/notes/new" as any}>
           <Button size="sm" className="gap-2">
             <Plus className="size-4" />
             Nová poznámka
@@ -58,7 +58,7 @@ export function NoteList() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {results.map((note) => (
-            <Link key={note._id} href={`/dashboard/notes/${note._id}`}>
+            <Link key={note._id} href={`/dashboard/notes/${note._id}` as any}>
               <Card className="group h-full transition-all hover:border-primary/50 hover:shadow-sm">
                 <CardHeader className="pb-3">
                   <CardTitle className="line-clamp-1 text-base">{note.title}</CardTitle>
