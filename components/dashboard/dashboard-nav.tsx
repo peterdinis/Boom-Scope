@@ -52,7 +52,7 @@ const navItems: {
 		label: "Dizajn",
 		description: "Pracovný priestor pre dizajn",
 		icon: Palette,
-		soon: true,
+		href: "/dashboard/design",
 	},
 	{
 		id: "generate",
