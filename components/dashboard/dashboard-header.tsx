@@ -1,0 +1,46 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import { ModeToggle } from "@/components/mode-toggle";
+import { UserMenu } from "@/components/UserMenu";
+import { DashboardMobileNav, type DashboardNavId } from "./dashboard-nav";
+
+export function DashboardHeader() {
+	const pathname = usePathname();
+
+	let activeId: DashboardNavId = "overview";
+	if (pathname.startsWith("/dashboard/notes")) activeId = "notes";
+	if (pathname.startsWith("/dashboard/design")) activeId = "design";
+	if (pathname.startsWith("/dashboard/generate")) activeId = "generate";
+
+	const titles: Record<DashboardNavId, { title: string; subtitle: string }> = {
+		overview: {
+			title: "Prehľad",
+			subtitle: "Rýchle odkazy na prácu s projektom",
+		},
+		notes: { title: "Poznámky", subtitle: "Správa vašich poznámok k projektu" },
+		design: { title: "Dizajn", subtitle: "Pracovný priestor pre dizajn" },
+		generate: {
+			title: "Generovať nový dizajn",
+			subtitle: "Generovať nové varianty dizajnu",
+		},
+	};
+
+	const { title, subtitle } = titles[activeId];
+
+	return (
+		<header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/85 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/70 md:px-6">
+			<DashboardMobileNav />
+			<div className="hidden min-w-0 flex-1 md:block">
+				<p className="font-heading text-sm font-semibold text-foreground">
+					{title}
+				</p>
+				<p className="truncate text-xs text-muted-foreground">{subtitle}</p>
+			</div>
+			<div className="ml-auto flex shrink-0 items-center gap-2">
+				<ModeToggle />
+				<UserMenu />
+			</div>
+		</header>
+	);
+}
