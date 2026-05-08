@@ -1,7 +1,7 @@
 "use client";
 
 import { usePaginatedQuery } from "convex/react";
-import { Calendar, Folder, Plus, Search } from "lucide-react";
+import { Calendar, Download, Folder, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
+import { downloadNoteAsTxt } from "@/lib/notes";
 
 export function NoteList() {
 	const [searchTerm, setSearchTerm] = useState("");
@@ -80,10 +81,23 @@ export function NoteList() {
 					{results.map((note: any) => (
 						<Link key={note._id} href={`/dashboard/notes/${note._id}` as any}>
 							<Card className="group h-full transition-all hover:border-primary/50 hover:shadow-sm">
-								<CardHeader className="pb-3">
+								<CardHeader className="pb-3 flex flex-row items-center justify-between gap-2 space-y-0">
 									<CardTitle className="line-clamp-1 text-base">
 										{note.title}
 									</CardTitle>
+									<Button
+										variant="ghost"
+										size="icon-xs"
+										className="size-7 opacity-0 group-hover:opacity-100 transition-opacity"
+										onClick={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											downloadNoteAsTxt(note.title, note.content);
+										}}
+										title="Stiahnuť ako .txt"
+									>
+										<Download className="size-3.5" />
+									</Button>
 								</CardHeader>
 								<CardContent className="pb-3">
 									<div

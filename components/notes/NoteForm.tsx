@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "convex/react";
-import { ChevronLeft, Loader2, Save, Trash2 } from "lucide-react";
+import { ChevronLeft, Download, Loader2, Save, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { downloadNoteAsTxt } from "@/lib/notes";
 
 interface NoteFormProps {
 	initialData: {
@@ -83,6 +84,14 @@ export function NoteForm({ initialData }: NoteFormProps) {
 					</Button>
 				</Link>
 				<div className="flex items-center gap-2">
+					<Button
+						variant="outline"
+						size="icon-sm"
+						onClick={() => downloadNoteAsTxt(title, content)}
+						title="Stiahnuť ako .txt"
+					>
+						<Download className="size-4" />
+					</Button>
 					<Button
 						variant="outline"
 						size="icon-sm"
