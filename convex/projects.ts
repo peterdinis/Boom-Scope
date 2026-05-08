@@ -1,5 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 export const list = query({
@@ -20,7 +20,7 @@ export const create = mutation({
 	},
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
-		if (!userId) throw new Error("Not authenticated");
+		if (!userId) throw new ConvexError("Not authenticated");
 		return await ctx.db.insert("projects", {
 			name: args.name,
 			userId,

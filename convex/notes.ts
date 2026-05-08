@@ -2,6 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { ConvexError } from "convex/values";
 
 export const list = query({
 	args: {
@@ -77,7 +78,7 @@ export const create = mutation({
 	},
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
-		if (!userId) throw new Error("Not authenticated");
+		if (!userId) throw new ConvexError("Not authenticated");
 		return await ctx.db.insert("notes", {
 			title: args.title,
 			content: args.content,
@@ -96,10 +97,10 @@ export const update = mutation({
 	},
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
-		if (!userId) throw new Error("Not authenticated");
+		if (!userId) throw new ConvexError("Not authenticated");
 		const existing = await ctx.db.get(args.noteId);
 		if (!existing || existing.userId !== userId)
-			throw new Error("Unauthorized");
+			throw new ConvexError("Unauthorized");
 
 		const { noteId, ...updates } = args;
 		await ctx.db.patch(noteId, updates);
@@ -110,10 +111,10 @@ export const remove = mutation({
 	args: { noteId: v.id("notes") },
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
-		if (!userId) throw new Error("Not authenticated");
+		if (!userId) throw new ConvexError("Not authenticated");
 		const existing = await ctx.db.get(args.noteId);
 		if (!existing || existing.userId !== userId)
-			throw new Error("Unauthorized");
+			throw new ConvexError("Unauthorized");
 		await ctx.db.delete(args.noteId);
 	},
 });

@@ -10,7 +10,7 @@ export default defineSchema({
 	}).index("by_userId", ["userId"]),
 	notes: defineTable({
 		title: v.string(),
-		content: v.string(), // HTML or JSON string
+		content: v.string(),
 		projectId: v.optional(v.id("projects")),
 		userId: v.id("users"),
 	})
