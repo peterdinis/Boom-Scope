@@ -1,12 +1,16 @@
 "use client";
 
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { ModeToggle } from "@/components/mode-toggle";
 import { UserMenu } from "@/components/UserMenu";
+import { Button } from "@/components/ui/button";
 import { DashboardMobileNav, type DashboardNavId } from "./dashboard-nav";
+import { useSidebar } from "./sidebar-context";
 
 export function DashboardHeader() {
 	const pathname = usePathname();
+	const { isCollapsed, toggleSidebar } = useSidebar();
 
 	let activeId: DashboardNavId = "overview";
 	if (pathname.startsWith("/dashboard/notes")) activeId = "notes";
@@ -31,6 +35,19 @@ export function DashboardHeader() {
 	return (
 		<header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/85 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/70 md:px-6">
 			<DashboardMobileNav />
+			<Button
+				variant="ghost"
+				size="icon-sm"
+				onClick={toggleSidebar}
+				className="hidden md:flex"
+				title={isCollapsed ? "Otvoriť bočný panel" : "Zatvoriť bočný panel"}
+			>
+				{isCollapsed ? (
+					<PanelLeftOpen className="size-4" />
+				) : (
+					<PanelLeftClose className="size-4" />
+				)}
+			</Button>
 			<div className="hidden min-w-0 flex-1 md:block">
 				<p className="font-heading text-sm font-semibold text-foreground">
 					{title}

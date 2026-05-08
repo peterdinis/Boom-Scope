@@ -6,6 +6,8 @@ import { Toaster } from "sonner";
 import ConvexClientProvider from "@/components/ConvexClientProvider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
+import { Suspense } from "react";
+import GlobalLoading from "./loading";
 
 const ralewayHeading = Raleway({
 	subsets: ["latin"],
@@ -59,7 +61,9 @@ export default function RootLayout({
 						enableSystem
 						disableTransitionOnChange
 					>
-						<ConvexClientProvider>{children}</ConvexClientProvider>
+						<ConvexClientProvider>
+							<Suspense fallback={<GlobalLoading />}>{children}</Suspense>
+						</ConvexClientProvider>
 						<Toaster />
 					</ThemeProvider>
 				</body>
