@@ -1,58 +1,69 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Figtree, Raleway } from "next/font/google";
+import { Figtree, Geist, Geist_Mono, Raleway } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils";
-import { Toaster } from "sonner";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
-import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "sonner";
 import ConvexClientProvider from "@/components/ConvexClientProvider";
+import { ThemeProvider } from "@/components/theme-provider";
+import { cn } from "@/lib/utils";
 
-const ralewayHeading = Raleway({subsets:['latin'],variable:'--font-heading'});
+const ralewayHeading = Raleway({
+	subsets: ["latin"],
+	variable: "--font-heading",
+});
 
-const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
+const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+	variable: "--font-geist-sans",
+	subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+	variable: "--font-geist-mono",
+	subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Boom Scope",
-  description: "Boom Scope app",
+	title: "Boom Scope",
+	description: "Boom Scope app",
 };
 
 // Convex Auth reads cookies in the root layout; avoid a cached shell without auth state.
 export const dynamic = "force-dynamic";
 
 export default function RootLayout({
-  children,
+	children,
 }: Readonly<{
-  children: React.ReactNode;
+	children: React.ReactNode;
 }>) {
-  return (
-    <ConvexAuthNextjsServerProvider>
-      <html
-        lang="sk"
-        suppressHydrationWarning
-        className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", figtree.variable, ralewayHeading.variable)}
-      >
-        <body className="min-h-full flex flex-col">
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <ConvexClientProvider>{children}</ConvexClientProvider>
-            <Toaster />
-          </ThemeProvider>
-        </body>
-      </html>
-    </ConvexAuthNextjsServerProvider>
-  );
+	return (
+		<ConvexAuthNextjsServerProvider>
+			<html
+				lang="sk"
+				suppressHydrationWarning
+				className={cn(
+					"h-full",
+					"antialiased",
+					geistSans.variable,
+					geistMono.variable,
+					"font-sans",
+					figtree.variable,
+					ralewayHeading.variable,
+				)}
+			>
+				<body className="min-h-full flex flex-col">
+					<ThemeProvider
+						attribute="class"
+						defaultTheme="system"
+						enableSystem
+						disableTransitionOnChange
+					>
+						<ConvexClientProvider>{children}</ConvexClientProvider>
+						<Toaster />
+					</ThemeProvider>
+				</body>
+			</html>
+		</ConvexAuthNextjsServerProvider>
+	);
 }

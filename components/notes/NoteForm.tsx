@@ -1,139 +1,132 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ChevronLeft, Loader2, Save, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { NoteEditor } from "@/components/notes/NoteEditor";
 import { ProjectSelector } from "@/components/notes/ProjectSelector";
-import { Id } from "@/convex/_generated/dataModel";
-import { 
-  ChevronLeft, 
-  Save, 
-  Loader2, 
-  Trash2 
-} from "lucide-react";
-import Link from "next/link";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 
 interface NoteFormProps {
-  initialData: {
-    _id: Id<"notes">;
-    title: string;
-    content: string;
-    projectId?: Id<"projects">;
-  };
+	initialData: {
+		_id: Id<"notes">;
+		title: string;
+		content: string;
+		projectId?: Id<"projects">;
+	};
 }
 
 export function NoteForm({ initialData }: NoteFormProps) {
-  const router = useRouter();
-  const updateNote = useMutation(api.notes.update);
-  const removeNote = useMutation(api.notes.remove);
-  
-  const [title, setTitle] = useState(initialData.title);
-  const [content, setContent] = useState(initialData.content);
-  const [projectId, setProjectId] = useState<Id<"projects"> | undefined>(initialData.projectId);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+	const router = useRouter();
+	const updateNote = useMutation(api.notes.update);
+	const removeNote = useMutation(api.notes.remove);
 
-  const handleSave = async () => {
-    if (!title.trim()) {
-      toast.error("Názov poznámky nemôže byť prázdny.");
-      return;
-    }
+	const [title, setTitle] = useState(initialData.title);
+	const [content, setContent] = useState(initialData.content);
+	const [projectId, setProjectId] = useState<Id<"projects"> | undefined>(
+		initialData.projectId,
+	);
+	const [isSaving, setIsSaving] = useState(false);
+	const [isDeleting, setIsDeleting] = useState(false);
 
-    setIsSaving(true);
-    try {
-      await updateNote({
-        noteId: initialData._id,
-        title,
-        content,
-        projectId,
-      });
-      toast.success("Poznámka bola uložená.");
-    } catch (error) {
-      console.error(error);
-      toast.error("Nepodarilo sa uložiť poznámku.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
+	const handleSave = async () => {
+		if (!title.trim()) {
+			toast.error("Názov poznámky nemôže byť prázdny.");
+			return;
+		}
 
-  const handleDelete = async () => {
-    if (!confirm("Naozaj chcete túto poznámku odstrániť?")) return;
+		setIsSaving(true);
+		try {
+			await updateNote({
+				noteId: initialData._id,
+				title,
+				content,
+				projectId,
+			});
+			toast.success("Poznámka bola uložená.");
+		} catch (error) {
+			console.error(error);
+			toast.error("Nepodarilo sa uložiť poznámku.");
+		} finally {
+			setIsSaving(false);
+		}
+	};
 
-    setIsDeleting(true);
-    try {
-      await removeNote({ noteId: initialData._id });
-      toast.success("Poznámka bola odstránená.");
-      router.push("/dashboard/notes" as any);
-    } catch (error) {
-      console.error(error);
-      toast.error("Nepodarilo sa odstrániť poznámku.");
-      setIsDeleting(false);
-    }
-  };
+	const handleDelete = async () => {
+		if (!confirm("Naozaj chcete túto poznámku odstrániť?")) return;
 
-  return (
-    <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-between gap-4">
-        <Link href={"/dashboard/notes" as any}>
-          <Button variant="ghost" size="sm" className="gap-2">
-            <ChevronLeft className="size-4" />
-            Späť
-          </Button>
-        </Link>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon-sm"
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="text-destructive hover:bg-destructive/10"
-          >
-            {isDeleting ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Trash2 className="size-4" />
-            )}
-          </Button>
-          <Button onClick={handleSave} disabled={isSaving} className="gap-2">
-            {isSaving ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Save className="size-4" />
-            )}
-            Uložiť zmeny
-          </Button>
-        </div>
-      </div>
+		setIsDeleting(true);
+		try {
+			await removeNote({ noteId: initialData._id });
+			toast.success("Poznámka bola odstránená.");
+			router.push("/dashboard/notes" as any);
+		} catch (error) {
+			console.error(error);
+			toast.error("Nepodarilo sa odstrániť poznámku.");
+			setIsDeleting(false);
+		}
+	};
 
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-4">
-          <Input
-            placeholder="Názov poznámky"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="border-none bg-transparent px-0 text-3xl font-bold focus-visible:ring-0 md:text-4xl"
-          />
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <span className="text-sm text-muted-foreground">Priradiť k projektu:</span>
-            <div className="w-full sm:w-64">
-              <ProjectSelector 
-                value={projectId} 
-                onChange={setProjectId} 
-              />
-            </div>
-          </div>
-        </div>
+	return (
+		<div className="flex flex-col gap-8">
+			<div className="flex items-center justify-between gap-4">
+				<Link href={"/dashboard/notes" as any}>
+					<Button variant="ghost" size="sm" className="gap-2">
+						<ChevronLeft className="size-4" />
+						Späť
+					</Button>
+				</Link>
+				<div className="flex items-center gap-2">
+					<Button
+						variant="outline"
+						size="icon-sm"
+						onClick={handleDelete}
+						disabled={isDeleting}
+						className="text-destructive hover:bg-destructive/10"
+					>
+						{isDeleting ? (
+							<Loader2 className="size-4 animate-spin" />
+						) : (
+							<Trash2 className="size-4" />
+						)}
+					</Button>
+					<Button onClick={handleSave} disabled={isSaving} className="gap-2">
+						{isSaving ? (
+							<Loader2 className="size-4 animate-spin" />
+						) : (
+							<Save className="size-4" />
+						)}
+						Uložiť zmeny
+					</Button>
+				</div>
+			</div>
 
-        <NoteEditor 
-          content={content} 
-          onChange={setContent} 
-        />
-      </div>
-    </div>
-  );
+			<div className="flex flex-col gap-6">
+				<div className="flex flex-col gap-4">
+					<Input
+						placeholder="Názov poznámky"
+						value={title}
+						onChange={(e) => setTitle(e.target.value)}
+						className="border-none bg-transparent px-0 text-3xl font-bold focus-visible:ring-0 md:text-4xl"
+					/>
+					<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+						<span className="text-sm text-muted-foreground">
+							Priradiť k projektu:
+						</span>
+						<div className="w-full sm:w-64">
+							<ProjectSelector value={projectId} onChange={setProjectId} />
+						</div>
+					</div>
+				</div>
+
+				<NoteEditor content={content} onChange={setContent} />
+			</div>
+		</div>
+	);
 }
