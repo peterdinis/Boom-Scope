@@ -230,7 +230,7 @@ export default function KonvaCanvas({
 			element.fontSize = 24;
 			element.fontFamily = "Inter, sans-serif";
 			setIsDrawing(false);
-			setElements([...elements, element]);
+			setElements((prev) => [...prev, element]);
 			onSelect(id);
 			return;
 		} else {
@@ -267,7 +267,7 @@ export default function KonvaCanvas({
 	const handleMouseUp = () => {
 		if (!isDrawing || !newElement) return;
 
-		setElements([...elements, newElement]);
+		setElements((prev) => [...prev, newElement]);
 		setNewElement(null);
 		setIsDrawing(false);
 	};
@@ -275,7 +275,7 @@ export default function KonvaCanvas({
 	const handleTransformEnd = (e: KonvaEventObject<Event>) => {
 		const node = e.target;
 		const id = node.id();
-		const updatedElements = elements.map((el) => {
+		setElements((prev) => prev.map((el) => {
 			if (el.id === id) {
 				const scaleX = node.scaleX();
 				const scaleY = node.scaleY();
@@ -293,14 +293,12 @@ export default function KonvaCanvas({
 				};
 			}
 			return el;
-		});
-
-		setElements(updatedElements);
+		}));
 	};
 
 	const handleDragEnd = (e: KonvaEventObject<DragEvent>) => {
 		const id = e.target.id();
-		const updatedElements = elements.map((el) => {
+		setElements((prev) => prev.map((el) => {
 			if (el.id === id) {
 				return {
 					...el,
@@ -309,8 +307,7 @@ export default function KonvaCanvas({
 				};
 			}
 			return el;
-		});
-		setElements(updatedElements);
+		}));
 	};
 
 	const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
@@ -356,14 +353,20 @@ export default function KonvaCanvas({
 	};
 	
 	const handleContextMenu = (e: KonvaEventObject<PointerEvent>) => {
-		// Check if we clicked on an element
+		e.evt.preventDefault();
+		const stage = stageRef.current;
+		if (!stage) return;
+
+		const pointer = stage.getPointerPosition();
+		if (!pointer) return;
+
 		const clickedOnElement = e.target !== stage;
 		if (clickedOnElement) {
 			const id = e.target.id();
 			if (id) {
 				setContextMenu({
-					x: pointerPosition.x,
-					y: pointerPosition.y,
+					x: pointer.x,
+					y: pointer.y,
 					elementId: id
 				});
 				onSelect(id);
@@ -507,7 +510,7 @@ export default function KonvaCanvas({
 						className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-500 transition-all group"
 						onClick={(e) => {
 							e.stopPropagation();
-							setElements(elements.filter(el => el.id !== contextMenu.elementId));
+							setElements((prev) => prev.filter(el => el.id !== contextMenu.elementId));
 							if (selectedId === contextMenu.elementId) onSelect(null);
 							setContextMenu(null);
 						}}

@@ -175,23 +175,9 @@ export default function DesignPage() {
 		if (toolId !== "select") {
 			setSelectedId(null);
 		}
-	}, []);
+	}, [projects, saveDesign, canvasSize, artboardColor]);
 
-	const elementsRef = useRef(elements);
-	
-	useEffect(() => {
-		elementsRef.current = elements;
-	}, [elements]);
 
-	const activeToolRef = useRef(activeTool);
-	const previousToolRef = useRef(previousTool);
-	const selectedIdRef = useRef(selectedId);
-
-	useEffect(() => {
-		activeToolRef.current = activeTool;
-		previousToolRef.current = previousTool;
-		selectedIdRef.current = selectedId;
-	}, [activeTool, previousTool, selectedId]);
 
 	const updateSelectedElement = useCallback(
 		(updates: Partial<CanvasElement>) => {
@@ -594,7 +580,7 @@ export default function DesignPage() {
 													size="icon-xs"
 													onClick={(e) => {
 														e.stopPropagation();
-														setElements(elements.filter((item) => item.id !== el.id));
+														setElements((prev) => prev.filter((item) => item.id !== el.id));
 														if (selectedId === el.id) setSelectedId(null);
 													}}
 													className="hover:bg-red-500 hover:text-white rounded-lg transition-all duration-300"
@@ -1068,8 +1054,12 @@ export default function DesignPage() {
 												size="sm"
 												className="rounded-xl border-border bg-background hover:bg-accent gap-2 text-[9px] font-black uppercase"
 												onClick={() => {
-													const otherElements = elements.filter(el => el.id !== selectedId);
-													setElements([...otherElements, selectedElement]);
+													setElements((prev) => {
+														const el = prev.find(e => e.id === selectedId);
+														if (!el) return prev;
+														const otherElements = prev.filter(e => e.id !== selectedId);
+														return [...otherElements, el];
+													});
 												}}
 											>
 												<ArrowUp className="size-3" /> Dopredu
@@ -1079,8 +1069,12 @@ export default function DesignPage() {
 												size="sm"
 												className="rounded-xl border-border bg-background hover:bg-accent gap-2 text-[9px] font-black uppercase"
 												onClick={() => {
-													const otherElements = elements.filter(el => el.id !== selectedId);
-													setElements([selectedElement, ...otherElements]);
+													setElements((prev) => {
+														const el = prev.find(e => e.id === selectedId);
+														if (!el) return prev;
+														const otherElements = prev.filter(e => e.id !== selectedId);
+														return [el, ...otherElements];
+													});
 												}}
 											>
 												<ArrowDown className="size-3" /> Dozadu
