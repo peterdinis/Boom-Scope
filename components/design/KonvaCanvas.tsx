@@ -303,22 +303,40 @@ export default function KonvaCanvas({
 		e.evt.preventDefault();
 		const stage = stageRef.current;
 		if (!stage) return;
+
+		// Handle Panning (Standard Scroll)
+		if (!e.evt.ctrlKey && !e.evt.metaKey) {
+			const dx = -e.evt.deltaX;
+			const dy = -e.evt.deltaY;
+			stage.position({
+				x: stage.x() + dx,
+				y: stage.y() + dy,
+			});
+			return;
+		}
+
+		// Handle Zooming (Ctrl/Cmd + Scroll)
 		const oldScale = stage.scaleX();
 		const pointer = stage.getPointerPosition();
+		if (!pointer) return;
 
 		const mousePointTo = {
-			x: (pointer!.x - stage.x()) / oldScale,
-			y: (pointer!.y - stage.y()) / oldScale,
+			x: (pointer.x - stage.x()) / oldScale,
+			y: (pointer.y - stage.y()) / oldScale,
 		};
 
 		const direction = e.evt.deltaY > 0 ? 1 : -1;
-		const newScale = direction > 0 ? oldScale * 0.9 : oldScale * 1.1;
+		const scaleBy = 1.1;
+		const newScale = direction > 0 ? oldScale / scaleBy : oldScale * scaleBy;
 
-		stage.scale({ x: newScale, y: newScale });
+		// Limit zoom
+		const finalScale = Math.max(0.1, Math.min(5, newScale));
+		stage.scale({ x: finalScale, y: finalScale });
+		setZoom(finalScale);
 
 		const newPos = {
-			x: pointer!.x - mousePointTo.x * newScale,
-			y: pointer!.y - mousePointTo.y * newScale,
+			x: pointer.x - mousePointTo.x * finalScale,
+			y: pointer.y - mousePointTo.y * finalScale,
 		};
 		stage.position(newPos);
 	};

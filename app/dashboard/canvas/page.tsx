@@ -96,6 +96,7 @@ export default function DesignPage() {
 	const [canvasSize, setCanvasSize] = useState<{ width: number; height: number } | null>(null);
 	const [zoom, setZoom] = useState(1);
 	const [snapToGrid, setSnapToGrid] = useState(true);
+	const [previousTool, setPreviousTool] = useState<string | null>(null);
 
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -168,6 +169,11 @@ export default function DesignPage() {
 					setSelectedId(null);
 				}
 			}
+			
+			if (e.code === "Space" && activeTool !== "hand") {
+				setPreviousTool(activeTool);
+				setActiveTool("hand");
+			}
 			if (e.key === "v") setActiveTool("select");
 			if (e.key === "p") setActiveTool("pencil");
 			if (e.key === "e") setActiveTool("eraser");
@@ -184,9 +190,20 @@ export default function DesignPage() {
 			}
 		};
 
+		const handleKeyUp = (e: KeyboardEvent) => {
+			if (e.code === "Space" && previousTool) {
+				setActiveTool(previousTool);
+				setPreviousTool(null);
+			}
+		};
+
 		window.addEventListener("keydown", handleKeyDown);
-		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [selectedId, handleAction, updateSelectedElement]);
+		window.addEventListener("keyup", handleKeyUp);
+		return () => {
+			window.removeEventListener("keydown", handleKeyDown);
+			window.removeEventListener("keyup", handleKeyUp);
+		};
+	}, [selectedId, handleAction, updateSelectedElement, activeTool, previousTool]);
 
 	const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
