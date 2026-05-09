@@ -11,6 +11,7 @@ import {
 } from "@radix-ui/react-dialog";
 import {
 	FileText,
+	FolderKanban,
 	LayoutDashboard,
 	Menu,
 	Palette,
@@ -23,7 +24,12 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export type DashboardNavId = "overview" | "notes" | "design" | "generate";
+export type DashboardNavId =
+	| "overview"
+	| "projects"
+	| "notes"
+	| "design"
+	| "generate";
 
 const navItems: {
 	id: DashboardNavId;
@@ -39,6 +45,13 @@ const navItems: {
 		description: "Domovská stránka projektu",
 		icon: LayoutDashboard,
 		href: "/dashboard",
+	},
+	{
+		id: "projects",
+		label: "Projekty",
+		description: "Spravovať vaše projekty",
+		icon: FolderKanban,
+		href: "/dashboard/projects",
 	},
 	{
 		id: "notes",
