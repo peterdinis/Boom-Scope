@@ -37,7 +37,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CANVAS_PRESETS, type CanvasPreset } from "@/lib/canvas-presets";
+import { CANVAS_PRESETS } from "@/lib/canvas-presets";
 import { cn } from "@/lib/utils";
 
 const KonvaCanvas = dynamic(() => import("@/components/design/KonvaCanvas"), {
@@ -85,8 +85,8 @@ export default function DesignPage() {
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 
 	const [strokeColor, setStrokeColor] = useState("#3b82f6");
-	const [fillColor, setFillColor] = useState("none");
-	const [strokeWidth, setStrokeWidth] = useState(2);
+	const [fillColor] = useState("none");
+	const [strokeWidth] = useState(2);
 
 	const [leftPanelOpen, setLeftPanelOpen] = useState(true);
 	const [rightPanelOpen, setRightPanelOpen] = useState(true);
@@ -95,7 +95,6 @@ export default function DesignPage() {
 
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const { resolvedTheme } = useTheme();
-	const isDark = resolvedTheme === "dark";
 
 	const handleAction = useCallback((toolId: string) => {
 		if (toolId === "undo") {

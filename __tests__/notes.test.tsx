@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { usePaginatedQuery } from "convex/react";
 import React from "react";
 import { describe, expect, test, vi } from "vitest";
+import type { Id } from "../convex/_generated/dataModel";
 import { NoteList } from "../components/notes/NoteList";
 
 // Mock Convex
@@ -43,7 +44,7 @@ describe("Component: NoteList", () => {
 	test("renders a list of notes", () => {
 		const mockNotes = [
 			{
-				_id: "n1" as any,
+				_id: "n1" as unknown as Id<"notes">,
 				title: "Meeting Note",
 				content: "<p>Content</p>",
 				_creationTime: Date.now(),

@@ -3,6 +3,7 @@ import { useQuery } from "convex/react";
 import { useParams } from "next/navigation";
 import React from "react";
 import { describe, expect, test, vi } from "vitest";
+import type { Id } from "../convex/_generated/dataModel";
 import ProjectDetailPage from "../app/dashboard/projects/[projectId]/page";
 
 // Mock Convex
@@ -23,7 +24,7 @@ describe("Page: Project Detail", () => {
 	test("renders project title and description", () => {
 		vi.mocked(useParams).mockReturnValue({ projectId: "test-id" });
 		vi.mocked(useQuery).mockReturnValue({
-			_id: "test-id" as any,
+			_id: "test-id" as unknown as Id<"projects">,
 			name: "Architecture Project",
 			description: "A custom villa design",
 		});
@@ -37,7 +38,7 @@ describe("Page: Project Detail", () => {
 	test("shows the correct module sections", () => {
 		vi.mocked(useParams).mockReturnValue({ projectId: "test-id" });
 		vi.mocked(useQuery).mockReturnValue({
-			_id: "test-id" as any,
+			_id: "test-id" as unknown as Id<"projects">,
 			name: "Test Project",
 		});
 
