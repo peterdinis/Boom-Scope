@@ -1,6 +1,8 @@
 "use client";
 
 import {
+	ArrowDown,
+	ArrowUp,
 	Circle,
 	Eye,
 	EyeOff,
@@ -14,6 +16,7 @@ import {
 	PanelRight,
 	Pencil,
 	RefreshCw,
+	RotateCw,
 	Settings2,
 	Sliders,
 	Smartphone,
@@ -96,6 +99,7 @@ export default function DesignPage() {
 	const [canvasSize, setCanvasSize] = useState<{ width: number; height: number } | null>(null);
 	const [zoom, setZoom] = useState(1);
 	const [snapToGrid, setSnapToGrid] = useState(true);
+	const [artboardColor, setArtboardColor] = useState<string | null>(null);
 	const [previousTool, setPreviousTool] = useState<string | null>(null);
 
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -296,6 +300,7 @@ export default function DesignPage() {
 					zoom={zoom}
 					setZoom={setZoom}
 					snapToGrid={snapToGrid}
+					artboardColor={artboardColor}
 				/>
 
 				{/* Zoom Controls */}
@@ -545,6 +550,18 @@ export default function DesignPage() {
 														<Unlock className="size-3 opacity-40" />
 													)}
 												</button>
+												<Button
+													variant="ghost"
+													size="icon-xs"
+													onClick={(e) => {
+														e.stopPropagation();
+														setElements(elements.filter((item) => item.id !== el.id));
+														if (selectedId === el.id) setSelectedId(null);
+													}}
+													className="hover:bg-red-500 hover:text-white rounded-lg transition-all duration-300"
+												>
+													<Trash2 className="size-3.5" />
+												</Button>
 											</div>
 										</div>
 									))
@@ -802,6 +819,66 @@ export default function DesignPage() {
 											</Label>
 										</div>
 
+										{/* Rotation */}
+										<div className="space-y-5">
+											<div className="flex justify-between items-center">
+												<div className="flex items-center gap-2">
+													<RotateCw className="size-3 opacity-20" />
+													<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">
+														Rotácia
+													</p>
+												</div>
+												<span className="text-[10px] font-mono font-bold opacity-60">
+													{Math.round(selectedElement.rotation || 0)}°
+												</span>
+											</div>
+											<input
+												type="range"
+												min="0"
+												max="360"
+												value={selectedElement.rotation || 0}
+												onChange={(e) =>
+													updateSelectedElement({
+														rotation: parseInt(e.target.value),
+													})
+												}
+												className="w-full accent-blue-500 bg-foreground/10 rounded-full h-1 appearance-none cursor-pointer hover:bg-foreground/20 transition-colors"
+											/>
+										</div>
+
+										{/* Z-index (Layering) */}
+										<div className="space-y-5">
+											<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">
+												Usporiadanie Vrstiev
+											</p>
+											<div className="grid grid-cols-2 gap-3">
+												<Button
+													variant="outline"
+													size="sm"
+													className="rounded-xl border-border bg-background hover:bg-accent gap-2 text-[10px] font-bold"
+													onClick={() => {
+														const otherElements = elements.filter(el => el.id !== selectedId);
+														setElements([...otherElements, selectedElement]);
+													}}
+												>
+													<ArrowUp className="size-3" />
+													Dopredu
+												</Button>
+												<Button
+													variant="outline"
+													size="sm"
+													className="rounded-xl border-border bg-background hover:bg-accent gap-2 text-[10px] font-bold"
+													onClick={() => {
+														const otherElements = elements.filter(el => el.id !== selectedId);
+														setElements([selectedElement, ...otherElements]);
+													}}
+												>
+													<ArrowDown className="size-3" />
+													Dozadu
+												</Button>
+											</div>
+										</div>
+
 										{/* Opacity */}
 										<div className="space-y-5">
 											<div className="flex justify-between items-center">
@@ -946,16 +1023,38 @@ export default function DesignPage() {
 									</div>
 								</>
 							) : (
-								<div className="h-full flex flex-col items-center justify-center opacity-30 dark:opacity-10 text-center space-y-6">
-									<div className="size-24 rounded-[40px] bg-foreground/5 flex items-center justify-center border-2 border-dashed border-foreground/10">
-										<Settings2 className="size-10" />
+								<div className="space-y-8 animate-in fade-in duration-700">
+									<div className="flex items-center gap-3">
+										<Palette className="size-3.5 text-blue-500" />
+										<Label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">
+											Nastavenia Plátna
+										</Label>
 									</div>
-									<div className="space-y-2">
-										<p className="text-xs font-black uppercase tracking-[0.2em]">
-											Žiadny Výber
+
+									{/* Artboard Background */}
+									<div className="space-y-5">
+										<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">
+											Pozadie Artboardu
 										</p>
-										<p className="text-[10px] font-medium tracking-widest max-w-35">
-											Vyberte objekt na úpravu jeho vlastností
+										<div className="grid grid-cols-5 gap-2">
+											{[null, "#ffffff", "#f8fafc", "#18181b", "#000000"].map((color) => (
+												<button
+													key={color || "none"}
+													onClick={() => setArtboardColor(color)}
+													className={cn(
+														"size-8 rounded-lg border border-border shadow-sm transition-all hover:scale-110",
+														artboardColor === color ? "ring-2 ring-blue-500 ring-offset-2" : "",
+														!color && "bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] bg-repeat" // Placeholder for transparent
+													)}
+													style={{ backgroundColor: color || "transparent" }}
+												/>
+											))}
+										</div>
+									</div>
+									
+									<div className="p-6 rounded-[24px] bg-blue-500/5 border border-blue-500/10 space-y-4">
+										<p className="text-[10px] font-bold text-blue-500/60 leading-relaxed">
+											Tu môžete nastaviť globálne vlastnosti vášho projektu. Vyberte objekt pre špecifické úpravy.
 										</p>
 									</div>
 								</div>

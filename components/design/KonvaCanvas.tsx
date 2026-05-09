@@ -11,6 +11,7 @@ import "konva/lib/shapes/Text";
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
+import { Trash2 } from "lucide-react";
 import {
 	Circle,
 	Image as KonvaImage,
@@ -59,6 +60,7 @@ interface KonvaCanvasProps {
 	canvasSize?: { width: number; height: number } | null;
 	zoom: number;
 	setZoom: (zoom: number | ((prev: number) => number)) => void;
+	artboardColor?: string | null;
 }
 
 const GRID_SIZE = 20;
@@ -76,6 +78,7 @@ export default function KonvaCanvas({
 	canvasSize,
 	zoom,
 	setZoom,
+	artboardColor,
 }: KonvaCanvasProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const stageRef = useRef<Konva.Stage>(null);
@@ -83,6 +86,7 @@ export default function KonvaCanvas({
 	const [size, setSize] = useState({ width: 0, height: 0 });
 	const [isDrawing, setIsDrawing] = useState(false);
 	const [newElement, setNewElement] = useState<CanvasElement | null>(null);
+	const [contextMenu, setContextMenu] = useState<{ x: number, y: number, elementId: string } | null>(null);
 	const { resolvedTheme } = useTheme();
 	const isDark = resolvedTheme === "dark";
 
@@ -340,6 +344,37 @@ export default function KonvaCanvas({
 		};
 		stage.position(newPos);
 	};
+	
+	const handleContextMenu = (e: KonvaEventObject<PointerEvent>) => {
+		e.evt.preventDefault();
+		const stage = stageRef.current;
+		if (!stage) return;
+
+		const pointerPosition = stage.getPointerPosition();
+		if (!pointerPosition) return;
+
+		// Check if we clicked on an element
+		const clickedOnElement = e.target !== stage;
+		if (clickedOnElement) {
+			const id = e.target.id();
+			if (id) {
+				setContextMenu({
+					x: pointerPosition.x,
+					y: pointerPosition.y,
+					elementId: id
+				});
+				onSelect(id);
+			}
+		} else {
+			setContextMenu(null);
+		}
+	};
+
+	useEffect(() => {
+		const handleClickOutside = () => setContextMenu(null);
+		window.addEventListener('click', handleClickOutside);
+		return () => window.removeEventListener('click', handleClickOutside);
+	}, []);
 
 	const renderGrid = () => {
 		const lines = [];
@@ -376,7 +411,7 @@ export default function KonvaCanvas({
 	};
 
 	return (
-		<div ref={containerRef} className="h-full w-full bg-background">
+		<div ref={containerRef} className="h-full w-full bg-background relative overflow-hidden">
 			<Stage
 				ref={stageRef}
 				width={size.width}
@@ -385,6 +420,7 @@ export default function KonvaCanvas({
 				onMouseMove={handleMouseMove}
 				onMouseUp={handleMouseUp}
 				onWheel={handleWheel}
+				onContextMenu={handleContextMenu}
 				draggable={activeTool === "select" || activeTool === "hand"}
 				style={{ cursor: activeTool === "hand" ? "grab" : "default" }}
 			>
@@ -399,7 +435,7 @@ export default function KonvaCanvas({
 							y={0}
 							width={canvasSize.width}
 							height={canvasSize.height}
-							fill={isDark ? "#18181b" : "#ffffff"}
+							fill={artboardColor || (isDark ? "#18181b" : "#ffffff")}
 							shadowColor="black"
 							shadowBlur={20}
 							shadowOpacity={0.1}
@@ -457,6 +493,27 @@ export default function KonvaCanvas({
 					)}
 				</Layer>
 			</Stage>
+
+			{/* Context Menu */}
+			{contextMenu && (
+				<div 
+					className="absolute z-[100] bg-background/80 backdrop-blur-2xl border border-border rounded-2xl shadow-2xl p-1.5 min-w-[180px] animate-in zoom-in-95 duration-200"
+					style={{ top: contextMenu.y, left: contextMenu.x }}
+				>
+					<button
+						className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-500 transition-all group"
+						onClick={(e) => {
+							e.stopPropagation();
+							setElements(elements.filter(el => el.id !== contextMenu.elementId));
+							if (selectedId === contextMenu.elementId) onSelect(null);
+							setContextMenu(null);
+						}}
+					>
+						<span className="text-[10px] font-black uppercase tracking-widest">Vymazať objekt</span>
+						<Trash2 className="size-3.5 opacity-50 group-hover:opacity-100" />
+					</button>
+				</div>
+			)}
 		</div>
 	);
 }
