@@ -45,7 +45,7 @@ describe("Page: Project Detail", () => {
 		render(<ProjectDetailPage />);
 
 		expect(screen.getByText("Poznámky")).toBeDefined();
-		expect(screen.getByText("Dizajny")).toBeDefined();
+		expect(screen.getByText("Canvas")).toBeDefined();
 		expect(screen.getByText("Design Systems")).toBeDefined();
 	});
 

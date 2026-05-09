@@ -11,7 +11,7 @@ describe("Component: ShareDialog", () => {
 			<ShareDialog isOpen={true} onClose={mockOnClose} designId={designId} />,
 		);
 		expect(screen.getByText(/Zdieľať Design/i)).toBeDefined();
-		expect(screen.getByText(/Verejný Odkaz/i)).toBeDefined();
+		expect(screen.getByText(/^Verejný Odkaz$/i)).toBeDefined();
 	});
 
 	test("displays correctly truncated designId in URL", () => {
@@ -46,6 +46,7 @@ describe("Component: ShareDialog", () => {
 		fireEvent.click(copyBtn);
 
 		expect(writeTextMock).toHaveBeenCalled();
-		expect(screen.getByText(/Kopírovať/i)).toBeDefined(); // Label changes or icon changes
+		// After click, the label is replaced with the Check icon.
+		expect(screen.queryByText(/Kopírovať/i)).toBeNull();
 	});
 });
