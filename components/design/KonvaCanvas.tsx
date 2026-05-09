@@ -2,7 +2,16 @@
 
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useEffect, useRef, useState } from "react";
-import { Circle, Layer, Line, Rect, Stage, Transformer, Text, Image as KonvaImage } from "react-konva";
+import {
+	Circle,
+	Image as KonvaImage,
+	Layer,
+	Line,
+	Rect,
+	Stage,
+	Text,
+	Transformer,
+} from "react-konva";
 import useImage from "use-image";
 
 export interface CanvasElement {
@@ -85,8 +94,8 @@ export default function KonvaCanvas({
 	useEffect(() => {
 		if (transformerRef.current && selectedId) {
 			const selectedNode = stageRef.current.findOne(`#${selectedId}`);
-			const element = elementsRef.current.find(el => el.id === selectedId);
-			
+			const element = elementsRef.current.find((el) => el.id === selectedId);
+
 			// Don't show transformer for locked or hidden elements
 			if (selectedNode && !element?.isLocked && element?.isVisible !== false) {
 				transformerRef.current.nodes([selectedNode]);
@@ -118,7 +127,7 @@ export default function KonvaCanvas({
 		onSelect(null);
 		const stage = e.target.getStage();
 		if (!stage) return;
-		
+
 		const pos = stage.getRelativePointerPosition();
 		if (!pos) return;
 
@@ -139,7 +148,8 @@ export default function KonvaCanvas({
 			opacity: 1,
 			isVisible: true,
 			isLocked: false,
-			globalCompositeOperation: activeTool === "eraser" ? "destination-out" : "source-over",
+			globalCompositeOperation:
+				activeTool === "eraser" ? "destination-out" : "source-over",
 		};
 
 		if (activeTool === "pencil" || activeTool === "eraser") {
@@ -259,7 +269,7 @@ export default function KonvaCanvas({
 		const lines = [];
 		const width = size.width * 10;
 		const height = size.height * 10;
-		
+
 		for (let i = -width; i < width; i += GRID_SIZE) {
 			lines.push(
 				<Line
@@ -269,7 +279,7 @@ export default function KonvaCanvas({
 					strokeWidth={0.2}
 					opacity={0.05}
 					listening={false}
-				/>
+				/>,
 			);
 		}
 		for (let j = -height; j < height; j += GRID_SIZE) {
@@ -281,7 +291,7 @@ export default function KonvaCanvas({
 					strokeWidth={0.2}
 					opacity={0.05}
 					listening={false}
-				/>
+				/>,
 			);
 		}
 		return lines;
@@ -300,9 +310,7 @@ export default function KonvaCanvas({
 				draggable={activeTool === "select"}
 			>
 				{/* Background Grid Layer */}
-				<Layer listening={false}>
-					{renderGrid()}
-				</Layer>
+				<Layer listening={false}>{renderGrid()}</Layer>
 
 				{/* Main Drawing Layer */}
 				<Layer>
@@ -312,16 +320,26 @@ export default function KonvaCanvas({
 							element={el}
 							isSelected={selectedId === el.id}
 							onSelect={() => {
-								if (activeTool === "select" && !el.isLocked && el.isVisible !== false) {
+								if (
+									activeTool === "select" &&
+									!el.isLocked &&
+									el.isVisible !== false
+								) {
 									onSelect(el.id);
 								}
 							}}
 							onDragEnd={handleDragEnd}
-							draggable={activeTool === "select" && !el.isLocked && el.isVisible !== false}
+							draggable={
+								activeTool === "select" &&
+								!el.isLocked &&
+								el.isVisible !== false
+							}
 						/>
 					))}
-					{newElement && <RenderElement element={newElement} isSelected={false} />}
-					
+					{newElement && (
+						<RenderElement element={newElement} isSelected={false} />
+					)}
+
 					{activeTool === "select" && (
 						<Transformer
 							ref={transformerRef}
@@ -396,12 +414,7 @@ function RenderElement({
 
 	if (el.type === "circle") {
 		const radius = Math.sqrt((el.width || 0) ** 2 + (el.height || 0) ** 2);
-		return (
-			<Circle
-				{...commonProps}
-				radius={radius}
-			/>
-		);
+		return <Circle {...commonProps} radius={radius} />;
 	}
 
 	if (el.type === "pencil") {

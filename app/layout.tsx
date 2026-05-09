@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { Figtree, Geist, Geist_Mono, Raleway } from "next/font/google";
 import "./globals.css";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
+import { Suspense } from "react";
 import { Toaster } from "sonner";
 import ConvexClientProvider from "@/components/ConvexClientProvider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
-import { Suspense } from "react";
 import GlobalLoading from "./loading";
 
 const ralewayHeading = Raleway({
