@@ -14,7 +14,7 @@ export function DashboardHeader() {
 
 	let activeId: DashboardNavId = "overview";
 	if (pathname.startsWith("/dashboard/notes")) activeId = "notes";
-	if (pathname.startsWith("/dashboard/design")) activeId = "design";
+	if (pathname.startsWith("/dashboard/canvas")) activeId = "design";
 	if (pathname.startsWith("/dashboard/generate")) activeId = "generate";
 
 	const titles: Record<DashboardNavId, { title: string; subtitle: string }> = {

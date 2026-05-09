@@ -20,81 +20,33 @@ import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAction, useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 
 interface GeneratedSystem {
-	colors: string[];
-	fonts: {
-		heading: string;
-		body: string;
-	};
-	vibe: string;
+	colors: { name: string; hex: string; rgb: string }[];
+	fonts: string[];
+	description?: string;
 }
 
-const FONT_PAIRS = [
-	{ heading: "Raleway", body: "Inter" },
-	{ heading: "Playfair Display", body: "Source Sans Pro" },
-	{ heading: "Montserrat", body: "Open Sans" },
-	{ heading: "Oswald", body: "Roboto" },
-	{ heading: "Outfit", body: "Geist" },
-	{ heading: "Fraunces", body: "Manrope" },
-	{ heading: "Syne", body: "Inter" },
-	{ heading: "Cabinet Grotesk", body: "Satoshi" },
-];
-
 export default function DesignSystemPage() {
+	const projects = useQuery(api.projects.list);
+	const analyzeDesign = useAction(api.openai.analyzeDesignSystem);
+	const saveSystem = useMutation(api.design_systems.create);
+	
+	const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 	const [images, setImages] = useState<{ id: string; url: string }[]>([]);
 	const [isAnalyzing, setIsAnalyzing] = useState(false);
 	const [system, setSystem] = useState<GeneratedSystem | null>(null);
 	const [copiedColor, setCopiedColor] = useState<string | null>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
-
-	const extractColors = async (imageUrl: string): Promise<string[]> => {
-		return new Promise((resolve) => {
-			const img = new Image();
-			img.crossOrigin = "Anonymous";
-			img.src = imageUrl;
-			img.onload = () => {
-				const canvas = document.createElement("canvas");
-				const ctx = canvas.getContext("2d");
-				if (!ctx)
-					return resolve([
-						"#3b82f6",
-						"#10b981",
-						"#6366f1",
-						"#f59e0b",
-						"#ef4444",
-					]);
-
-				canvas.width = 100;
-				canvas.height = 100;
-				ctx.drawImage(img, 0, 0, 100, 100);
-
-				const data = ctx.getImageData(0, 0, 100, 100).data;
-				const colorCounts: Record<string, number> = {};
-
-				for (let i = 0; i < data.length; i += 40) {
-					// Sample every 10th pixel
-					const r = data[i];
-					const g = data[i + 1];
-					const b = data[i + 2];
-					const hex = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
-					colorCounts[hex] = (colorCounts[hex] || 0) + 1;
-				}
-
-				const sortedColors = Object.entries(colorCounts)
-					.sort(([, a], [, b]) => b - a)
-					.map(([color]) => color)
-					.filter((c) => c !== "#ffffff" && c !== "#000000") // Skip pure white/black
-					.slice(0, 5);
-
-				resolve(
-					sortedColors.length >= 5
-						? sortedColors
-						: [...sortedColors, "#3b82f6", "#10b981"].slice(0, 5),
-				);
-			};
-		});
-	};
 
 	const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const files = Array.from(e.target.files || []);
@@ -112,38 +64,36 @@ export default function DesignSystemPage() {
 
 	const analyzeImages = async () => {
 		if (images.length === 0) return;
+		if (!selectedProjectId) {
+			toast.error("Najprv vyberte projekt!");
+			return;
+		}
+
 		setIsAnalyzing(true);
 		setSystem(null);
 
-		// Simulate AI delay
-		await new Promise((r) => setTimeout(r, 3000));
+		try {
+			const result = await analyzeDesign({
+				imageUrls: images.map(img => img.url)
+			});
 
-		const allColors: string[] = [];
-		for (const img of images) {
-			const colors = await extractColors(img.url);
-			allColors.push(...colors);
+			setSystem(result as any);
+			
+			// Save to Convex
+			await saveSystem({
+				projectId: selectedProjectId as any,
+				colors: (result as any).colors,
+				fonts: (result as any).fonts,
+				description: (result as any).description,
+			});
+
+			toast.success("Design System úspešne vygenerovaný a uložený!");
+		} catch (error) {
+			console.error(error);
+			toast.error("Nepodarilo sa zanalyzovať dizajn. Skontrolujte OpenAI kľúč.");
+		} finally {
+			setIsAnalyzing(false);
 		}
-
-		// Unique top colors
-		const uniqueColors = Array.from(new Set(allColors)).slice(0, 6);
-		const randomFontPair =
-			FONT_PAIRS[Math.floor(Math.random() * FONT_PAIRS.length)];
-
-		setSystem({
-			colors:
-				uniqueColors.length >= 5
-					? uniqueColors
-					: ["#3b82f6", "#10b981", "#6366f1", "#f59e0b", "#ef4444"],
-			fonts: randomFontPair,
-			vibe: [
-				"Modern Minimalist",
-				"Bold & Vibrant",
-				"Elegant Luxury",
-				"Tech Brutalist",
-			][Math.floor(Math.random() * 4)],
-		});
-		setIsAnalyzing(false);
-		toast.success("Design System Generated!");
 	};
 
 	const copyToClipboard = (text: string) => {

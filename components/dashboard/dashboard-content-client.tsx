@@ -56,10 +56,10 @@ export function DashboardContent({ viewer }: { viewer: any }) {
 						</CardContent>
 					</Card>
 				</Link>
-				<Link href="/dashboard/design">
+				<Link href="/dashboard/canvas">
 					<Card className="hover:border-primary/50 transition-colors">
 						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<CardTitle className="text-sm font-medium">Dizajn</CardTitle>
+							<CardTitle className="text-sm font-medium">Canvas</CardTitle>
 							<Palette className="size-4 text-muted-foreground" />
 						</CardHeader>
 						<CardContent>
