@@ -44,10 +44,16 @@ export default function GlobalLoading() {
 						Boom Scope
 					</motion.h2>
 					<div className="flex items-center gap-1">
-						<span className="text-sm text-muted-foreground">Pripravujeme prostredie</span>
+						<span className="text-sm text-muted-foreground">
+							Pripravujeme prostredie
+						</span>
 						<motion.span
 							animate={{ opacity: [0, 1, 0] }}
-							transition={{ repeat: Number.POSITIVE_INFINITY, duration: 1.5, times: [0, 0.5, 1] }}
+							transition={{
+								repeat: Number.POSITIVE_INFINITY,
+								duration: 1.5,
+								times: [0, 0.5, 1],
+							}}
 							className="text-sm text-muted-foreground"
 						>
 							...

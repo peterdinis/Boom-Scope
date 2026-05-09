@@ -2,6 +2,7 @@
 
 import {
 	Circle,
+	Eraser,
 	Image as ImageIcon,
 	MousePointer2,
 	Pencil,
@@ -20,12 +21,13 @@ import {
 	useSpring,
 	useTransform,
 } from "motion/react";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { cn } from "@/lib/utils";
 
 const tools = [
 	{ id: "select", icon: MousePointer2, label: "Výber" },
 	{ id: "pencil", icon: Pencil, label: "Pero" },
+	{ id: "eraser", icon: Eraser, label: "Guma" },
 	{ id: "rect", icon: Square, label: "Obdĺžnik" },
 	{ id: "circle", icon: Circle, label: "Kruh" },
 	{ id: "text", icon: Type, label: "Text" },
@@ -34,7 +36,7 @@ const tools = [
 	{ id: "undo", icon: Undo, label: "Späť" },
 	{ id: "redo", icon: Redo, label: "Dopredu" },
 	{ id: "sep-2", type: "separator" },
-	{ id: "trash", icon: Trash2, label: "Vymazať", color: "text-destructive" },
+	{ id: "trash", icon: Trash2, label: "Vymazať", color: "text-red-500/60" },
 	{ id: "settings", icon: Settings, label: "Nastavenia" },
 	{ id: "share", icon: Share2, label: "Zdieľať" },
 ];
@@ -49,13 +51,14 @@ export function Dock({
 	const mouseX = useMotionValue(Infinity);
 
 	return (
-		<div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
+		<div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50">
 			<motion.div
 				onMouseMove={(e) => mouseX.set(e.pageX)}
 				onMouseLeave={() => mouseX.set(Infinity)}
 				className={cn(
-					"flex items-end gap-3 rounded-2xl px-4 pb-3 pt-2",
-					"bg-background/40 backdrop-blur-xl border border-white/10 shadow-2xl",
+					"flex items-end gap-2 rounded-[28px] px-4 pb-4 pt-3",
+					"bg-background/80 dark:bg-background/40 backdrop-blur-3xl border border-border",
+					"shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]",
 				)}
 			>
 				{tools.map((tool) => {
@@ -63,7 +66,7 @@ export function Dock({
 						return (
 							<div
 								key={tool.id}
-								className="mx-1 h-8 w-px bg-white/10 self-center"
+								className="mx-2 h-10 w-px bg-border/50 self-center"
 							/>
 						);
 					}
@@ -106,7 +109,7 @@ function DockIcon({
 		return val - bounds.x - bounds.width / 2;
 	});
 
-	const widthSync = useTransform(distance, [-150, 0, 150], [40, 60, 40]);
+	const widthSync = useTransform(distance, [-150, 0, 150], [44, 70, 44]);
 	const width = useSpring(widthSync, {
 		mass: 0.1,
 		stiffness: 150,
@@ -122,11 +125,11 @@ function DockIcon({
 			<motion.div
 				style={{ width, height: width }}
 				className={cn(
-					"flex items-center justify-center rounded-xl transition-colors",
+					"flex items-center justify-center rounded-[18px] transition-all duration-300",
 					isActive
-						? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+						? "bg-blue-600 text-white shadow-[0_10px_20px_rgba(37,99,235,0.4)]"
 						: cn(
-								"bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-foreground",
+								"bg-foreground/5 text-foreground/40 hover:bg-foreground/10 hover:text-foreground",
 								color,
 							),
 				)}
@@ -135,8 +138,8 @@ function DockIcon({
 			</motion.div>
 
 			{/* Tooltip */}
-			<div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-				<div className="bg-popover text-popover-foreground text-[10px] px-2 py-1 rounded-md border border-border shadow-sm whitespace-nowrap font-medium">
+			<div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none translate-y-2 group-hover:translate-y-0">
+				<div className="bg-background/90 backdrop-blur-md text-foreground text-[10px] px-3 py-1.5 rounded-xl border border-border shadow-2xl whitespace-nowrap font-bold uppercase tracking-widest">
 					{label}
 				</div>
 			</div>
@@ -145,7 +148,7 @@ function DockIcon({
 			{isActive && (
 				<motion.div
 					layoutId="active-pill"
-					className="absolute -bottom-1.5 size-1 rounded-full bg-primary"
+					className="absolute -bottom-2 size-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"
 				/>
 			)}
 		</button>

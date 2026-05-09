@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, AnimatePresence } from "motion/react";
 import { AlertCircle, ChevronDown, ChevronUp, RefreshCcw } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -58,7 +58,8 @@ export default function GlobalError({
 						transition={{ delay: 0.2 }}
 						className="text-muted-foreground"
 					>
-						Ospravedlňujeme sa, ale pri načítavaní stránky sa vyskytla neočakávaná chyba.
+						Ospravedlňujeme sa, ale pri načítavaní stránky sa vyskytla
+						neočakávaná chyba.
 					</motion.p>
 					{error.digest && (
 						<motion.code
@@ -101,7 +102,9 @@ export default function GlobalError({
 								className="overflow-hidden"
 							>
 								<div className="rounded-xl border border-border/50 bg-muted/30 p-4 text-left font-mono text-xs text-muted-foreground break-all">
-									<p className="font-bold text-foreground mb-2">Message: {error.message}</p>
+									<p className="font-bold text-foreground mb-2">
+										Message: {error.message}
+									</p>
 									{error.stack && (
 										<pre className="whitespace-pre-wrap overflow-x-auto max-h-[200px]">
 											{error.stack}
