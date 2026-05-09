@@ -20,7 +20,7 @@ vi.mock("@/components/UserMenu", () => ({
 
 describe("Component: DashboardHeader", () => {
 	test("renders the correct title based on pathname", () => {
-		(usePathname as any).mockReturnValue("/dashboard/notes");
+		vi.mocked(usePathname).mockReturnValue("/dashboard/notes");
 
 		render(
 			<SidebarProvider>
@@ -33,7 +33,7 @@ describe("Component: DashboardHeader", () => {
 	});
 
 	test("toggles sidebar on button click", () => {
-		(usePathname as any).mockReturnValue("/dashboard");
+		vi.mocked(usePathname).mockReturnValue("/dashboard");
 
 		render(
 			<SidebarProvider>

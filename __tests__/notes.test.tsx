@@ -18,7 +18,7 @@ vi.mock("next/navigation", () => ({
 
 describe("Component: NoteList", () => {
 	test("renders loading skeletons initially", () => {
-		(usePaginatedQuery as any).mockReturnValue({
+		vi.mocked(usePaginatedQuery).mockReturnValue({
 			results: [],
 			status: "LoadingFirstPage",
 			loadMore: vi.fn(),
@@ -30,7 +30,7 @@ describe("Component: NoteList", () => {
 	});
 
 	test("renders empty state when no notes found", () => {
-		(usePaginatedQuery as any).mockReturnValue({
+		vi.mocked(usePaginatedQuery).mockReturnValue({
 			results: [],
 			status: "Exhausted",
 			loadMore: vi.fn(),
@@ -43,14 +43,14 @@ describe("Component: NoteList", () => {
 	test("renders a list of notes", () => {
 		const mockNotes = [
 			{
-				_id: "n1",
+				_id: "n1" as any,
 				title: "Meeting Note",
 				content: "<p>Content</p>",
 				_creationTime: Date.now(),
 				projectName: "Alpha",
 			},
 		];
-		(usePaginatedQuery as any).mockReturnValue({
+		vi.mocked(usePaginatedQuery).mockReturnValue({
 			results: mockNotes,
 			status: "CanLoadMore",
 			loadMore: vi.fn(),
@@ -63,7 +63,7 @@ describe("Component: NoteList", () => {
 
 	test("updates search term on input change", () => {
 		const loadMore = vi.fn();
-		(usePaginatedQuery as any).mockReturnValue({
+		vi.mocked(usePaginatedQuery).mockReturnValue({
 			results: [],
 			status: "Exhausted",
 			loadMore,
