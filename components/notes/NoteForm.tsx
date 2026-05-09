@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { downloadNoteAsTxt } from "@/lib/notes";
+import { noteSchema } from "@/lib/validations";
 
 interface NoteFormProps {
 	initialData: {
@@ -37,8 +38,10 @@ export function NoteForm({ initialData }: NoteFormProps) {
 	const [isDeleting, setIsDeleting] = useState(false);
 
 	const handleSave = async () => {
-		if (!title.trim()) {
-			toast.error("Názov poznámky nemôže byť prázdny.");
+		const validation = noteSchema.safeParse({ title, content, projectId });
+		
+		if (!validation.success) {
+			toast.error(validation.error.errors[0].message);
 			return;
 		}
 

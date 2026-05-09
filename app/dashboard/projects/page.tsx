@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
+import { projectSchema } from "@/lib/validations";
 
 export default function ProjectsPage() {
 	const projects = useQuery(api.projects.list);
@@ -41,7 +42,13 @@ export default function ProjectsPage() {
 
 	const handleCreate = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!newProjectName.trim()) return;
+		
+		const validation = projectSchema.safeParse({ name: newProjectName });
+		
+		if (!validation.success) {
+			toast.error(validation.error.errors[0].message);
+			return;
+		}
 
 		try {
 			await createProject({ name: newProjectName });

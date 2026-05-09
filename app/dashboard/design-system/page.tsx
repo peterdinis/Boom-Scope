@@ -30,11 +30,21 @@ import {
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
 
-interface GeneratedSystem {
-	colors: { name: string; hex: string; rgb: string }[];
-	fonts: string[];
-	description?: string;
-}
+import { z } from "zod";
+
+const aiSystemSchema = z.object({
+	colors: z.array(
+		z.object({
+			name: z.string(),
+			hex: z.string().regex(/^#/, "Farba musí byť v HEX formáte"),
+			rgb: z.string(),
+		}),
+	),
+	fonts: z.array(z.string()),
+	description: z.string().optional(),
+});
+
+interface GeneratedSystem extends z.infer<typeof aiSystemSchema> {}
 
 export default function DesignSystemPage() {
 	const projects = useQuery(api.projects.list);
@@ -79,14 +89,19 @@ export default function DesignSystemPage() {
 				imageUrls: images.map((img) => img.url),
 			});
 
-			setSystem(result as any);
+			const parsed = aiSystemSchema.safeParse(result);
+			if (!parsed.success) {
+				throw new Error("AI vrátila neplatné dáta.");
+			}
+
+			setSystem(parsed.data);
 
 			// Save to Convex
 			await saveSystem({
 				projectId: selectedProjectId as any,
-				colors: (result as any).colors,
-				fonts: (result as any).fonts,
-				description: (result as any).description,
+				colors: parsed.data.colors,
+				fonts: parsed.data.fonts,
+				description: parsed.data.description,
 			});
 
 			toast.success("Design System úspešne vygenerovaný a uložený!");

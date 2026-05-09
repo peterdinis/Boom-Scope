@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { noteSchema } from "@/lib/validations";
 
 export default function NewNotePage() {
 	const router = useRouter();
@@ -25,8 +26,10 @@ export default function NewNotePage() {
 	const [isSaving, setIsSaving] = useState(false);
 
 	const handleSave = async () => {
-		if (!title.trim()) {
-			toast.error("Zadajte prosím názov poznámky.");
+		const validation = noteSchema.safeParse({ title, content, projectId });
+		
+		if (!validation.success) {
+			toast.error(validation.error.errors[0].message);
 			return;
 		}
 
