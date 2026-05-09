@@ -24,7 +24,12 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export type DashboardNavId = "overview" | "projects" | "notes" | "design" | "generate";
+export type DashboardNavId =
+	| "overview"
+	| "projects"
+	| "notes"
+	| "design"
+	| "generate";
 
 const navItems: {
 	id: DashboardNavId;

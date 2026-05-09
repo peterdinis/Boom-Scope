@@ -1,6 +1,6 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const create = mutation({
 	args: {
@@ -34,15 +34,23 @@ export const list = query({
 });
 
 export const getById = query({
-	args: { projectId: v.id("projects") },
+	args: { projectId: v.string() }, // Accept string and validate manually if needed, or keep v.id
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
 		if (!userId) return null;
 
-		const project = await ctx.db.get(args.projectId);
-		if (!project || project.userId !== userId) return null;
+		try {
+			const project = await ctx.db.get(args.projectId as any);
+			if (!project) return null;
 
-		return project;
+			// Narrowing for TypeScript
+			if ("userId" in project && project.userId === userId) {
+				return project as any;
+			}
+			return null;
+		} catch (e) {
+			return null;
+		}
 	},
 });
 

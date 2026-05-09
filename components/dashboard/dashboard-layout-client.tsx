@@ -1,10 +1,10 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { SidebarProvider, useSidebar } from "./sidebar-context";
-import { DashboardSidebarNav } from "./dashboard-nav";
-import { DashboardHeader } from "./dashboard-header";
 import { cn } from "@/lib/utils";
+import { DashboardHeader } from "./dashboard-header";
+import { DashboardSidebarNav } from "./dashboard-nav";
+import { SidebarProvider, useSidebar } from "./sidebar-context";
 
 function DashboardLayoutContent({ children }: { children: ReactNode }) {
 	const { isCollapsed } = useSidebar();

@@ -1,35 +1,42 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { 
-	Plus, FolderKanban, MoreVertical, ExternalLink, 
-	Clock, Calendar, Trash2, ArrowRight, Search 
+import {
+	ArrowRight,
+	Calendar,
+	Clock,
+	ExternalLink,
+	FolderKanban,
+	MoreVertical,
+	Plus,
+	Search,
+	Trash2,
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
-import { useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { api } from "@/convex/_generated/api";
 
 export default function ProjectsPage() {
 	const projects = useQuery(api.projects.list);
 	const createProject = useMutation(api.projects.create);
 	const deleteProject = useMutation(api.projects.remove);
-	
+
 	const [searchQuery, setSearchQuery] = useState("");
 	const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 	const [newProjectName, setNewProjectName] = useState("");
 
-	const filteredProjects = projects?.filter(p => 
-		p.name.toLowerCase().includes(searchQuery.toLowerCase())
+	const filteredProjects = projects?.filter((p) =>
+		p.name.toLowerCase().includes(searchQuery.toLowerCase()),
 	);
 
 	const handleCreate = async (e: React.FormEvent) => {
@@ -62,7 +69,7 @@ export default function ProjectsPage() {
 				{/* Header */}
 				<header className="flex flex-col md:flex-row md:items-end justify-between gap-8">
 					<div className="space-y-4">
-						<motion.div 
+						<motion.div
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20 text-[10px] font-black uppercase tracking-[0.2em]"
@@ -70,7 +77,7 @@ export default function ProjectsPage() {
 							<FolderKanban className="size-3" />
 							Centrálny Dashboard
 						</motion.div>
-						<motion.h1 
+						<motion.h1
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.1 }}
@@ -83,14 +90,14 @@ export default function ProjectsPage() {
 					<div className="flex items-center gap-4">
 						<div className="relative w-64">
 							<Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 opacity-20" />
-							<Input 
-								placeholder="Hľadať projekt..." 
+							<Input
+								placeholder="Hľadať projekt..."
 								className="pl-12 h-14 rounded-2xl bg-background/40 backdrop-blur-3xl border-border"
 								value={searchQuery}
 								onChange={(e) => setSearchQuery(e.target.value)}
 							/>
 						</div>
-						<Button 
+						<Button
 							onClick={() => setIsCreateModalOpen(true)}
 							className="h-14 px-8 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-[0_20px_40px_rgba(37,99,235,0.3)] transition-all"
 						>
@@ -116,26 +123,44 @@ export default function ProjectsPage() {
 									<div className="h-64 p-8 rounded-[40px] bg-background/40 backdrop-blur-3xl border border-border hover:border-blue-500/30 transition-all duration-500 shadow-xl group-hover:shadow-blue-500/5 group-hover:-translate-y-2 flex flex-col justify-between overflow-hidden">
 										{/* Background Accent */}
 										<div className="absolute -right-4 -top-4 size-32 bg-blue-500/5 blur-3xl group-hover:bg-blue-500/10 transition-colors" />
-										
+
 										<div className="space-y-4">
 											<div className="flex items-start justify-between">
 												<div className="size-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20 group-hover:scale-110 transition-transform duration-500">
 													<FolderKanban className="size-6" />
 												</div>
 												<DropdownMenu>
-													<DropdownMenuTrigger asChild onClick={(e) => e.preventDefault()}>
-														<Button variant="ghost" size="icon" className="rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
+													<DropdownMenuTrigger
+														asChild
+														onClick={(e) => e.preventDefault()}
+													>
+														<Button
+															variant="ghost"
+															size="icon"
+															className="rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
+														>
 															<MoreVertical className="size-4" />
 														</Button>
 													</DropdownMenuTrigger>
-													<DropdownMenuContent align="end" className="rounded-2xl border-border bg-background/90 backdrop-blur-xl">
-														<DropdownMenuItem className="text-red-500 focus:text-red-500 focus:bg-red-500/10 rounded-xl" onClick={(e) => { e.preventDefault(); handleDelete(project._id); }}>
+													<DropdownMenuContent
+														align="end"
+														className="rounded-2xl border-border bg-background/90 backdrop-blur-xl"
+													>
+														<DropdownMenuItem
+															className="text-red-500 focus:text-red-500 focus:bg-red-500/10 rounded-xl"
+															onClick={(e) => {
+																e.preventDefault();
+																handleDelete(project._id);
+															}}
+														>
 															<Trash2 className="size-4 mr-2" /> Vymazať
 														</DropdownMenuItem>
 													</DropdownMenuContent>
 												</DropdownMenu>
 											</div>
-											<h3 className="text-2xl font-black tracking-tight">{project.name}</h3>
+											<h3 className="text-2xl font-black tracking-tight">
+												{project.name}
+											</h3>
 											<p className="text-sm font-medium opacity-40 line-clamp-2">
 												{project.description || "Žiadny popis projektu."}
 											</p>
@@ -143,7 +168,9 @@ export default function ProjectsPage() {
 
 										<div className="flex items-center justify-between pt-6 border-t border-border/50">
 											<div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest opacity-30">
-												<span className="flex items-center gap-1.5"><Clock className="size-3" /> Nedávno</span>
+												<span className="flex items-center gap-1.5">
+													<Clock className="size-3" /> Nedávno
+												</span>
 											</div>
 											<div className="size-10 rounded-full bg-foreground/5 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
 												<ArrowRight className="size-4" />
@@ -162,8 +189,12 @@ export default function ProjectsPage() {
 								<FolderKanban className="size-12" />
 							</div>
 							<div className="text-center">
-								<p className="text-xl font-black uppercase tracking-widest">Žiadne projekty</p>
-								<p className="text-sm font-medium">Vytvorte si svoj prvý projekt na začatie práce</p>
+								<p className="text-xl font-black uppercase tracking-widest">
+									Žiadne projekty
+								</p>
+								<p className="text-sm font-medium">
+									Vytvorte si svoj prvý projekt na začatie práce
+								</p>
 							</div>
 						</div>
 					)}
@@ -174,7 +205,7 @@ export default function ProjectsPage() {
 			<AnimatePresence>
 				{isCreateModalOpen && (
 					<div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-						<motion.div 
+						<motion.div
 							initial={{ opacity: 0 }}
 							animate={{ opacity: 1 }}
 							exit={{ opacity: 0 }}
@@ -187,11 +218,15 @@ export default function ProjectsPage() {
 							exit={{ opacity: 0, scale: 0.9, y: 20 }}
 							className="relative w-full max-w-lg p-10 rounded-[40px] bg-background border border-border shadow-2xl"
 						>
-							<h2 className="text-3xl font-black tracking-tight mb-8">Nový <span className="text-blue-500">Projekt</span></h2>
+							<h2 className="text-3xl font-black tracking-tight mb-8">
+								Nový <span className="text-blue-500">Projekt</span>
+							</h2>
 							<form onSubmit={handleCreate} className="space-y-8">
 								<div className="space-y-4">
-									<label className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 ml-4">Názov Projektu</label>
-									<Input 
+									<label className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 ml-4">
+										Názov Projektu
+									</label>
+									<Input
 										autoFocus
 										value={newProjectName}
 										onChange={(e) => setNewProjectName(e.target.value)}
@@ -200,15 +235,15 @@ export default function ProjectsPage() {
 									/>
 								</div>
 								<div className="flex gap-4">
-									<Button 
-										type="button" 
-										variant="ghost" 
+									<Button
+										type="button"
+										variant="ghost"
 										onClick={() => setIsCreateModalOpen(false)}
 										className="flex-1 h-16 rounded-[24px] font-black uppercase tracking-widest text-xs"
 									>
 										Zrušiť
 									</Button>
-									<Button 
+									<Button
 										type="submit"
 										disabled={!newProjectName.trim()}
 										className="flex-2 h-16 px-10 rounded-[24px] bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-xs shadow-xl"
