@@ -2,8 +2,8 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { usePaginatedQuery } from "convex/react";
 import React from "react";
 import { describe, expect, test, vi } from "vitest";
-import type { Id } from "../convex/_generated/dataModel";
 import { NoteList } from "../components/notes/NoteList";
+import type { Id } from "../convex/_generated/dataModel";
 
 // Mock Convex
 vi.mock("convex/react", () => ({

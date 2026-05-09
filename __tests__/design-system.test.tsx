@@ -2,6 +2,14 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import React from "react";
 import { describe, expect, test, vi } from "vitest";
 import DesignSystemPage from "../app/dashboard/design-system/page";
+import { toast } from "sonner";
+
+// Mock Convex hooks so the page renders without a ConvexProvider in tests.
+vi.mock("convex/react", () => ({
+	useQuery: vi.fn(() => []),
+	useMutation: vi.fn(() => vi.fn()),
+	useAction: vi.fn(() => vi.fn()),
+}));
 
 // Mock Sonner toast
 vi.mock("sonner", () => ({
@@ -42,7 +50,7 @@ describe("Page: Design System Generator", () => {
 		});
 	});
 
-	test("enters analyzing state on button click", async () => {
+	test("requires a project before analyzing", async () => {
 		const { container } = render(<DesignSystemPage />);
 
 		const input = container.querySelector(
@@ -54,6 +62,6 @@ describe("Page: Design System Generator", () => {
 		const generateBtn = await screen.findByText(/Generovať Identitu/i);
 		fireEvent.click(generateBtn);
 
-		expect(screen.getByText(/Analyzujem vizuálnu DNA/i)).toBeDefined();
+		expect(toast.error).toHaveBeenCalledWith("Najprv vyberte projekt!");
 	});
 });

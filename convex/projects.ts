@@ -1,5 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 export const create = mutation({
@@ -9,7 +9,7 @@ export const create = mutation({
 	},
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
-		if (!userId) throw new Error("Unauthorized");
+		if (!userId) throw new ConvexError("Unauthorized");
 
 		const projectId = await ctx.db.insert("projects", {
 			name: args.name,
@@ -58,10 +58,10 @@ export const remove = mutation({
 	args: { projectId: v.id("projects") },
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
-		if (!userId) throw new Error("Unauthorized");
+		if (!userId) throw new ConvexError("Unauthorized");
 
 		const project = await ctx.db.get(args.projectId);
-		if (!project || project.userId !== userId) throw new Error("Unauthorized");
+		if (!project || project.userId !== userId) throw new ConvexError("Unauthorized");
 
 		// TODO: Cleanup related notes, designs, etc.
 		await ctx.db.delete(args.projectId);

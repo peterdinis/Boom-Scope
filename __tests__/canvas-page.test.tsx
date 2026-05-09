@@ -1,5 +1,6 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, expect, test, vi, beforeEach } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import type { ReactNode } from "react";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import DesignPage from "../app/dashboard/canvas/page";
 
 // Mock convex
@@ -8,10 +9,12 @@ vi.mock("convex/react", () => ({
 	useMutation: vi.fn(() => vi.fn()),
 }));
 
+type MockChildren = { children?: ReactNode };
+
 // Mock react-konva to avoid canvas issues
 vi.mock("react-konva", () => ({
-	Stage: ({ children }: any) => <div>{children}</div>,
-	Layer: ({ children }: any) => <div>{children}</div>,
+	Stage: ({ children }: MockChildren) => <div>{children}</div>,
+	Layer: ({ children }: MockChildren) => <div>{children}</div>,
 	Rect: () => <div>Rect</div>,
 	Circle: () => <div>Circle</div>,
 	Line: () => <div>Line</div>,
@@ -31,7 +34,7 @@ describe("Page: Design Canvas", () => {
 
 	test("renders toolbar and sidebar by default", () => {
 		render(<DesignPage />);
-		
+
 		// Check for some tool labels in Dock (assuming it's rendered)
 		// Note: Since Dock is separate, we might need to check if DesignPage renders it
 		expect(screen.getByText(/Editor Prvku/i)).toBeDefined();
@@ -40,10 +43,12 @@ describe("Page: Design Canvas", () => {
 
 	test("toggles right panel visibility", () => {
 		render(<DesignPage />);
-		
+
 		// Find settings/properties toggle
 		// In the sidebar there is a button to close it
-		const closeBtn = screen.getByRole("button", { name: /Vlastnosti/i }).parentElement?.querySelector("button");
+		const closeBtn = screen
+			.getByRole("button", { name: /Vlastnosti/i })
+			.parentElement?.querySelector("button");
 		if (closeBtn) {
 			fireEvent.click(closeBtn);
 			// After closing, the right panel should be gone (or starting to animate out)

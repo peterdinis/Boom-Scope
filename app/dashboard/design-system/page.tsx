@@ -17,6 +17,7 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
 	Select,
@@ -26,10 +27,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
-
-import { z } from "zod";
-import { Id } from "@/convex/_generated/dataModel";
 
 const aiSystemSchema = z.object({
 	colors: z.array(
@@ -257,10 +256,11 @@ export default function DesignSystemPage() {
 										key={img.id}
 										className="relative h-48 min-w-48 rounded-[28px] overflow-hidden group/img shadow-2xl border border-white/10"
 									>
+										{/* eslint-disable-next-line @next/next/no-img-element -- user-uploaded blob/data URL preview */}
 										<img
 											src={img.url}
 											className="h-full w-full object-cover transition-transform duration-700 group-hover/img:scale-110"
-											alt="Inspiration"
+											alt="Inšpirácia"
 										/>
 										<button
 											onClick={(e) => {

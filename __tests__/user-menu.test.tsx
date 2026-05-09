@@ -2,8 +2,8 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useQuery } from "convex/react";
 import React from "react";
 import { describe, expect, test, vi } from "vitest";
-import type { Doc } from "../convex/_generated/dataModel";
 import { UserMenu } from "../components/UserMenu";
+import type { Doc } from "../convex/_generated/dataModel";
 
 // Mock Convex
 vi.mock("convex/react", () => ({
@@ -55,7 +55,9 @@ describe("Component: UserMenu", () => {
 	});
 
 	test("calls signOut when button is clicked", async () => {
-		vi.mocked(useQuery).mockReturnValue({ name: "User" } as unknown as Doc<"users">);
+		vi.mocked(useQuery).mockReturnValue({
+			name: "User",
+		} as unknown as Doc<"users">);
 
 		render(<UserMenu />);
 		const logoutBtn = screen.getByTitle("Odhlásiť sa");

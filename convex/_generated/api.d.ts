@@ -10,6 +10,7 @@
 
 import type * as auth from "../auth.js";
 import type * as design_systems from "../design_systems.js";
+import type * as designs from "../designs.js";
 import type * as http from "../http.js";
 import type * as notes from "../notes.js";
 import type * as openai from "../openai.js";
@@ -25,6 +26,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   design_systems: typeof design_systems;
+  designs: typeof designs;
   http: typeof http;
   notes: typeof notes;
   openai: typeof openai;

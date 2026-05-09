@@ -2,8 +2,8 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { useMutation, useQuery } from "convex/react";
 import React from "react";
 import { describe, expect, test, vi } from "vitest";
-import type { Id } from "../convex/_generated/dataModel";
 import ProjectsPage from "../app/dashboard/projects/page";
+import type { Id } from "../convex/_generated/dataModel";
 
 // Mock Convex hooks
 vi.mock("convex/react", () => ({
@@ -48,8 +48,16 @@ describe("Page: Projects", () => {
 
 	test("renders a list of projects", () => {
 		const mockProjects = [
-			{ _id: "1" as unknown as Id<"projects">, name: "Project One", description: "Desc one" },
-			{ _id: "2" as unknown as Id<"projects">, name: "Project Two", description: "Desc two" },
+			{
+				_id: "1" as unknown as Id<"projects">,
+				name: "Project One",
+				description: "Desc one",
+			},
+			{
+				_id: "2" as unknown as Id<"projects">,
+				name: "Project Two",
+				description: "Desc two",
+			},
 		];
 		vi.mocked(useQuery).mockReturnValue(mockProjects);
 		render(<ProjectsPage />);
