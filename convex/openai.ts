@@ -1,6 +1,6 @@
 import { v } from "convex/values";
-import { action } from "./_generated/server";
 import OpenAI from "openai";
+import { action } from "./_generated/server";
 
 const openai = new OpenAI({
 	apiKey: process.env.OPENAI_API_KEY,
@@ -16,20 +16,24 @@ export const analyzeDesignSystem = action({
 			messages: [
 				{
 					role: "system",
-					content: "You are a professional brand designer and UI/UX expert. Analyze the provided images and extract a comprehensive design system. Return a JSON object with: { \"colors\": [ { \"name\": \"...\", \"hex\": \"#...\", \"rgb\": \"rgb(...)\" } ], \"fonts\": [ \"Font Name 1\", \"Font Name 2\" ], \"description\": \"Short brand description...\" }. Ensure the colors are harmonious and extracted from the imagery. Return ONLY valid JSON."
+					content:
+						'You are a professional brand designer and UI/UX expert. Analyze the provided images and extract a comprehensive design system. Return a JSON object with: { "colors": [ { "name": "...", "hex": "#...", "rgb": "rgb(...)" } ], "fonts": [ "Font Name 1", "Font Name 2" ], "description": "Short brand description..." }. Ensure the colors are harmonious and extracted from the imagery. Return ONLY valid JSON.',
 				},
 				{
 					role: "user",
 					content: [
-						{ type: "text", text: "Analyze these inspiration images and create a professional design system." },
-						...args.imageUrls.map(url => ({
+						{
+							type: "text",
+							text: "Analyze these inspiration images and create a professional design system.",
+						},
+						...args.imageUrls.map((url) => ({
 							type: "image_url" as const,
-							image_url: { url }
-						}))
-					]
-				}
+							image_url: { url },
+						})),
+					],
+				},
 			],
-			response_format: { type: "json_object" }
+			response_format: { type: "json_object" },
 		});
 
 		const content = response.choices[0].message.content;

@@ -1,15 +1,17 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const create = mutation({
 	args: {
 		projectId: v.id("projects"),
-		colors: v.array(v.object({
-			name: v.string(),
-			hex: v.string(),
-			rgb: v.string()
-		})),
+		colors: v.array(
+			v.object({
+				name: v.string(),
+				hex: v.string(),
+				rgb: v.string(),
+			}),
+		),
 		fonts: v.array(v.string()),
 		description: v.optional(v.string()),
 	},
@@ -40,7 +42,7 @@ export const getByProject = query({
 			.query("design_systems")
 			.withIndex("by_projectId", (q) => q.eq("projectId", args.projectId))
 			.collect();
-			
+
 		return systems;
 	},
 });

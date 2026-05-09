@@ -1,9 +1,9 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { expect, test, describe, vi } from "vitest";
-import { UserMenu } from "../components/UserMenu";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useQuery } from "convex/react";
 import React from "react";
+import { describe, expect, test, vi } from "vitest";
+import { UserMenu } from "../components/UserMenu";
 
 // Mock Convex
 vi.mock("convex/react", () => ({
@@ -46,7 +46,7 @@ describe("Component: UserMenu", () => {
 			email: "peter@example.com",
 			image: null,
 		});
-		
+
 		render(<UserMenu />);
 		expect(screen.getByText("Peter Dinis")).toBeDefined();
 		expect(screen.getByText("peter@example.com")).toBeDefined();

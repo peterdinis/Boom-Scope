@@ -1,7 +1,7 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { expect, test, describe, vi } from "vitest";
-import DesignSystemPage from "../app/dashboard/design-system/page";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import React from "react";
+import { describe, expect, test, vi } from "vitest";
+import DesignSystemPage from "../app/dashboard/design-system/page";
 
 // Mock Sonner toast
 vi.mock("sonner", () => ({
@@ -29,8 +29,10 @@ describe("Page: Design System Generator", () => {
 
 	test("shows generation button after image upload", async () => {
 		const { container } = render(<DesignSystemPage />);
-		const input = container.querySelector("input[type='file']") as HTMLInputElement;
-		
+		const input = container.querySelector(
+			"input[type='file']",
+		) as HTMLInputElement;
+
 		const file = new File(["dummy content"], "test.png", { type: "image/png" });
 		fireEvent.change(input, { target: { files: [file] } });
 
@@ -41,8 +43,10 @@ describe("Page: Design System Generator", () => {
 
 	test("enters analyzing state on button click", async () => {
 		const { container } = render(<DesignSystemPage />);
-		
-		const input = container.querySelector("input[type='file']") as HTMLInputElement;
+
+		const input = container.querySelector(
+			"input[type='file']",
+		) as HTMLInputElement;
 		const file = new File(["dummy content"], "test.png", { type: "image/png" });
 		fireEvent.change(input, { target: { files: [file] } });
 

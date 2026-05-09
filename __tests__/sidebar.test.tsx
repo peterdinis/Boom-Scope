@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
-import { expect, test, describe, vi } from "vitest";
-import { DashboardSidebarNav } from "../components/dashboard/dashboard-nav";
-import { SidebarProvider } from "../components/dashboard/sidebar-context";
 import { usePathname } from "next/navigation";
 import React from "react";
+import { describe, expect, test, vi } from "vitest";
+import { DashboardSidebarNav } from "../components/dashboard/dashboard-nav";
+import { SidebarProvider } from "../components/dashboard/sidebar-context";
 
 // Mock Next.js navigation
 vi.mock("next/navigation", () => ({
@@ -13,13 +13,13 @@ vi.mock("next/navigation", () => ({
 describe("Component: DashboardSidebarNav", () => {
 	test("renders all navigation links", () => {
 		(usePathname as any).mockReturnValue("/dashboard");
-		
+
 		render(
 			<SidebarProvider>
 				<DashboardSidebarNav />
-			</SidebarProvider>
+			</SidebarProvider>,
 		);
-		
+
 		expect(screen.getByText("Prehľad")).toBeDefined();
 		expect(screen.getByText("Projekty")).toBeDefined();
 		expect(screen.getByText("Poznámky")).toBeDefined();
@@ -29,13 +29,13 @@ describe("Component: DashboardSidebarNav", () => {
 
 	test("highlights the active link", () => {
 		(usePathname as any).mockReturnValue("/dashboard/projects");
-		
+
 		render(
 			<SidebarProvider>
 				<DashboardSidebarNav />
-			</SidebarProvider>
+			</SidebarProvider>,
 		);
-		
+
 		const projectsLink = screen.getByRole("link", { name: /Projekty/i });
 		expect(projectsLink.className).toContain("bg-sidebar-accent");
 	});

@@ -1,12 +1,12 @@
 "use client";
 
+import { AnimatePresence, motion } from "motion/react";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { DashboardHeader } from "./dashboard-header";
 import { DashboardSidebarNav } from "./dashboard-nav";
 import { SidebarProvider, useSidebar } from "./sidebar-context";
-import { motion, AnimatePresence } from "motion/react";
-import { usePathname } from "next/navigation";
 
 function DashboardLayoutContent({ children }: { children: ReactNode }) {
 	const { isCollapsed } = useSidebar();
@@ -32,12 +32,12 @@ function DashboardLayoutContent({ children }: { children: ReactNode }) {
 							initial={{ opacity: 0, scale: 0.98, y: 15, filter: "blur(20px)" }}
 							animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
 							exit={{ opacity: 0, scale: 1.02, y: -15, filter: "blur(20px)" }}
-							transition={{ 
+							transition={{
 								type: "spring",
 								stiffness: 260,
 								damping: 30,
 								mass: 1,
-								restDelta: 0.001
+								restDelta: 0.001,
 							}}
 							className="h-full origin-top"
 						>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useAction, useMutation, useQuery } from "convex/react";
 import {
 	ArrowRight,
 	Check,
@@ -19,9 +20,6 @@ import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useAction, useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import {
 	Select,
 	SelectContent,
@@ -29,6 +27,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { api } from "@/convex/_generated/api";
+import { cn } from "@/lib/utils";
 
 interface GeneratedSystem {
 	colors: { name: string; hex: string; rgb: string }[];
@@ -40,8 +40,10 @@ export default function DesignSystemPage() {
 	const projects = useQuery(api.projects.list);
 	const analyzeDesign = useAction(api.openai.analyzeDesignSystem);
 	const saveSystem = useMutation(api.design_systems.create);
-	
-	const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+
+	const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+		null,
+	);
 	const [images, setImages] = useState<{ id: string; url: string }[]>([]);
 	const [isAnalyzing, setIsAnalyzing] = useState(false);
 	const [system, setSystem] = useState<GeneratedSystem | null>(null);
@@ -74,11 +76,11 @@ export default function DesignSystemPage() {
 
 		try {
 			const result = await analyzeDesign({
-				imageUrls: images.map(img => img.url)
+				imageUrls: images.map((img) => img.url),
 			});
 
 			setSystem(result as any);
-			
+
 			// Save to Convex
 			await saveSystem({
 				projectId: selectedProjectId as any,
@@ -90,7 +92,9 @@ export default function DesignSystemPage() {
 			toast.success("Design System úspešne vygenerovaný a uložený!");
 		} catch (error) {
 			console.error(error);
-			toast.error("Nepodarilo sa zanalyzovať dizajn. Skontrolujte OpenAI kľúč.");
+			toast.error(
+				"Nepodarilo sa zanalyzovať dizajn. Skontrolujte OpenAI kľúč.",
+			);
 		} finally {
 			setIsAnalyzing(false);
 		}
@@ -177,13 +181,20 @@ export default function DesignSystemPage() {
 						<label className="text-[10px] font-black uppercase tracking-widest opacity-40">
 							Priradiť k projektu
 						</label>
-						<Select onValueChange={setSelectedProjectId} value={selectedProjectId || undefined}>
+						<Select
+							onValueChange={setSelectedProjectId}
+							value={selectedProjectId || undefined}
+						>
 							<SelectTrigger className="w-full md:w-[300px] h-12 rounded-2xl bg-background/50 backdrop-blur-xl border-border/50">
 								<SelectValue placeholder="Vyberte projekt..." />
 							</SelectTrigger>
 							<SelectContent className="rounded-2xl border-border/50 backdrop-blur-3xl">
 								{projects?.map((project) => (
-									<SelectItem key={project._id} value={project._id} className="rounded-xl">
+									<SelectItem
+										key={project._id}
+										value={project._id}
+										className="rounded-xl"
+									>
 										{project.name}
 									</SelectItem>
 								))}
@@ -357,7 +368,10 @@ export default function DesignSystemPage() {
 										</div>
 										<div className="space-y-4">
 											{system.fonts.map((font, idx) => (
-												<div key={font} className="p-5 rounded-2xl bg-foreground/5 border border-border/50">
+												<div
+													key={font}
+													className="p-5 rounded-2xl bg-foreground/5 border border-border/50"
+												>
 													<p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-20 mb-2">
 														{idx === 0 ? "Hlavné Písmo" : "Sekundárne Písmo"}
 													</p>
@@ -481,7 +495,9 @@ export default function DesignSystemPage() {
 														</h4>
 														<p
 															className="text-xs font-medium opacity-40"
-															style={{ fontFamily: system.fonts[1] || system.fonts[0] }}
+															style={{
+																fontFamily: system.fonts[1] || system.fonts[0],
+															}}
 														>
 															Harmonické farby extrahované z vašej inšpirácie.
 														</p>

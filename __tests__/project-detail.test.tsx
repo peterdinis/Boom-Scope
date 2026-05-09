@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
-import { expect, test, describe, vi } from "vitest";
-import ProjectDetailPage from "../app/dashboard/projects/[projectId]/page";
 import { useQuery } from "convex/react";
 import { useParams } from "next/navigation";
 import React from "react";
+import { describe, expect, test, vi } from "vitest";
+import ProjectDetailPage from "../app/dashboard/projects/[projectId]/page";
 
 // Mock Convex
 vi.mock("convex/react", () => ({
@@ -25,11 +25,11 @@ describe("Page: Project Detail", () => {
 		(useQuery as any).mockReturnValue({
 			_id: "test-id",
 			name: "Architecture Project",
-			description: "A custom villa design"
+			description: "A custom villa design",
 		});
 
 		render(<ProjectDetailPage />);
-		
+
 		expect(screen.getByText("Architecture Project")).toBeDefined();
 		expect(screen.getByText("A custom villa design")).toBeDefined();
 	});
@@ -42,7 +42,7 @@ describe("Page: Project Detail", () => {
 		});
 
 		render(<ProjectDetailPage />);
-		
+
 		expect(screen.getByText("Poznámky")).toBeDefined();
 		expect(screen.getByText("Dizajny")).toBeDefined();
 		expect(screen.getByText("Design Systems")).toBeDefined();
@@ -53,7 +53,7 @@ describe("Page: Project Detail", () => {
 		(useQuery as any).mockReturnValue(null);
 
 		render(<ProjectDetailPage />);
-		
+
 		expect(screen.getByText(/Projekt neexistuje/i)).toBeDefined();
 	});
 });
