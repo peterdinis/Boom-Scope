@@ -1,6 +1,8 @@
 "use client";
 
 import {
+	ArrowDown,
+	ArrowUp,
 	Circle,
 	Eye,
 	EyeOff,
@@ -14,6 +16,7 @@ import {
 	PanelRight,
 	Pencil,
 	RefreshCw,
+	RotateCw,
 	Settings2,
 	Sliders,
 	Smartphone,
@@ -40,6 +43,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CANVAS_PRESETS } from "@/lib/canvas-presets";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { ShareDialog } from "@/components/design/ShareDialog";
 import { cn } from "@/lib/utils";
 
 const KonvaCanvas = dynamic(() => import("@/components/design/KonvaCanvas"), {
@@ -87,7 +93,7 @@ export default function DesignPage() {
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 
 	const [strokeColor, setStrokeColor] = useState("#3b82f6");
-	const [fillColor] = useState("none");
+	const [fillColor, setFillColor] = useState("none");
 	const [strokeWidth] = useState(2);
 
 	const [leftPanelOpen, setLeftPanelOpen] = useState(true);
@@ -96,7 +102,25 @@ export default function DesignPage() {
 	const [canvasSize, setCanvasSize] = useState<{ width: number; height: number } | null>(null);
 	const [zoom, setZoom] = useState(1);
 	const [snapToGrid, setSnapToGrid] = useState(true);
+	const [artboardColor, setArtboardColor] = useState<string | null>(null);
 	const [previousTool, setPreviousTool] = useState<string | null>(null);
+	const [isShareOpen, setIsShareOpen] = useState(false);
+	const [sharedDesignId, setSharedDesignId] = useState<string | null>(null);
+
+	const projects = useQuery(api.projects.list);
+	const saveDesign = useMutation(api.designs.saveDesign);
+
+	const elementsRef = useRef(elements);
+	const activeToolRef = useRef(activeTool);
+	const previousToolRef = useRef(previousTool);
+	const selectedIdRef = useRef(selectedId);
+
+	useEffect(() => {
+		elementsRef.current = elements;
+		activeToolRef.current = activeTool;
+		previousToolRef.current = previousTool;
+		selectedIdRef.current = selectedId;
+	}, [elements, activeTool, previousTool, selectedId]);
 
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -128,27 +152,32 @@ export default function DesignPage() {
 			}
 			return;
 		}
+		if (toolId === "share") {
+			const firstProject = projects?.[0];
+			if (!firstProject) {
+				alert("Najprv si vytvorte projekt v dashboarde!");
+				return;
+			}
+
+			saveDesign({
+				name: `Design - ${new Date().toLocaleDateString()}`,
+				elements: JSON.stringify(elementsRef.current),
+				projectId: firstProject._id,
+				canvasSize: canvasSize || { width: 1920, height: 1080 },
+				artboardColor: artboardColor || undefined,
+			}).then((id) => {
+				setSharedDesignId(id);
+				setIsShareOpen(true);
+			});
+			return;
+		}
 		setActiveTool(toolId);
 		if (toolId !== "select") {
 			setSelectedId(null);
 		}
-	}, []);
+	}, [projects, saveDesign, canvasSize, artboardColor]);
 
-	const elementsRef = useRef(elements);
-	
-	useEffect(() => {
-		elementsRef.current = elements;
-	}, [elements]);
 
-	const activeToolRef = useRef(activeTool);
-	const previousToolRef = useRef(previousTool);
-	const selectedIdRef = useRef(selectedId);
-
-	useEffect(() => {
-		activeToolRef.current = activeTool;
-		previousToolRef.current = previousTool;
-		selectedIdRef.current = selectedId;
-	}, [activeTool, previousTool, selectedId]);
 
 	const updateSelectedElement = useCallback(
 		(updates: Partial<CanvasElement>) => {
@@ -296,6 +325,7 @@ export default function DesignPage() {
 					zoom={zoom}
 					setZoom={setZoom}
 					snapToGrid={snapToGrid}
+					artboardColor={artboardColor}
 				/>
 
 				{/* Zoom Controls */}
@@ -545,6 +575,18 @@ export default function DesignPage() {
 														<Unlock className="size-3 opacity-40" />
 													)}
 												</button>
+												<Button
+													variant="ghost"
+													size="icon-xs"
+													onClick={(e) => {
+														e.stopPropagation();
+														setElements((prev) => prev.filter((item) => item.id !== el.id));
+														if (selectedId === el.id) setSelectedId(null);
+													}}
+													className="hover:bg-red-500 hover:text-white rounded-lg transition-all duration-300"
+												>
+													<Trash2 className="size-3.5" />
+												</Button>
 											</div>
 										</div>
 									))
@@ -733,10 +775,20 @@ export default function DesignPage() {
 											) : (
 												<Eye className="size-3" />
 											)}
-											{selectedElement.isVisible === false
-												? "Skryté"
-												: "Viditeľné"}
+											{selectedElement.isVisible === false ? "Skryté" : "Viditeľné"}
 										</button>
+									</div>
+
+									<div className="flex items-center justify-between">
+										<div className="flex items-center gap-3">
+											<div className="size-8 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shadow-sm">
+												<Sliders className="size-4 text-blue-500" />
+											</div>
+											<div>
+												<h2 className="text-[10px] font-black uppercase tracking-[0.3em]">Editor Prvku</h2>
+												<p className="text-[9px] font-bold opacity-30 uppercase tracking-widest">{selectedElement.type}</p>
+											</div>
+										</div>
 										<button
 											onClick={() =>
 												updateSelectedElement({
@@ -744,46 +796,141 @@ export default function DesignPage() {
 												})
 											}
 											className={cn(
-												"flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+												"size-10 rounded-xl flex items-center justify-center transition-all",
 												selectedElement.isLocked
-													? "bg-amber-500/20 text-amber-500"
-													: "hover:bg-background/50 text-foreground/50",
+													? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+													: "hover:bg-foreground/5 text-foreground/40"
 											)}
 										>
-											{selectedElement.isLocked ? (
-												<Lock className="size-3" />
-											) : (
-												<Unlock className="size-3" />
-											)}
-											{selectedElement.isLocked ? "Zamknuté" : "Odomknuté"}
+											{selectedElement.isLocked ? <Lock className="size-4" /> : <Unlock className="size-4" />}
 										</button>
+									</div>
+
+									{/* Geometry Section */}
+									<div className="space-y-6">
+										<div className="flex items-center gap-3">
+											<Maximize2 className="size-3.5 text-blue-500/60" />
+											<Label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Geometria</Label>
+										</div>
+
+										<div className="grid grid-cols-2 gap-4">
+											<div className="space-y-3">
+												<p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-20">Os X</p>
+												<Input
+													type="number"
+													value={Math.round(selectedElement.x)}
+													onChange={(e) => updateSelectedElement({ x: parseInt(e.target.value) || 0 })}
+													className="bg-background border-border h-10 rounded-xl text-xs font-mono font-bold text-center"
+												/>
+											</div>
+											<div className="space-y-3">
+												<p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-20">Os Y</p>
+												<Input
+													type="number"
+													value={Math.round(selectedElement.y)}
+													onChange={(e) => updateSelectedElement({ y: parseInt(e.target.value) || 0 })}
+													className="bg-background border-border h-10 rounded-xl text-xs font-mono font-bold text-center"
+												/>
+											</div>
+										</div>
+
+										<div className="grid grid-cols-2 gap-4">
+											<div className="space-y-3">
+												<p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-20">Šírka</p>
+												<Input
+													type="number"
+													value={Math.round(selectedElement.width || 0)}
+													onChange={(e) => updateSelectedElement({ width: parseInt(e.target.value) || 0 })}
+													className="bg-background border-border h-10 rounded-xl text-xs font-mono font-bold text-center"
+												/>
+											</div>
+											<div className="space-y-3">
+												<p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-20">Výška</p>
+												<Input
+													type="number"
+													value={Math.round(selectedElement.height || 0)}
+													onChange={(e) => updateSelectedElement({ height: parseInt(e.target.value) || 0 })}
+													className="bg-background border-border h-10 rounded-xl text-xs font-mono font-bold text-center"
+												/>
+											</div>
+										</div>
+
+										<div className="space-y-4">
+											<div className="flex justify-between items-center">
+												<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">Rotácia</p>
+												<div className="flex items-center gap-2">
+													<RotateCw className="size-3 opacity-30" />
+													<Input
+														type="number"
+														value={Math.round(selectedElement.rotation || 0)}
+														onChange={(e) => updateSelectedElement({ rotation: parseInt(e.target.value) || 0 })}
+														className="w-16 bg-background border-border h-8 rounded-lg text-[10px] font-mono font-bold text-center"
+													/>
+												</div>
+											</div>
+											<input
+												type="range"
+												min="0"
+												max="360"
+												value={selectedElement.rotation || 0}
+												onChange={(e) => updateSelectedElement({ rotation: parseInt(e.target.value) })}
+												className="w-full accent-blue-500 bg-foreground/10 rounded-full h-1 appearance-none cursor-pointer hover:bg-foreground/20 transition-colors"
+											/>
+										</div>
 									</div>
 
 									{/* Visual Settings */}
 									<div className="space-y-8">
 										<div className="flex items-center gap-3">
-											<Palette className="size-3.5 text-blue-500" />
-											<Label className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30">
-												Vizuál
-											</Label>
+											<Palette className="size-3.5 text-blue-500/60" />
+											<Label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Vizuál</Label>
+										</div>
+
+										{/* Fill / Gradient Toggle */}
+										<div className="space-y-5">
+											<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">Typ Výplne</p>
+											<div className="grid grid-cols-2 gap-2 p-1.5 bg-foreground/5 rounded-2xl border border-border">
+												<button
+													onClick={() => updateSelectedElement({ fillType: "solid" })}
+													className={cn(
+														"py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
+														selectedElement.fillType !== "gradient" ? "bg-background text-blue-500 shadow-sm border border-border" : "opacity-40 hover:opacity-100"
+													)}
+												>
+													Jednofarebná
+												</button>
+												<button
+													onClick={() => updateSelectedElement({ fillType: "gradient" })}
+													className={cn(
+														"py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
+														selectedElement.fillType === "gradient" ? "bg-background text-blue-500 shadow-sm border border-border" : "opacity-40 hover:opacity-100"
+													)}
+												>
+													Gradient
+												</button>
+											</div>
 										</div>
 
 										<div className="space-y-5">
 											<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">
-												Farba obrysu
+												{selectedElement.fillType === "gradient" ? "Farby Gradientu" : "Farba Výplne"}
 											</p>
 											<div className="grid grid-cols-6 gap-2.5">
 												{PALETTE.map((color) => (
 													<button
 														key={color}
 														onClick={() => {
-															setStrokeColor(color);
-															updateSelectedElement({ stroke: color });
+															if (selectedElement.fillType === "gradient") {
+																const colors = selectedElement.gradientColors || ["#3b82f6", "#10b981"];
+																updateSelectedElement({ gradientColors: [color, colors[1]] });
+															} else {
+																updateSelectedElement({ fill: color });
+															}
 														}}
 														className={cn(
 															"size-8 rounded-xl border-2 transition-all duration-300 hover:scale-110 active:scale-90",
-															selectedElement.stroke === color
-																? "border-blue-500 scale-110 shadow-[0_0_20px_rgba(59,130,246,0.5)]"
+															(selectedElement.fill === color || selectedElement.gradientColors?.[0] === color)
+																? "border-blue-500 scale-110 shadow-[0_0_20px_rgba(59,130,246,0.3)]"
 																: "border-transparent hover:border-foreground/20",
 														)}
 														style={{ backgroundColor: color }}
@@ -791,26 +938,70 @@ export default function DesignPage() {
 												))}
 											</div>
 										</div>
-									</div>
 
-									{/* Geometry Section */}
-									<div className="space-y-10">
-										<div className="flex items-center gap-3">
-											<Sliders className="size-3.5 text-emerald-500" />
-											<Label className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30">
-												Parametre
-											</Label>
+										{/* Borders / Stroke */}
+										<div className="space-y-6">
+											<div className="flex justify-between items-center">
+												<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">Obrys (Stroke)</p>
+												<span className="text-[10px] font-mono font-bold opacity-60">{selectedElement.strokeWidth || 0}px</span>
+											</div>
+											<div className="space-y-5">
+												<div className="grid grid-cols-6 gap-2.5">
+													{PALETTE.map((color) => (
+														<button
+															key={color}
+															onClick={() => {
+																setStrokeColor(color);
+																updateSelectedElement({ stroke: color });
+															}}
+															className={cn(
+																"size-8 rounded-xl border-2 transition-all duration-300 hover:scale-110 active:scale-90",
+																selectedElement.stroke === color
+																	? "border-blue-500 scale-110 shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+																	: "border-transparent hover:border-foreground/20",
+															)}
+															style={{ backgroundColor: color }}
+														/>
+													))}
+												</div>
+											</div>
+											<div className="space-y-4">
+												<input
+													type="range"
+													min="0"
+													max="20"
+													value={selectedElement.strokeWidth || 0}
+													onChange={(e) => updateSelectedElement({ strokeWidth: parseInt(e.target.value) })}
+													className="w-full accent-blue-500 bg-foreground/10 rounded-full h-1 appearance-none cursor-pointer hover:bg-foreground/20 transition-colors"
+												/>
+												<div className="grid grid-cols-3 gap-2">
+													{[
+														{ label: "Súvislá", value: [] },
+														{ label: "Prerušená", value: [10, 5] },
+														{ label: "Bodkovaná", value: [2, 4] },
+													].map((style) => (
+														<button
+															key={style.label}
+															onClick={() => updateSelectedElement({ dash: style.value })}
+															className={cn(
+																"py-2 rounded-lg text-[8px] font-black uppercase tracking-widest border transition-all",
+																JSON.stringify(selectedElement.dash) === JSON.stringify(style.value)
+																	? "bg-blue-500/10 border-blue-500/30 text-blue-500"
+																	: "bg-foreground/5 border-transparent opacity-40 hover:opacity-100"
+															)}
+														>
+															{style.label}
+														</button>
+													))}
+												</div>
+											</div>
 										</div>
 
 										{/* Opacity */}
 										<div className="space-y-5">
 											<div className="flex justify-between items-center">
-												<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">
-													Priehľadnosť
-												</p>
-												<span className="text-[10px] font-mono font-bold opacity-60">
-													{Math.round((selectedElement.opacity ?? 1) * 100)}%
-												</span>
+												<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">Priehľadnosť</p>
+												<span className="text-[10px] font-mono font-bold opacity-60">{Math.round((selectedElement.opacity ?? 1) * 100)}%</span>
 											</div>
 											<input
 												type="range"
@@ -818,19 +1009,15 @@ export default function DesignPage() {
 												max="1"
 												step="0.01"
 												value={selectedElement.opacity ?? 1}
-												onChange={(e) =>
-													updateSelectedElement({
-														opacity: parseFloat(e.target.value),
-													})
-												}
+												onChange={(e) => updateSelectedElement({ opacity: parseFloat(e.target.value) })}
 												className="w-full accent-blue-500 bg-foreground/10 rounded-full h-1 appearance-none cursor-pointer hover:bg-foreground/20 transition-colors"
 											/>
 										</div>
 
 										{/* Text Specifics */}
 										{selectedElement.type === "text" && (
-											<div className="space-y-8 animate-in fade-in duration-500">
-												<div className="flex items-center justify-between p-4 rounded-[24px] bg-blue-500/5 border border-blue-500/10 shadow-sm">
+											<div className="space-y-6 pt-6 border-t border-border animate-in fade-in duration-500">
+												<div className="flex items-center justify-between p-4 rounded-[20px] bg-blue-500/5 border border-blue-500/10 shadow-sm">
 													<div className="flex items-center gap-3">
 														<Sparkles className="size-4 text-blue-500" />
 														<span className="text-[10px] font-black uppercase tracking-widest opacity-80 text-blue-500">
@@ -847,115 +1034,123 @@ export default function DesignPage() {
 													</Button>
 												</div>
 
-												<div className="space-y-5">
-													<div className="flex justify-between items-center">
-														<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">
-															Písmo & Veľkosť
-														</p>
-														<span className="text-[10px] font-mono font-bold opacity-60">
-															{selectedElement.fontSize}px
-														</span>
-													</div>
-													<select
-														value={selectedElement.fontFamily}
-														onChange={(e) =>
-															updateSelectedElement({
-																fontFamily: e.target.value,
-															})
-														}
-														className="w-full bg-background border border-border rounded-xl p-3 text-xs outline-none hover:bg-accent transition-all font-bold shadow-sm"
-													>
-														{FONTS.map((f) => (
-															<option
-																key={f}
-																value={f}
-																className="bg-background text-foreground"
-															>
-																{f.split(",")[0]}
-															</option>
-														))}
-													</select>
-													<input
-														type="range"
-														min="8"
-														max="200"
-														value={selectedElement.fontSize ?? 24}
-														onChange={(e) =>
-															updateSelectedElement({
-																fontSize: parseInt(e.target.value),
-															})
-														}
-														className="w-full accent-emerald-500 bg-foreground/10 rounded-full h-1 appearance-none cursor-pointer hover:bg-foreground/20 transition-colors"
-													/>
-												</div>
 												<div className="space-y-4">
-													<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">
-														Textový obsah
-													</p>
+													<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">Obsah Textu</p>
 													<textarea
 														value={selectedElement.text || ""}
-														onChange={(e) =>
-															updateSelectedElement({ text: e.target.value })
-														}
-														className="w-full bg-background border border-border focus:border-blue-500/50 focus:bg-accent transition-all rounded-[20px] p-4 text-xs h-24 outline-none resize-none font-bold shadow-inner"
+														onChange={(e) => updateSelectedElement({ text: e.target.value })}
+														className="w-full bg-background border border-border focus:border-blue-500/50 transition-all rounded-2xl p-4 text-xs h-24 outline-none resize-none font-bold"
 													/>
 												</div>
 											</div>
 										)}
 									</div>
 
-									{/* Transformation Display */}
-									<div className="pt-10 border-t border-border space-y-8">
-										<div className="flex items-center gap-3">
-											<Maximize2 className="size-3.5 opacity-20" />
-											<Label className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30">
-												Transformácia
-											</Label>
-										</div>
-										<div className="grid grid-cols-2 gap-4">
-											<div className="p-5 rounded-[24px] bg-foreground/5 border border-border shadow-inner">
-												<p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-20 mb-2">
-													Os X
-												</p>
-												<p className="text-xs font-mono font-bold opacity-70">
-													{Math.round(selectedElement.x)}
-												</p>
-											</div>
-											<div className="p-5 rounded-[24px] bg-foreground/5 border border-border shadow-inner">
-												<p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-20 mb-2">
-													Os Y
-												</p>
-												<p className="text-xs font-mono font-bold opacity-70">
-													{Math.round(selectedElement.y)}
-												</p>
-											</div>
+									{/* Layering & Delete */}
+									<div className="pt-8 border-t border-border space-y-4">
+										<div className="grid grid-cols-2 gap-3">
+											<Button
+												variant="outline"
+												size="sm"
+												className="rounded-xl border-border bg-background hover:bg-accent gap-2 text-[9px] font-black uppercase"
+												onClick={() => {
+													setElements((prev) => {
+														const el = prev.find(e => e.id === selectedId);
+														if (!el) return prev;
+														const otherElements = prev.filter(e => e.id !== selectedId);
+														return [...otherElements, el];
+													});
+												}}
+											>
+												<ArrowUp className="size-3" /> Dopredu
+											</Button>
+											<Button
+												variant="outline"
+												size="sm"
+												className="rounded-xl border-border bg-background hover:bg-accent gap-2 text-[9px] font-black uppercase"
+												onClick={() => {
+													setElements((prev) => {
+														const el = prev.find(e => e.id === selectedId);
+														if (!el) return prev;
+														const otherElements = prev.filter(e => e.id !== selectedId);
+														return [el, ...otherElements];
+													});
+												}}
+											>
+												<ArrowDown className="size-3" /> Dozadu
+											</Button>
 										</div>
 										<Button
 											variant="ghost"
-											className="w-full gap-4 text-[10px] font-black uppercase tracking-[0.3em] h-14 rounded-[24px] bg-red-500/5 text-red-500/60 hover:bg-red-500/10 hover:text-red-500 border border-red-500/10 transition-all duration-300 shadow-sm"
+											className="w-full gap-4 text-[9px] font-black uppercase tracking-[0.3em] h-14 rounded-2xl bg-red-500/5 text-red-500/60 hover:bg-red-500/10 hover:text-red-500 border border-red-500/10 transition-all shadow-sm"
 											onClick={() => {
-												setElements(
-													elements.filter((el) => el.id !== selectedId),
-												);
+												setElements(elements.filter((el) => el.id !== selectedId));
 												setSelectedId(null);
 											}}
 										>
-											<Trash2 className="size-4" />
-											Vymazať Výber
+											<Trash2 className="size-4" /> Vymazať objekt
 										</Button>
 									</div>
 								</>
 							) : (
-								<div className="h-full flex flex-col items-center justify-center opacity-30 dark:opacity-10 text-center space-y-6">
-									<div className="size-24 rounded-[40px] bg-foreground/5 flex items-center justify-center border-2 border-dashed border-foreground/10">
-										<Settings2 className="size-10" />
+								<div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-700">
+									<div className="flex items-center gap-4">
+										<div className="size-10 rounded-[18px] bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shadow-sm">
+											<Palette className="size-5 text-blue-500" />
+										</div>
+										<div>
+											<h2 className="text-[10px] font-black uppercase tracking-[0.3em]">Nastavenia Plátna</h2>
+											<p className="text-[9px] font-bold opacity-30 uppercase tracking-widest">Globálne parametre</p>
+										</div>
 									</div>
-									<div className="space-y-2">
-										<p className="text-xs font-black uppercase tracking-[0.2em]">
-											Žiadny Výber
-										</p>
-										<p className="text-[10px] font-medium tracking-widest max-w-35">
-											Vyberte objekt na úpravu jeho vlastností
+
+									{/* Artboard Size */}
+									<div className="space-y-6">
+										<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">Rozmery Artboardu (px)</p>
+										<div className="grid grid-cols-2 gap-4">
+											<div className="space-y-3">
+												<p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-20">Šírka</p>
+												<Input
+													type="number"
+													value={canvasSize?.width || 1920}
+													onChange={(e) => setCanvasSize(prev => ({ ...prev!, width: parseInt(e.target.value) || 1920 }))}
+													className="bg-background border-border h-10 rounded-xl text-xs font-mono font-bold text-center"
+												/>
+											</div>
+											<div className="space-y-3">
+												<p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-20">Výška</p>
+												<Input
+													type="number"
+													value={canvasSize?.height || 1080}
+													onChange={(e) => setCanvasSize(prev => ({ ...prev!, height: parseInt(e.target.value) || 1080 }))}
+													className="bg-background border-border h-10 rounded-xl text-xs font-mono font-bold text-center"
+												/>
+											</div>
+										</div>
+									</div>
+
+									{/* Artboard Background */}
+									<div className="space-y-6">
+										<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">Pozadie Plátna</p>
+										<div className="grid grid-cols-5 gap-3">
+											{[null, "#ffffff", "#f8fafc", "#18181b", "#000000"].map((color) => (
+												<button
+													key={color || "none"}
+													onClick={() => setArtboardColor(color)}
+													className={cn(
+														"size-9 rounded-xl border border-border shadow-sm transition-all hover:scale-110",
+														artboardColor === color ? "ring-2 ring-blue-500 ring-offset-4" : "",
+														!color && "bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] bg-repeat"
+													)}
+													style={{ backgroundColor: color || "transparent" }}
+												/>
+											))}
+										</div>
+									</div>
+
+									<div className="p-8 rounded-[32px] bg-blue-500/5 border border-blue-500/10 space-y-4 shadow-sm">
+										<p className="text-[10px] font-bold text-blue-500/60 leading-relaxed uppercase tracking-widest text-center">
+											Vyberte objekt pre špecifické úpravy alebo nastavte globálne parametre projektu vyššie.
 										</p>
 									</div>
 								</div>
@@ -966,14 +1161,14 @@ export default function DesignPage() {
 						<div className="mt-10 pt-8 border-t border-border grid grid-cols-2 gap-4">
 							<Button
 								variant="outline"
-								className="h-14 rounded-[20px] bg-background border-border hover:bg-accent transition-all shadow-sm"
+								className="h-14 rounded-2xl bg-background border-border hover:bg-accent transition-all shadow-sm"
 								onClick={() => handleAction("undo")}
 							>
 								<Undo2 className="size-5 opacity-40" />
 							</Button>
 							<Button
 								variant="outline"
-								className="h-14 rounded-[20px] bg-background border-border hover:bg-accent transition-all group shadow-sm"
+								className="h-14 rounded-2xl bg-background border-border hover:bg-accent transition-all group shadow-sm"
 								onClick={() => handleAction("trash")}
 							>
 								<Trash2 className="size-5 opacity-20 group-hover:opacity-60 text-red-500 transition-all" />
@@ -985,6 +1180,12 @@ export default function DesignPage() {
 
 			{/* The Magic Dock */}
 			<Dock activeTool={activeTool} onToolChange={handleAction} />
+
+			<ShareDialog
+				isOpen={isShareOpen}
+				onClose={() => setIsShareOpen(false)}
+				designId={sharedDesignId}
+			/>
 		</div>
 	);
 }
