@@ -426,7 +426,7 @@ function RenderElement({
 		shadowColor: isSelected ? "#3b82f6" : "transparent",
 		shadowBlur: isSelected ? 15 : 0,
 		shadowOpacity: 0.5,
-		globalCompositeOperation: el.globalCompositeOperation as any,
+		globalCompositeOperation: el.globalCompositeOperation as GlobalCompositeOperation,
 	};
 
 	if (el.type === "rect") {

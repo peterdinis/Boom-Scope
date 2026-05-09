@@ -45,7 +45,7 @@ export default function ProjectsPage() {
 		const validation = projectSchema.safeParse({ name: newProjectName });
 		
 		if (!validation.success) {
-			toast.error(validation.error.errors[0].message);
+			toast.error(validation.error.message);
 			return;
 		}
 

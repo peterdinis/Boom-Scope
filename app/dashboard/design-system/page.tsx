@@ -29,6 +29,7 @@ import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
 
 import { z } from "zod";
+import { Id } from "@/convex/_generated/dataModel";
 
 const aiSystemSchema = z.object({
 	colors: z.array(
@@ -198,7 +199,7 @@ export default function DesignSystemPage() {
 							onValueChange={setSelectedProjectId}
 							value={selectedProjectId || undefined}
 						>
-							<SelectTrigger className="w-full md:w-[300px] h-12 rounded-2xl bg-background/50 backdrop-blur-xl border-border/50">
+							<SelectTrigger className="w-full md:w-75 h-12 rounded-2xl bg-background/50 backdrop-blur-xl border-border/50">
 								<SelectValue placeholder="Vyberte projekt..." />
 							</SelectTrigger>
 							<SelectContent className="rounded-2xl border-border/50 backdrop-blur-3xl">
@@ -538,8 +539,8 @@ export default function DesignSystemPage() {
 
 			{/* Background Blobs */}
 			<div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none opacity-20 dark:opacity-10">
-				<div className="absolute top-0 right-0 size-[800px] bg-blue-500/20 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2" />
-				<div className="absolute bottom-0 left-0 size-[600px] bg-emerald-500/10 blur-[100px] rounded-full -translate-x-1/2 translate-y-1/2" />
+				<div className="absolute top-0 right-0 size-200 bg-blue-500/20 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2" />
+				<div className="absolute bottom-0 left-0 size-150 bg-emerald-500/10 blur-[100px] rounded-full -translate-x-1/2 translate-y-1/2" />
 			</div>
 		</div>
 	);

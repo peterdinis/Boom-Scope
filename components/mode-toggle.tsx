@@ -12,7 +12,8 @@ export function ModeToggle() {
 	const [mounted, setMounted] = React.useState(false);
 
 	React.useEffect(() => {
-		setMounted(true);
+		const timeout = setTimeout(() => setMounted(true), 0);
+		return () => clearTimeout(timeout);
 	}, []);
 
 	if (!mounted) {
