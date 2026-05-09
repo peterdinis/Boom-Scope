@@ -3,17 +3,15 @@
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useEffect } from "react";
-import { 
-  User, 
-  Settings as SettingsIcon, 
-  Bell, 
-  Shield, 
-  CreditCard, 
-  Palette, 
-  Check, 
-  Upload, 
-  Moon, 
-  Sun, 
+import {
+  User,
+  Settings as SettingsIcon,
+  Shield,
+  Palette,
+  Check,
+  Upload,
+  Moon,
+  Sun,
   Monitor,
   Camera,
   Loader2
@@ -29,7 +27,7 @@ export default function SettingsPage() {
   const user = useQuery(api.users.viewer);
   const updateUser = useMutation(api.users.updateUser);
   const { theme, setTheme } = useTheme();
-  
+
   const [name, setName] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
@@ -55,9 +53,6 @@ export default function SettingsPage() {
   const tabs = [
     { id: "profile", label: "Profil", icon: User },
     { id: "appearance", label: "Vzhľad", icon: Palette },
-    { id: "notifications", label: "Notifikácie", icon: Bell },
-    { id: "billing", label: "Predplatné", icon: CreditCard },
-    { id: "security", label: "Zabezpečenie", icon: Shield },
   ];
 
   if (!user) {
@@ -91,8 +86,8 @@ export default function SettingsPage() {
               onClick={() => setActiveTab(tab.id)}
               className={cn(
                 "flex items-center gap-4 px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-300",
-                activeTab === tab.id 
-                  ? "bg-background text-blue-500 shadow-xl shadow-blue-500/5 border border-border" 
+                activeTab === tab.id
+                  ? "bg-background text-blue-500 shadow-xl shadow-blue-500/5 border border-border"
                   : "text-foreground/40 hover:text-foreground hover:bg-foreground/5"
               )}
             >
@@ -134,7 +129,7 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-3">
                     <Label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Meno a Priezvisko</Label>
-                    <Input 
+                    <Input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Zadajte vaše meno"
@@ -143,7 +138,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="space-y-3">
                     <Label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">E-mailová adresa</Label>
-                    <Input 
+                    <Input
                       value={user.email || ""}
                       readOnly
                       className="h-14 bg-foreground/5 border-border rounded-2xl px-6 text-sm font-bold opacity-50 cursor-not-allowed"
@@ -152,7 +147,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="flex justify-end pt-4">
-                  <Button 
+                  <Button
                     onClick={handleUpdateProfile}
                     disabled={isUpdating || name === user.name}
                     className="h-14 px-10 rounded-2xl bg-blue-500 hover:bg-blue-600 text-white font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-blue-500/20 gap-3"
@@ -194,8 +189,8 @@ export default function SettingsPage() {
                       onClick={() => setTheme(mode.id)}
                       className={cn(
                         "group relative p-8 rounded-[32px] border-2 transition-all duration-500 flex flex-col items-center gap-6",
-                        theme === mode.id 
-                          ? "bg-background border-blue-500 shadow-2xl shadow-blue-500/10" 
+                        theme === mode.id
+                          ? "bg-background border-blue-500 shadow-2xl shadow-blue-500/10"
                           : "bg-foreground/5 border-transparent hover:border-foreground/10"
                       )}
                     >
@@ -227,62 +222,31 @@ export default function SettingsPage() {
                   {["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"].map((color) => (
                     <button
                       key={color}
-                      className="size-10 rounded-xl border-2 border-transparent hover:scale-110 transition-all cursor-pointer shadow-sm"
+                      onClick={async () => {
+                        try {
+                          await updateUser({ accentColor: color });
+                          toast.success("Akcentová farba bola zmenená");
+                        } catch {
+                          toast.error("Chyba pri zmene farby");
+                        }
+                      }}
+                      className={cn(
+                        "size-10 rounded-xl border-2 transition-all cursor-pointer shadow-sm relative flex items-center justify-center",
+                        user.accentColor === color
+                          ? "border-foreground scale-110"
+                          : "border-transparent hover:scale-110 hover:border-foreground/20"
+                      )}
                       style={{ backgroundColor: color }}
-                    />
+                    >
+                      {user.accentColor === color && (
+                        <Check className="size-5 text-white drop-shadow-md" />
+                      )}
+                    </button>
                   ))}
                 </div>
               </section>
-            </div>
           )}
-
-          {activeTab === "billing" && (
-            <div className="space-y-12">
-               <div className="p-12 rounded-[48px] bg-gradient-to-br from-blue-500 to-indigo-600 text-white space-y-8 relative overflow-hidden shadow-2xl shadow-blue-500/20">
-                 {/* Decorative elements */}
-                 <div className="absolute top-0 right-0 size-64 bg-white/10 blur-[80px] -translate-y-1/2 translate-x-1/2" />
-                 <div className="absolute bottom-0 left-0 size-64 bg-black/10 blur-[80px] translate-y-1/2 -translate-x-1/2" />
-                 
-                 <div className="space-y-2 relative">
-                   <div className="inline-flex px-4 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-[10px] font-black uppercase tracking-widest mb-4">
-                     Váš aktuálny plán
-                   </div>
-                   <h3 className="text-4xl font-black tracking-tight">Free Plan</h3>
-                   <p className="text-sm font-bold opacity-70 uppercase tracking-[0.2em]">Osobné použitie</p>
-                 </div>
-
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative pt-8 border-t border-white/10">
-                   <div className="space-y-2">
-                     <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Limit projektov</p>
-                     <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                       <div className="h-full w-2/5 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.5)]" />
-                     </div>
-                     <p className="text-xs font-bold">2 z 5 projektov využitých</p>
-                   </div>
-                   <div className="space-y-2">
-                     <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Úložisko</p>
-                     <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                       <div className="h-full w-1/5 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.5)]" />
-                     </div>
-                     <p className="text-xs font-bold">150 MB z 1 GB využité</p>
-                   </div>
-                 </div>
-
-                 <Button className="w-full h-16 rounded-[28px] bg-white text-blue-600 hover:bg-blue-50 font-black uppercase tracking-[0.3em] text-[11px] shadow-xl relative transition-transform hover:scale-[1.02] active:scale-[0.98]">
-                   Prejsť na Pro verziu
-                 </Button>
-               </div>
             </div>
-          )}
-          
-          {(activeTab === "notifications" || activeTab === "security") && (
-            <div className="flex flex-col items-center justify-center py-20 space-y-6 opacity-20">
-              <Loader2 className="size-12 animate-spin text-blue-500" />
-              <p className="text-[10px] font-black uppercase tracking-[0.5em]">Pripravujeme túto sekciu...</p>
-            </div>
-          )}
-        </div>
-      </div>
     </div>
-  );
+        );
 }
