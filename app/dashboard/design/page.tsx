@@ -83,6 +83,9 @@ export default function DesignPage() {
 		}
 	}, []);
 
+	const elementsRef = useRef(elements);
+	elementsRef.current = elements;
+
 	// Keyboard Shortcuts
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -105,18 +108,18 @@ export default function DesignPage() {
 			if (e.key === "c") setActiveTool("circle");
 			if (e.key === "t") setActiveTool("text");
 			if (e.key === "l" && selectedId) {
-				const el = elements.find(el => el.id === selectedId);
+				const el = elementsRef.current.find(el => el.id === selectedId);
 				if (el) updateSelectedElement({ isLocked: !el.isLocked });
 			}
 			if (e.key === "h" && selectedId) {
-				const el = elements.find(el => el.id === selectedId);
+				const el = elementsRef.current.find(el => el.id === selectedId);
 				if (el) updateSelectedElement({ isVisible: el.isVisible === false });
 			}
 		};
 
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [selectedId, elements, handleAction]);
+	}, [selectedId, handleAction]); // elements removed from dependencies
 
 	const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];

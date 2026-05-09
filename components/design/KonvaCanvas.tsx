@@ -78,11 +78,14 @@ export default function KonvaCanvas({
 		return () => resizeObserver.unobserve(observeTarget);
 	}, []);
 
+	const elementsRef = useRef(elements);
+	elementsRef.current = elements;
+
 	// Handle transformer selection
 	useEffect(() => {
 		if (transformerRef.current && selectedId) {
 			const selectedNode = stageRef.current.findOne(`#${selectedId}`);
-			const element = elements.find(el => el.id === selectedId);
+			const element = elementsRef.current.find(el => el.id === selectedId);
 			
 			// Don't show transformer for locked or hidden elements
 			if (selectedNode && !element?.isLocked && element?.isVisible !== false) {
@@ -97,7 +100,7 @@ export default function KonvaCanvas({
 		} else if (transformerRef.current) {
 			transformerRef.current.nodes([]);
 		}
-	}, [selectedId, elements, onSelect]);
+	}, [selectedId, onSelect]); // elements removed from dependencies
 
 	const snap = (val: number) => {
 		return snapToGrid ? Math.round(val / GRID_SIZE) * GRID_SIZE : val;
