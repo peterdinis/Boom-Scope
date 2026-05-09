@@ -4,6 +4,12 @@ import { v } from "convex/values";
 
 export default defineSchema({
 	...authTables,
+	users: defineTable({
+		name: v.optional(v.string()),
+		image: v.optional(v.string()),
+		email: v.optional(v.string()),
+		accentColor: v.optional(v.string()),
+	}),
 	projects: defineTable({
 		name: v.string(),
 		description: v.optional(v.string()),

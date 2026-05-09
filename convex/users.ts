@@ -1,22 +1,29 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
+import { v } from "convex/values";
 
 export const viewer = query({
-	args: {},
 	handler: async (ctx) => {
 		const userId = await getAuthUserId(ctx);
-		if (userId === null) {
-			return null;
-		}
-		const user = await ctx.db.get(userId);
-		if (user === null) {
-			return null;
-		}
-		return {
-			_id: user._id,
-			email: user.email ?? null,
-			name: user.name ?? null,
-			image: user.image ?? null,
-		};
+		if (userId === null) return null;
+		return await ctx.db.get(userId);
+	},
+});
+
+export const updateUser = mutation({
+	args: {
+		name: v.optional(v.string()),
+		image: v.optional(v.string()),
+		accentColor: v.optional(v.string()),
+	},
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (userId === null) throw new Error("Unauthorized");
+
+		await ctx.db.patch(userId, {
+			name: args.name,
+			image: args.image,
+			accentColor: args.accentColor,
+		});
 	},
 });
