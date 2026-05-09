@@ -34,6 +34,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (user?.name && name === "") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setName(user.name);
     }
   }, [user, name]);

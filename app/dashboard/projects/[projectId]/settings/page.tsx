@@ -42,8 +42,14 @@ export default function ProjectSettingsPage() {
 
   useEffect(() => {
     if (project) {
-      if (name === "") setName(project.name);
-      if (description === "" && project.description) setDescription(project.description);
+      if (name === "") {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setName(project.name);
+      }
+      if (description === "" && project.description) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setDescription(project.description);
+      }
     }
   }, [project, name, description]);
 
@@ -162,7 +168,7 @@ export default function ProjectSettingsPage() {
                 <Label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Popis projektu</Label>
                 <Textarea 
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
                   placeholder="Pridajte krátky popis projektu..."
                   className="min-h-[120px] bg-background border-border rounded-2xl p-6 text-sm font-medium resize-y focus:border-[var(--user-accent)] transition-all"
                 />
