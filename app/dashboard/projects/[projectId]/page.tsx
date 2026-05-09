@@ -3,14 +3,11 @@
 import { useQuery } from "convex/react";
 import {
 	ArrowLeft,
-	Calendar,
 	ChevronRight,
 	Clock,
-	ExternalLink,
 	FileText,
 	Layout,
 	Palette,
-	PencilLine,
 	Plus,
 	Settings2,
 	Sparkles,
@@ -21,6 +18,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 
 export default function ProjectDetailPage() {
@@ -33,7 +31,7 @@ export default function ProjectDetailPage() {
 
 	const project = useQuery(
 		api.projects.getById,
-		projectId ? { projectId: projectId as any } : "skip",
+		projectId ? { projectId: projectId as Id<"projects"> } : "skip",
 	);
 
 	if (project === undefined) {

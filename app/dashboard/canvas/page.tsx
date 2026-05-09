@@ -118,6 +118,16 @@ export default function DesignPage() {
 	const elementsRef = useRef(elements);
 	elementsRef.current = elements;
 
+	const updateSelectedElement = useCallback(
+		(updates: Partial<CanvasElement>) => {
+			if (!selectedId) return;
+			setElements((prev) =>
+				prev.map((el) => (el.id === selectedId ? { ...el, ...updates } : el)),
+			);
+		},
+		[selectedId, setElements],
+	);
+
 	// Keyboard Shortcuts
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -155,7 +165,7 @@ export default function DesignPage() {
 
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [selectedId, handleAction]);
+	}, [selectedId, handleAction, updateSelectedElement]);
 
 	const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -187,12 +197,6 @@ export default function DesignPage() {
 
 	const selectedElement = elements.find((el) => el.id === selectedId);
 
-	const updateSelectedElement = (updates: Partial<CanvasElement>) => {
-		if (!selectedId) return;
-		setElements((prev) =>
-			prev.map((el) => (el.id === selectedId ? { ...el, ...updates } : el)),
-		);
-	};
 
 	const toggleElementProperty = (
 		id: string,
@@ -349,7 +353,7 @@ export default function DesignPage() {
 								</div>
 							) : (
 								elements
-									.map((el, i) => (
+									.map((el) => (
 										<div key={el.id} className="relative group">
 											<button
 												onClick={() => setSelectedId(el.id)}

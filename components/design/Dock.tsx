@@ -96,7 +96,7 @@ function DockIcon({
 	color,
 }: {
 	mouseX: MotionValue;
-	icon: any;
+	icon: React.ElementType;
 	label: string;
 	isActive: boolean;
 	onClick: () => void;

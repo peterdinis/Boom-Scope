@@ -16,7 +16,6 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
 import { downloadNoteAsTxt } from "@/lib/notes";
-import { cn } from "@/lib/utils";
 
 export function NoteList() {
 	const [searchTerm, setSearchTerm] = useState("");
@@ -47,7 +46,7 @@ export function NoteList() {
 			</div>
 
 			{results.length === 0 &&
-			(status === "LoadingFirstPage" || status === "LoadingMore") ? (
+				(status === "LoadingFirstPage" || status === "LoadingMore") ? (
 				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					{[1, 2, 3, 4, 5, 6].map((i) => (
 						<Card key={i} className="h-[200px]">
@@ -78,8 +77,8 @@ export function NoteList() {
 				</div>
 			) : (
 				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-					{results.map((note: any) => (
-						<Link key={note._id} href={`/dashboard/notes/${note._id}` as any}>
+					{results.map((note) => (
+						<Link key={note._id} href={`/dashboard/notes/${note._id}`}>
 							<Card className="group h-full transition-all hover:border-primary/50 hover:shadow-sm">
 								<CardHeader className="pb-3 flex flex-row items-center justify-between gap-2 space-y-0">
 									<CardTitle className="line-clamp-1 text-base">

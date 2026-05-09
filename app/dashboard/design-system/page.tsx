@@ -2,11 +2,9 @@
 
 import { useAction, useMutation, useQuery } from "convex/react";
 import {
-	ArrowRight,
 	Check,
 	Copy,
 	Download,
-	Image as ImageIcon,
 	Layout,
 	Palette,
 	RefreshCw,
@@ -17,7 +15,7 @@ import {
 	Wand2,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,7 +42,7 @@ const aiSystemSchema = z.object({
 	description: z.string().optional(),
 });
 
-interface GeneratedSystem extends z.infer<typeof aiSystemSchema> {}
+type GeneratedSystem = z.infer<typeof aiSystemSchema>;
 
 export default function DesignSystemPage() {
 	const projects = useQuery(api.projects.list);
@@ -98,7 +96,7 @@ export default function DesignSystemPage() {
 
 			// Save to Convex
 			await saveSystem({
-				projectId: selectedProjectId as any,
+				projectId: selectedProjectId as Id<"projects">,
 				colors: parsed.data.colors,
 				fonts: parsed.data.fonts,
 				description: parsed.data.description,
@@ -125,7 +123,7 @@ export default function DesignSystemPage() {
 	const copyAsCSS = () => {
 		if (!system) return;
 		const css = `:root {
-  ${system.colors.map((c, i) => `--color-${c.name.toLowerCase().replace(/\s+/g, "-")}: ${c.hex};`).join("\n  ")}
+  ${system.colors.map((c) => `--color-${c.name.toLowerCase().replace(/\s+/g, "-")}: ${c.hex};`).join("\n  ")}
   ${system.fonts.map((f, i) => `--font-${i === 0 ? "primary" : "secondary"}: '${f}';`).join("\n  ")}
 }`;
 		navigator.clipboard.writeText(css);

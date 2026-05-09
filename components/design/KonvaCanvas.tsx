@@ -2,13 +2,11 @@
 
 import Konva from "konva";
 
-if (typeof window !== "undefined") {
-	require("konva/lib/shapes/Transformer");
-	require("konva/lib/shapes/Rect");
-	require("konva/lib/shapes/Circle");
-	require("konva/lib/shapes/Line");
-	require("konva/lib/shapes/Text");
-}
+import "konva/lib/shapes/Transformer";
+import "konva/lib/shapes/Rect";
+import "konva/lib/shapes/Circle";
+import "konva/lib/shapes/Line";
+import "konva/lib/shapes/Text";
 
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useTheme } from "next-themes";
@@ -74,8 +72,8 @@ export default function KonvaCanvas({
 	snapToGrid = true,
 }: KonvaCanvasProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
-	const stageRef = useRef<any>(null);
-	const transformerRef = useRef<any>(null);
+	const stageRef = useRef<Konva.Stage>(null);
+	const transformerRef = useRef<Konva.Transformer>(null);
 	const [size, setSize] = useState({ width: 0, height: 0 });
 	const [isDrawing, setIsDrawing] = useState(false);
 	const [newElement, setNewElement] = useState<CanvasElement | null>(null);
@@ -83,7 +81,10 @@ export default function KonvaCanvas({
 	const isDark = resolvedTheme === "dark";
 
 	const elementsRef = useRef(elements);
-	elementsRef.current = elements;
+
+	useEffect(() => {
+		elementsRef.current = elements;
+	}, [elements]);
 
 	// Handle stage resizing
 	useEffect(() => {
@@ -105,7 +106,7 @@ export default function KonvaCanvas({
 
 	// Handle transformer selection
 	useEffect(() => {
-		if (transformerRef.current && selectedId) {
+		if (transformerRef.current && selectedId && stageRef.current) {
 			const selectedNode = stageRef.current.findOne(`#${selectedId}`);
 			const element = elementsRef.current.find((el) => el.id === selectedId);
 
@@ -113,7 +114,7 @@ export default function KonvaCanvas({
 			if (selectedNode && !element?.isLocked && element?.isVisible !== false) {
 				if (typeof transformerRef.current.nodes === "function") {
 					transformerRef.current.nodes([selectedNode]);
-					transformerRef.current.getLayer().batchDraw();
+					transformerRef.current.getLayer()!.batchDraw();
 				}
 			} else {
 				if (typeof transformerRef.current.nodes === "function") {
@@ -269,12 +270,13 @@ export default function KonvaCanvas({
 	const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
 		e.evt.preventDefault();
 		const stage = stageRef.current;
+		if (!stage) return;
 		const oldScale = stage.scaleX();
 		const pointer = stage.getPointerPosition();
 
 		const mousePointTo = {
-			x: (pointer.x - stage.x()) / oldScale,
-			y: (pointer.y - stage.y()) / oldScale,
+			x: (pointer!.x - stage.x()) / oldScale,
+			y: (pointer!.y - stage.y()) / oldScale,
 		};
 
 		const direction = e.evt.deltaY > 0 ? 1 : -1;
@@ -283,8 +285,8 @@ export default function KonvaCanvas({
 		stage.scale({ x: newScale, y: newScale });
 
 		const newPos = {
-			x: pointer.x - mousePointTo.x * newScale,
-			y: pointer.y - mousePointTo.y * newScale,
+			x: pointer!.x - mousePointTo.x * newScale,
+			y: pointer!.y - mousePointTo.y * newScale,
 		};
 		stage.position(newPos);
 	};

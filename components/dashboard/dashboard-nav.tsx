@@ -36,7 +36,7 @@ const navItems: {
 	label: string;
 	description: string;
 	icon: React.ElementType;
-	href?: any;
+	href?: string;
 	soon?: boolean;
 }[] = [
 	{
