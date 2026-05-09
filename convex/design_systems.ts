@@ -25,6 +25,7 @@ export const create = mutation({
 
 		return await ctx.db.insert("design_systems", {
 			projectId: args.projectId,
+			userId,
 			colors: args.colors,
 			fonts: args.fonts,
 			description: args.description,

@@ -8,23 +8,28 @@
  * @module
  */
 
-import type {
-	ApiFromModules,
-	FilterApi,
-	FunctionReference,
-} from "convex/server";
 import type * as auth from "../auth.js";
+import type * as design_systems from "../design_systems.js";
 import type * as http from "../http.js";
 import type * as notes from "../notes.js";
+import type * as openai from "../openai.js";
 import type * as projects from "../projects.js";
 import type * as users from "../users.js";
 
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
+
 declare const fullApi: ApiFromModules<{
-	auth: typeof auth;
-	http: typeof http;
-	notes: typeof notes;
-	projects: typeof projects;
-	users: typeof users;
+  auth: typeof auth;
+  design_systems: typeof design_systems;
+  http: typeof http;
+  notes: typeof notes;
+  openai: typeof openai;
+  projects: typeof projects;
+  users: typeof users;
 }>;
 
 /**
@@ -36,8 +41,8 @@ declare const fullApi: ApiFromModules<{
  * ```
  */
 export declare const api: FilterApi<
-	typeof fullApi,
-	FunctionReference<any, "public">
+  typeof fullApi,
+  FunctionReference<any, "public">
 >;
 
 /**
@@ -49,8 +54,8 @@ export declare const api: FilterApi<
  * ```
  */
 export declare const internal: FilterApi<
-	typeof fullApi,
-	FunctionReference<any, "internal">
+  typeof fullApi,
+  FunctionReference<any, "internal">
 >;
 
 export declare const components: {};
