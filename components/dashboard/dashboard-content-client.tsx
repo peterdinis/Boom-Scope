@@ -2,14 +2,13 @@
 
 import { FileText, FolderKanban, Palette, Sparkles } from "lucide-react";
 import Link from "next/link";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export function DashboardContent({ viewer }: { viewer: { name?: string } | null }) {
+export function DashboardContent({
+	viewer,
+}: {
+	viewer: { name?: string } | null;
+}) {
 	return (
 		<div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 md:px-8">
 			<div className="flex flex-col gap-3">

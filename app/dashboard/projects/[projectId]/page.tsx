@@ -16,11 +16,11 @@ import {
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import type { UrlObject } from "url";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
-import { UrlObject } from "url";
 
 export default function ProjectDetailPage() {
 	const params = useParams();

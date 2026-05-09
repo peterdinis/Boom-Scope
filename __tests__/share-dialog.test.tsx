@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, test, vi } from "vitest";
 import { ShareDialog } from "../components/design/ShareDialog";
 
@@ -8,11 +8,7 @@ describe("Component: ShareDialog", () => {
 
 	test("renders when open", () => {
 		render(
-			<ShareDialog 
-				isOpen={true} 
-				onClose={mockOnClose} 
-				designId={designId} 
-			/>
+			<ShareDialog isOpen={true} onClose={mockOnClose} designId={designId} />,
 		);
 		expect(screen.getByText(/Zdieľať Design/i)).toBeDefined();
 		expect(screen.getByText(/Verejný Odkaz/i)).toBeDefined();
@@ -20,22 +16,14 @@ describe("Component: ShareDialog", () => {
 
 	test("displays correctly truncated designId in URL", () => {
 		render(
-			<ShareDialog 
-				isOpen={true} 
-				onClose={mockOnClose} 
-				designId={designId} 
-			/>
+			<ShareDialog isOpen={true} onClose={mockOnClose} designId={designId} />,
 		);
 		expect(screen.getByText(new RegExp(designId, "i"))).toBeDefined();
 	});
 
 	test("calls onClose when close button is clicked", () => {
 		render(
-			<ShareDialog 
-				isOpen={true} 
-				onClose={mockOnClose} 
-				designId={designId} 
-			/>
+			<ShareDialog isOpen={true} onClose={mockOnClose} designId={designId} />,
 		);
 		const closeBtn = screen.getByRole("button", { name: "" }); // The X icon button
 		fireEvent.click(closeBtn);
@@ -51,16 +39,12 @@ describe("Component: ShareDialog", () => {
 		});
 
 		render(
-			<ShareDialog 
-				isOpen={true} 
-				onClose={mockOnClose} 
-				designId={designId} 
-			/>
+			<ShareDialog isOpen={true} onClose={mockOnClose} designId={designId} />,
 		);
-		
+
 		const copyBtn = screen.getByText(/Kopírovať/i);
 		fireEvent.click(copyBtn);
-		
+
 		expect(writeTextMock).toHaveBeenCalled();
 		expect(screen.getByText(/Kopírovať/i)).toBeDefined(); // Label changes or icon changes
 	});

@@ -39,7 +39,7 @@ export function NoteForm({ initialData }: NoteFormProps) {
 
 	const handleSave = async () => {
 		const validation = noteSchema.safeParse({ title, content, projectId });
-		
+
 		if (!validation.success) {
 			toast.error(validation.error.errors[0].message);
 			return;

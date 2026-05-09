@@ -17,6 +17,7 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
 	Select,
@@ -26,10 +27,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
-
-import { z } from "zod";
-import { Id } from "@/convex/_generated/dataModel";
 
 const aiSystemSchema = z.object({
 	colors: z.array(

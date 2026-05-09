@@ -3,8 +3,8 @@ import { useQuery } from "convex/react";
 import { useParams } from "next/navigation";
 import React from "react";
 import { describe, expect, test, vi } from "vitest";
-import type { Id } from "../convex/_generated/dataModel";
 import ProjectDetailPage from "../app/dashboard/projects/[projectId]/page";
+import type { Id } from "../convex/_generated/dataModel";
 
 // Mock Convex
 vi.mock("convex/react", () => ({

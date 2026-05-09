@@ -7,6 +7,7 @@ import {
 	Hand,
 	Image as ImageIcon,
 	MousePointer2,
+	MoveUp,
 	Pencil,
 	Redo,
 	Share2,
@@ -15,7 +16,6 @@ import {
 	Trash2,
 	Type,
 	Undo,
-	MoveUp,
 } from "lucide-react";
 import {
 	type MotionValue,
@@ -44,7 +44,12 @@ const tools = [
 	{ id: "redo", icon: Redo, label: "Dopredu" },
 	{ id: "sep-3", type: "separator" },
 	{ id: "trash", icon: Trash2, label: "Vymazať", color: "text-red-500/60" },
-	{ id: "download", icon: Download, label: "Export", color: "text-green-500/60" },
+	{
+		id: "download",
+		icon: Download,
+		label: "Export",
+		color: "text-green-500/60",
+	},
 	{ id: "share", icon: Share2, label: "Zdieľať" },
 ];
 

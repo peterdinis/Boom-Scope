@@ -72,7 +72,7 @@ export const CANVAS_PRESETS: CanvasPreset[] = [
 	},
 	{
 		id: "ipad-pro",
-		name: "iPad Pro 11\"",
+		name: 'iPad Pro 11"',
 		width: 834,
 		height: 1194,
 		icon: "tablet",

@@ -20,10 +20,12 @@ export default defineSchema({
 	designs: defineTable({
 		name: v.string(),
 		elements: v.string(),
-		canvasSize: v.optional(v.object({
-			width: v.number(),
-			height: v.number(),
-		})),
+		canvasSize: v.optional(
+			v.object({
+				width: v.number(),
+				height: v.number(),
+			}),
+		),
 		artboardColor: v.optional(v.string()),
 		projectId: v.id("projects"),
 		userId: v.id("users"),

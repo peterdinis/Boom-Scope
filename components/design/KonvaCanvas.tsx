@@ -1,6 +1,6 @@
 "use client";
 
-import Konva from "konva";
+import type Konva from "konva";
 
 import "konva/lib/shapes/Transformer";
 import "konva/lib/shapes/Rect";
@@ -9,9 +9,9 @@ import "konva/lib/shapes/Line";
 import "konva/lib/shapes/Text";
 
 import type { KonvaEventObject } from "konva/lib/Node";
+import { Trash2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
-import { Trash2 } from "lucide-react";
 import {
 	Arrow,
 	Circle,
@@ -19,8 +19,8 @@ import {
 	Layer,
 	Line,
 	Rect,
-	Star,
 	Stage,
+	Star,
 	Text,
 	Transformer,
 } from "react-konva";
@@ -95,7 +95,11 @@ export default function KonvaCanvas({
 	const [size, setSize] = useState({ width: 0, height: 0 });
 	const [isDrawing, setIsDrawing] = useState(false);
 	const [newElement, setNewElement] = useState<CanvasElement | null>(null);
-	const [contextMenu, setContextMenu] = useState<{ x: number, y: number, elementId: string } | null>(null);
+	const [contextMenu, setContextMenu] = useState<{
+		x: number;
+		y: number;
+		elementId: string;
+	} | null>(null);
 	const { resolvedTheme } = useTheme();
 	const isDark = resolvedTheme === "dark";
 
@@ -130,9 +134,9 @@ export default function KonvaCanvas({
 			const scale = Math.min(
 				(size.width * 0.8) / canvasSize.width,
 				(size.height * 0.8) / canvasSize.height,
-				1
+				1,
 			);
-			
+
 			stage.scale({ x: scale, y: scale });
 			setZoom(scale);
 			stage.position({
@@ -275,39 +279,45 @@ export default function KonvaCanvas({
 	const handleTransformEnd = (e: KonvaEventObject<Event>) => {
 		const node = e.target;
 		const id = node.id();
-		setElements((prev) => prev.map((el) => {
-			if (el.id === id) {
-				const scaleX = node.scaleX();
-				const scaleY = node.scaleY();
+		setElements((prev) =>
+			prev.map((el) => {
+				if (el.id === id) {
+					const scaleX = node.scaleX();
+					const scaleY = node.scaleY();
 
-				node.scaleX(1);
-				node.scaleY(1);
+					node.scaleX(1);
+					node.scaleY(1);
 
-				return {
-					...el,
-					x: snap(node.x()),
-					y: snap(node.y()),
-					rotation: node.rotation(),
-					width: el.width ? snap(Math.max(5, el.width * scaleX)) : el.width,
-					height: el.height ? snap(Math.max(5, el.height * scaleY)) : el.height,
-				};
-			}
-			return el;
-		}));
+					return {
+						...el,
+						x: snap(node.x()),
+						y: snap(node.y()),
+						rotation: node.rotation(),
+						width: el.width ? snap(Math.max(5, el.width * scaleX)) : el.width,
+						height: el.height
+							? snap(Math.max(5, el.height * scaleY))
+							: el.height,
+					};
+				}
+				return el;
+			}),
+		);
 	};
 
 	const handleDragEnd = (e: KonvaEventObject<DragEvent>) => {
 		const id = e.target.id();
-		setElements((prev) => prev.map((el) => {
-			if (el.id === id) {
-				return {
-					...el,
-					x: snap(e.target.x()),
-					y: snap(e.target.y()),
-				};
-			}
-			return el;
-		}));
+		setElements((prev) =>
+			prev.map((el) => {
+				if (el.id === id) {
+					return {
+						...el,
+						x: snap(e.target.x()),
+						y: snap(e.target.y()),
+					};
+				}
+				return el;
+			}),
+		);
 	};
 
 	const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
@@ -351,7 +361,7 @@ export default function KonvaCanvas({
 		};
 		stage.position(newPos);
 	};
-	
+
 	const handleContextMenu = (e: KonvaEventObject<PointerEvent>) => {
 		e.evt.preventDefault();
 		const stage = stageRef.current;
@@ -367,7 +377,7 @@ export default function KonvaCanvas({
 				setContextMenu({
 					x: pointer.x,
 					y: pointer.y,
-					elementId: id
+					elementId: id,
 				});
 				onSelect(id);
 			}
@@ -378,8 +388,8 @@ export default function KonvaCanvas({
 
 	useEffect(() => {
 		const handleClickOutside = () => setContextMenu(null);
-		window.addEventListener('click', handleClickOutside);
-		return () => window.removeEventListener('click', handleClickOutside);
+		window.addEventListener("click", handleClickOutside);
+		return () => window.removeEventListener("click", handleClickOutside);
 	}, []);
 
 	const renderGrid = () => {
@@ -417,7 +427,10 @@ export default function KonvaCanvas({
 	};
 
 	return (
-		<div ref={containerRef} className="h-full w-full bg-background relative overflow-hidden">
+		<div
+			ref={containerRef}
+			className="h-full w-full bg-background relative overflow-hidden"
+		>
 			<Stage
 				ref={stageRef}
 				width={size.width}
@@ -426,9 +439,19 @@ export default function KonvaCanvas({
 				onMouseMove={handleMouseMove}
 				onMouseUp={readOnly ? undefined : handleMouseUp}
 				onWheel={handleWheel}
-				onContextMenu={readOnly ? (e) => e.evt.preventDefault() : handleContextMenu}
-				draggable={!readOnly && (activeTool === "select" || activeTool === "hand")}
-				style={{ cursor: readOnly ? "default" : (activeTool === "hand" ? "grab" : "default") }}
+				onContextMenu={
+					readOnly ? (e) => e.evt.preventDefault() : handleContextMenu
+				}
+				draggable={
+					!readOnly && (activeTool === "select" || activeTool === "hand")
+				}
+				style={{
+					cursor: readOnly
+						? "default"
+						: activeTool === "hand"
+							? "grab"
+							: "default",
+				}}
 			>
 				{/* Background Grid Layer */}
 				<Layer listening={false}>{renderGrid()}</Layer>
@@ -502,7 +525,7 @@ export default function KonvaCanvas({
 
 			{/* Context Menu */}
 			{contextMenu && (
-				<div 
+				<div
 					className="absolute z-[100] bg-background/80 backdrop-blur-2xl border border-border rounded-2xl shadow-2xl p-1.5 min-w-[180px] animate-in zoom-in-95 duration-200"
 					style={{ top: contextMenu.y, left: contextMenu.x }}
 				>
@@ -510,12 +533,16 @@ export default function KonvaCanvas({
 						className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-500 transition-all group"
 						onClick={(e) => {
 							e.stopPropagation();
-							setElements((prev) => prev.filter(el => el.id !== contextMenu.elementId));
+							setElements((prev) =>
+								prev.filter((el) => el.id !== contextMenu.elementId),
+							);
 							if (selectedId === contextMenu.elementId) onSelect(null);
 							setContextMenu(null);
 						}}
 					>
-						<span className="text-[10px] font-black uppercase tracking-widest">Vymazať objekt</span>
+						<span className="text-[10px] font-black uppercase tracking-widest">
+							Vymazať objekt
+						</span>
 						<Trash2 className="size-3.5 opacity-50 group-hover:opacity-100" />
 					</button>
 				</div>
@@ -546,10 +573,29 @@ function RenderElement({
 		x: el.x,
 		y: el.y,
 		stroke: el.stroke,
-		fill: el.fillType === "gradient" ? undefined : (el.fill === "none" ? undefined : el.fill),
-		fillLinearGradientStartPoint: el.fillType === "gradient" ? (el.gradientStart || { x: 0, y: 0 }) : undefined,
-		fillLinearGradientEndPoint: el.fillType === "gradient" ? (el.gradientEnd || { x: el.width || 100, y: el.height || 100 }) : undefined,
-		fillLinearGradientColorStops: el.fillType === "gradient" ? [0, el.gradientColors?.[0] || "#3b82f6", 1, el.gradientColors?.[1] || "#10b981"] : undefined,
+		fill:
+			el.fillType === "gradient"
+				? undefined
+				: el.fill === "none"
+					? undefined
+					: el.fill,
+		fillLinearGradientStartPoint:
+			el.fillType === "gradient"
+				? el.gradientStart || { x: 0, y: 0 }
+				: undefined,
+		fillLinearGradientEndPoint:
+			el.fillType === "gradient"
+				? el.gradientEnd || { x: el.width || 100, y: el.height || 100 }
+				: undefined,
+		fillLinearGradientColorStops:
+			el.fillType === "gradient"
+				? [
+						0,
+						el.gradientColors?.[0] || "#3b82f6",
+						1,
+						el.gradientColors?.[1] || "#10b981",
+					]
+				: undefined,
 		strokeWidth: el.strokeWidth,
 		dash: el.dash,
 		rotation: el.rotation || 0,
@@ -559,9 +605,10 @@ function RenderElement({
 		draggable: draggable,
 		onDragEnd: onDragEnd,
 		shadowColor: isSelected ? "#3b82f6" : "#000000",
-		shadowBlur: isSelected ? 15 : (el.shadowBlur || 0),
-		shadowOpacity: isSelected ? 0.5 : (el.shadowBlur ? 0.3 : 0),
-		globalCompositeOperation: el.globalCompositeOperation as GlobalCompositeOperation,
+		shadowBlur: isSelected ? 15 : el.shadowBlur || 0,
+		shadowOpacity: isSelected ? 0.5 : el.shadowBlur ? 0.3 : 0,
+		globalCompositeOperation:
+			el.globalCompositeOperation as GlobalCompositeOperation,
 	};
 
 	if (el.type === "rect") {

@@ -41,9 +41,9 @@ export default function ProjectsPage() {
 
 	const handleCreate = async (e: React.FormEvent) => {
 		e.preventDefault();
-		
+
 		const validation = projectSchema.safeParse({ name: newProjectName });
-		
+
 		if (!validation.success) {
 			toast.error(validation.error.message);
 			return;
