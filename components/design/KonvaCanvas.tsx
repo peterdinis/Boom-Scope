@@ -55,14 +55,14 @@ export interface CanvasElement {
 }
 
 interface KonvaCanvasProps {
-	activeTool: string;
+	activeTool?: string;
 	elements: CanvasElement[];
 	setElements: (elements: CanvasElement[]) => void;
 	selectedId: string | null;
 	onSelect: (id: string | null) => void;
-	strokeColor: string;
-	fillColor: string;
-	strokeWidth: number;
+	strokeColor?: string;
+	fillColor?: string;
+	strokeWidth?: number;
 	snapToGrid?: boolean;
 	canvasSize?: { width: number; height: number } | null;
 	zoom: number;
@@ -74,14 +74,14 @@ interface KonvaCanvasProps {
 const GRID_SIZE = 20;
 
 export default function KonvaCanvas({
-	activeTool,
+	activeTool = "select",
 	elements,
 	setElements,
 	selectedId,
 	onSelect,
-	strokeColor,
-	fillColor,
-	strokeWidth,
+	strokeColor = "#3b82f6",
+	fillColor = "none",
+	strokeWidth = 2,
 	snapToGrid = true,
 	canvasSize,
 	zoom,

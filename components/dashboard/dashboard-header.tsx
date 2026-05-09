@@ -13,20 +13,25 @@ export function DashboardHeader() {
 	const { isCollapsed, toggleSidebar } = useSidebar();
 
 	let activeId: DashboardNavId = "overview";
+	if (pathname.startsWith("/dashboard/projects")) activeId = "projects";
 	if (pathname.startsWith("/dashboard/notes")) activeId = "notes";
 	if (pathname.startsWith("/dashboard/canvas")) activeId = "design";
-	if (pathname.startsWith("/dashboard/generate")) activeId = "generate";
+	if (pathname.startsWith("/dashboard/design-system")) activeId = "generate";
 
 	const titles: Record<DashboardNavId, { title: string; subtitle: string }> = {
 		overview: {
 			title: "Prehľad",
 			subtitle: "Rýchle odkazy na prácu s projektom",
 		},
+		projects: {
+			title: "Projekty",
+			subtitle: "Spravujte všetky svoje projekty",
+		},
 		notes: { title: "Poznámky", subtitle: "Správa vašich poznámok k projektu" },
-		design: { title: "Dizajn", subtitle: "Pracovný priestor pre dizajn" },
+		design: { title: "Canvas", subtitle: "Pracovný priestor pre dizajn" },
 		generate: {
-			title: "Generovať nový dizajn",
-			subtitle: "Generovať nové varianty dizajnu",
+			title: "Design System",
+			subtitle: "AI generátor vizuálnej identity",
 		},
 	};
 

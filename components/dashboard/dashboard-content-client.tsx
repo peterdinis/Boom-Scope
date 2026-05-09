@@ -4,16 +4,20 @@ import { FileText, FolderKanban, Palette, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export function DashboardContent({
-	viewer,
-}: {
-	viewer: { name?: string } | null;
-}) {
+type ViewerSummary = {
+	name?: string | null;
+	email?: string | null;
+} | null;
+
+export function DashboardContent({ viewer }: { viewer: ViewerSummary }) {
+	const greeting =
+		viewer?.name ?? viewer?.email?.split("@")[0] ?? "Užívateľ";
+
 	return (
 		<div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 md:px-8">
 			<div className="flex flex-col gap-3">
 				<h1 className="font-heading text-3xl font-bold tracking-tight">
-					Vitajte späť, {viewer?.name || "Užívateľ"}
+					Vitajte späť, {greeting}
 				</h1>
 				<p className="text-muted-foreground">
 					Tu je prehľad toho, čo sa deje vo vašom projekte Boom Scope.

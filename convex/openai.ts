@@ -1,16 +1,23 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import OpenAI from "openai";
 import { action } from "./_generated/server";
 
-const openai = new OpenAI({
-	apiKey: process.env.OPENAI_API_KEY,
-});
+function getOpenAI(): OpenAI {
+	const apiKey = process.env.OPENAI_API_KEY;
+	if (!apiKey) {
+		throw new ConvexError(
+			"Chýba OPENAI_API_KEY v Convex prostredí. Pridajte ho cez `npx convex env set OPENAI_API_KEY <key>`.",
+		);
+	}
+	return new OpenAI({ apiKey });
+}
 
 export const analyzeDesignSystem = action({
 	args: {
 		imageUrls: v.array(v.string()), // Can be base64 or storage URLs
 	},
 	handler: async (ctx, args) => {
+		const openai = getOpenAI();
 		const response = await openai.chat.completions.create({
 			model: "gpt-4o-mini",
 			messages: [
@@ -37,7 +44,7 @@ export const analyzeDesignSystem = action({
 		});
 
 		const content = response.choices[0].message.content;
-		if (!content) throw new Error("Failed to get response from OpenAI");
+		if (!content) throw new ConvexError("Failed to get response from OpenAI");
 
 		return JSON.parse(content);
 	},

@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { auth } from "./auth";
 
@@ -17,10 +17,10 @@ export const saveDesign = mutation({
 	},
 	handler: async (ctx, args) => {
 		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) throw new Error("Unauthorized");
+		if (!identity) throw new ConvexError("Unauthorized");
 
 		const userId = await auth.getUserId(ctx);
-		if (!userId) throw new Error("User not found");
+		if (!userId) throw new ConvexError("User not found");
 
 		const designId = await ctx.db.insert("designs", {
 			name: args.name,
