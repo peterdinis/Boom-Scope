@@ -93,7 +93,7 @@ export default function DesignPage() {
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 
 	const [strokeColor, setStrokeColor] = useState("#3b82f6");
-	const [fillColor, setFillColor] = useState("none");
+	const [fillColor] = useState("none");
 	const [strokeWidth] = useState(2);
 
 	const [leftPanelOpen, setLeftPanelOpen] = useState(true);

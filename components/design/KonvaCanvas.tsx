@@ -52,12 +52,13 @@ export interface CanvasElement {
 	gradientEnd?: { x: number; y: number };
 	gradientColors?: string[];
 	dash?: number[];
+	shadowBlur?: number;
 }
 
 interface KonvaCanvasProps {
 	activeTool?: string;
 	elements: CanvasElement[];
-	setElements: (elements: CanvasElement[]) => void;
+	setElements: React.Dispatch<React.SetStateAction<CanvasElement[]>>;
 	selectedId: string | null;
 	onSelect: (id: string | null) => void;
 	strokeColor?: string;

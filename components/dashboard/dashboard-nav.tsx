@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { Route } from "next";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -36,7 +37,7 @@ const navItems: {
 	label: string;
 	description: string;
 	icon: React.ElementType;
-	href?: string;
+	href?: Route;
 	soon?: boolean;
 }[] = [
 	{

@@ -27,7 +27,20 @@ import {
 import { useRef } from "react";
 import { cn } from "@/lib/utils";
 
-const tools = [
+type ToolItem =
+	| {
+			id: string;
+			type: "separator";
+	  }
+	| {
+			id: string;
+			type?: "tool";
+			icon: React.ElementType;
+			label: string;
+			color?: string;
+	  };
+
+const tools: ToolItem[] = [
 	{ id: "select", icon: MousePointer2, label: "Výber" },
 	{ id: "hand", icon: Hand, label: "Posun" },
 	{ id: "pencil", icon: Pencil, label: "Pero" },

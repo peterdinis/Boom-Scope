@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import DesignPage from "../app/dashboard/canvas/page";
 
@@ -8,10 +9,12 @@ vi.mock("convex/react", () => ({
 	useMutation: vi.fn(() => vi.fn()),
 }));
 
+type MockChildren = { children?: ReactNode };
+
 // Mock react-konva to avoid canvas issues
 vi.mock("react-konva", () => ({
-	Stage: ({ children }: any) => <div>{children}</div>,
-	Layer: ({ children }: any) => <div>{children}</div>,
+	Stage: ({ children }: MockChildren) => <div>{children}</div>,
+	Layer: ({ children }: MockChildren) => <div>{children}</div>,
 	Rect: () => <div>Rect</div>,
 	Circle: () => <div>Circle</div>,
 	Line: () => <div>Line</div>,

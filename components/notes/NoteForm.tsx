@@ -41,7 +41,7 @@ export function NoteForm({ initialData }: NoteFormProps) {
 		const validation = noteSchema.safeParse({ title, content, projectId });
 
 		if (!validation.success) {
-			toast.error(validation.error.errors[0].message);
+			toast.error(validation.error.issues[0]?.message ?? "Neplatný vstup.");
 			return;
 		}
 
