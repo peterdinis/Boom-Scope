@@ -57,6 +57,8 @@ interface KonvaCanvasProps {
 	strokeWidth: number;
 	snapToGrid?: boolean;
 	canvasSize?: { width: number; height: number } | null;
+	zoom: number;
+	setZoom: (zoom: number | ((prev: number) => number)) => void;
 }
 
 const GRID_SIZE = 20;
@@ -72,6 +74,8 @@ export default function KonvaCanvas({
 	strokeWidth,
 	snapToGrid = true,
 	canvasSize,
+	zoom,
+	setZoom,
 }: KonvaCanvasProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const stageRef = useRef<Konva.Stage>(null);
@@ -117,12 +121,20 @@ export default function KonvaCanvas({
 			);
 			
 			stage.scale({ x: scale, y: scale });
+			setZoom(scale);
 			stage.position({
 				x: (size.width - canvasSize.width * scale) / 2,
 				y: (size.height - canvasSize.height * scale) / 2,
 			});
 		}
-	}, [canvasSize, size.width, size.height]);
+	}, [canvasSize, size.width, size.height, setZoom]);
+
+	// Update stage scale when zoom prop changes
+	useEffect(() => {
+		if (stageRef.current) {
+			stageRef.current.scale({ x: zoom, y: zoom });
+		}
+	}, [zoom]);
 
 	// Handle transformer selection
 	useEffect(() => {
@@ -157,12 +169,12 @@ export default function KonvaCanvas({
 
 	const handleMouseDown = (e: KonvaEventObject<MouseEvent>) => {
 		const clickedOnStage = e.target === e.target.getStage();
-		if (clickedOnStage && activeTool === "select") {
+		if (clickedOnStage && (activeTool === "select" || activeTool === "hand")) {
 			onSelect(null);
 			return;
 		}
 
-		if (activeTool === "select") return;
+		if (activeTool === "select" || activeTool === "hand") return;
 
 		onSelect(null);
 		const stage = e.target.getStage();
@@ -355,7 +367,8 @@ export default function KonvaCanvas({
 				onMouseMove={handleMouseMove}
 				onMouseUp={handleMouseUp}
 				onWheel={handleWheel}
-				draggable={activeTool === "select"}
+				draggable={activeTool === "select" || activeTool === "hand"}
+				style={{ cursor: activeTool === "hand" ? "grab" : "default" }}
 			>
 				{/* Background Grid Layer */}
 				<Layer listening={false}>{renderGrid()}</Layer>

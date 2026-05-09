@@ -2,12 +2,13 @@
 
 import {
 	Circle,
+	Download,
 	Eraser,
+	Hand,
 	Image as ImageIcon,
 	MousePointer2,
 	Pencil,
 	Redo,
-	Settings,
 	Share2,
 	Square,
 	Trash2,
@@ -26,18 +27,20 @@ import { cn } from "@/lib/utils";
 
 const tools = [
 	{ id: "select", icon: MousePointer2, label: "Výber" },
+	{ id: "hand", icon: Hand, label: "Posun" },
 	{ id: "pencil", icon: Pencil, label: "Pero" },
 	{ id: "eraser", icon: Eraser, label: "Guma" },
+	{ id: "sep-1", type: "separator" },
 	{ id: "rect", icon: Square, label: "Obdĺžnik" },
 	{ id: "circle", icon: Circle, label: "Kruh" },
 	{ id: "text", icon: Type, label: "Text" },
 	{ id: "image", icon: ImageIcon, label: "Obrázok" },
-	{ id: "sep-1", type: "separator" },
+	{ id: "sep-2", type: "separator" },
 	{ id: "undo", icon: Undo, label: "Späť" },
 	{ id: "redo", icon: Redo, label: "Dopredu" },
-	{ id: "sep-2", type: "separator" },
+	{ id: "sep-3", type: "separator" },
 	{ id: "trash", icon: Trash2, label: "Vymazať", color: "text-red-500/60" },
-	{ id: "settings", icon: Settings, label: "Nastavenia" },
+	{ id: "download", icon: Download, label: "Export", color: "text-green-500/60" },
 	{ id: "share", icon: Share2, label: "Zdieľať" },
 ];
 

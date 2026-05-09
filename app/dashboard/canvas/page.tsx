@@ -4,6 +4,7 @@ import {
 	Circle,
 	Eye,
 	EyeOff,
+	Grid,
 	Image as ImageIcon,
 	Layers,
 	Lock,
@@ -24,7 +25,6 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import dynamic from "next/dynamic";
-import { useTheme } from "next-themes";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Dock } from "@/components/design/Dock";
 import type { CanvasElement } from "@/components/design/KonvaCanvas";
@@ -92,9 +92,10 @@ export default function DesignPage() {
 	const [rightPanelOpen, setRightPanelOpen] = useState(true);
 	const [activeTab, setActiveTab] = useState<"layers" | "templates">("layers");
 	const [canvasSize, setCanvasSize] = useState<{ width: number; height: number } | null>(null);
+	const [zoom, setZoom] = useState(1);
+	const [snapToGrid, setSnapToGrid] = useState(true);
 
 	const fileInputRef = useRef<HTMLInputElement>(null);
-	const { resolvedTheme } = useTheme();
 
 	const handleAction = useCallback((toolId: string) => {
 		if (toolId === "undo") {
@@ -112,6 +113,16 @@ export default function DesignPage() {
 		}
 		if (toolId === "settings") {
 			setRightPanelOpen((prev) => !prev);
+			return;
+		}
+		if (toolId === "download") {
+			const stage = document.querySelector("canvas");
+			if (stage) {
+				const link = document.createElement("a");
+				link.download = "boom-scope-design.png";
+				link.href = stage.toDataURL();
+				link.click();
+			}
 			return;
 		}
 		setActiveTool(toolId);
@@ -248,11 +259,49 @@ export default function DesignPage() {
 					setElements={setElements}
 					selectedId={selectedId}
 					onSelect={setSelectedId}
-					strokeColor={strokeColor}
+				strokeColor={strokeColor}
 					fillColor={fillColor}
 					strokeWidth={strokeWidth}
 					canvasSize={canvasSize}
+					zoom={zoom}
+					setZoom={setZoom}
+					snapToGrid={snapToGrid}
 				/>
+
+				{/* Zoom Controls */}
+				<div className="absolute bottom-10 right-10 z-50 flex items-center gap-2 bg-background/80 backdrop-blur-xl border border-border p-1.5 rounded-2xl shadow-2xl">
+					<Button
+						variant="ghost"
+						size="icon-xs"
+						onClick={() => setZoom((prev) => Math.max(0.1, prev - 0.1))}
+						className="rounded-xl hover:bg-accent"
+					>
+						<Undo2 className="size-3.5" />
+					</Button>
+					<div className="px-3 text-[10px] font-black uppercase tracking-widest min-w-[60px] text-center">
+						{Math.round(zoom * 100)}%
+					</div>
+					<Button
+						variant="ghost"
+						size="icon-xs"
+						onClick={() => setZoom((prev) => Math.min(5, prev + 0.1))}
+						className="rounded-xl hover:bg-accent"
+					>
+						<RefreshCw className="size-3.5" />
+					</Button>
+					<div className="w-px h-6 bg-border mx-1" />
+					<Button
+						variant={snapToGrid ? "default" : "ghost"}
+						size="icon-xs"
+						onClick={() => setSnapToGrid(!snapToGrid)}
+						className={cn(
+							"rounded-xl",
+							snapToGrid ? "bg-blue-600 text-white" : "hover:bg-accent"
+						)}
+					>
+						<Grid className="size-3.5" />
+					</Button>
+				</div>
 			</div>
 
 			{/* Top Bar Info */}
