@@ -15,6 +15,7 @@ import {
 	LayoutDashboard,
 	Menu,
 	Palette,
+	Settings as SettingsIcon,
 	Sparkles,
 	X,
 } from "lucide-react";
@@ -30,7 +31,8 @@ export type DashboardNavId =
 	| "projects"
 	| "notes"
 	| "design"
-	| "generate";
+	| "generate"
+	| "settings";
 
 const navItems: {
 	id: DashboardNavId;
@@ -74,6 +76,13 @@ const navItems: {
 		description: "AI generátor vizuálnej identity",
 		icon: Sparkles,
 		href: "/dashboard/design-system",
+	},
+	{
+		id: "settings",
+		label: "Nastavenia",
+		description: "Správa účtu a preferencií",
+		icon: SettingsIcon,
+		href: "/dashboard/settings",
 	},
 ];
 
