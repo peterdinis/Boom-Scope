@@ -57,7 +57,8 @@ export function Dock({
 				onMouseLeave={() => mouseX.set(Infinity)}
 				className={cn(
 					"flex items-end gap-2 rounded-[28px] px-4 pb-4 pt-3",
-					"bg-black/20 backdrop-blur-3xl border border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.5)]",
+					"bg-background/80 dark:bg-background/40 backdrop-blur-3xl border border-border",
+					"shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]",
 				)}
 			>
 				{tools.map((tool) => {
@@ -65,7 +66,7 @@ export function Dock({
 						return (
 							<div
 								key={tool.id}
-								className="mx-2 h-10 w-px bg-white/5 self-center"
+								className="mx-2 h-10 w-px bg-border/50 self-center"
 							/>
 						);
 					}
@@ -128,7 +129,7 @@ function DockIcon({
 					isActive
 						? "bg-blue-600 text-white shadow-[0_10px_20px_rgba(37,99,235,0.4)]"
 						: cn(
-								"bg-white/5 text-white/40 hover:bg-white/10 hover:text-white",
+								"bg-foreground/5 text-foreground/40 hover:bg-foreground/10 hover:text-foreground",
 								color,
 							),
 				)}
@@ -138,7 +139,7 @@ function DockIcon({
 
 			{/* Tooltip */}
 			<div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none translate-y-2 group-hover:translate-y-0">
-				<div className="bg-black/80 backdrop-blur-md text-white text-[10px] px-3 py-1.5 rounded-xl border border-white/10 shadow-2xl whitespace-nowrap font-bold uppercase tracking-widest">
+				<div className="bg-background/90 backdrop-blur-md text-foreground text-[10px] px-3 py-1.5 rounded-xl border border-border shadow-2xl whitespace-nowrap font-bold uppercase tracking-widest">
 					{label}
 				</div>
 			</div>
