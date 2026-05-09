@@ -3,8 +3,16 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
 	reactStrictMode: true,
 	typedRoutes: true,
+	devIndicators: {
+		position: "bottom-right",
+	},
 	experimental: {
 		typedEnv: true,
+		optimizePackageImports: [
+			"lucide-react",
+			"framer-motion",
+			"sonner"
+		]
 	},
 	 images: {
         formats: ['image/webp'],

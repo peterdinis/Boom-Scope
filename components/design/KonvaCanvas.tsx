@@ -1,10 +1,19 @@
 "use client";
 
-import type { KonvaEventObject } from "konva/lib/Node";
-import { useEffect, useRef, useState } from "react";
+import Konva from "konva";
+if (typeof window !== "undefined") {
+	require("konva/lib/shapes/Transformer");
+	require("konva/lib/shapes/Rect");
+	require("konva/lib/shapes/Circle");
+	require("konva/lib/shapes/Line");
+	require("konva/lib/shapes/Text");
+}
+
 import { Circle, Layer, Line, Rect, Stage, Transformer, Text, Image as KonvaImage } from "react-konva";
 import useImage from "use-image";
 import { useTheme } from "next-themes";
+import type { KonvaEventObject } from "konva/lib/Node";
+import { useEffect, useRef, useState } from "react";
 
 export interface CanvasElement {
 	id: string;
@@ -92,16 +101,22 @@ export default function KonvaCanvas({
 			
 			// Don't show transformer for locked or hidden elements
 			if (selectedNode && !element?.isLocked && element?.isVisible !== false) {
-				transformerRef.current.nodes([selectedNode]);
-				transformerRef.current.getLayer().batchDraw();
+				if (typeof transformerRef.current.nodes === 'function') {
+					transformerRef.current.nodes([selectedNode]);
+					transformerRef.current.getLayer().batchDraw();
+				}
 			} else {
-				transformerRef.current.nodes([]);
+				if (typeof transformerRef.current.nodes === 'function') {
+					transformerRef.current.nodes([]);
+				}
 				if (element?.isLocked || element?.isVisible === false) {
 					onSelect(null);
 				}
 			}
 		} else if (transformerRef.current) {
-			transformerRef.current.nodes([]);
+			if (typeof transformerRef.current.nodes === 'function') {
+				transformerRef.current.nodes([]);
+			}
 		}
 	}, [selectedId, onSelect]);
 
