@@ -140,6 +140,16 @@ export default function DesignPage() {
 		elementsRef.current = elements;
 	}, [elements]);
 
+	const activeToolRef = useRef(activeTool);
+	const previousToolRef = useRef(previousTool);
+	const selectedIdRef = useRef(selectedId);
+
+	useEffect(() => {
+		activeToolRef.current = activeTool;
+		previousToolRef.current = previousTool;
+		selectedIdRef.current = selectedId;
+	}, [activeTool, previousTool, selectedId]);
+
 	const updateSelectedElement = useCallback(
 		(updates: Partial<CanvasElement>) => {
 			if (!selectedId) return;
@@ -164,14 +174,15 @@ export default function DesignPage() {
 				handleAction("undo");
 			}
 			if (e.key === "Delete" || e.key === "Backspace") {
-				if (selectedId) {
-					setElements((prev) => prev.filter((el) => el.id !== selectedId));
+				if (selectedIdRef.current) {
+					const idToDelete = selectedIdRef.current;
+					setElements((prev) => prev.filter((el) => el.id !== idToDelete));
 					setSelectedId(null);
 				}
 			}
 			
-			if (e.code === "Space" && activeTool !== "hand") {
-				setPreviousTool(activeTool);
+			if (e.code === "Space" && activeToolRef.current !== "hand") {
+				setPreviousTool(activeToolRef.current);
 				setActiveTool("hand");
 			}
 			if (e.key === "v") setActiveTool("select");
@@ -180,19 +191,19 @@ export default function DesignPage() {
 			if (e.key === "r") setActiveTool("rect");
 			if (e.key === "c") setActiveTool("circle");
 			if (e.key === "t") setActiveTool("text");
-			if (e.key === "l" && selectedId) {
-				const el = elementsRef.current.find((el) => el.id === selectedId);
+			if (e.key === "l" && selectedIdRef.current) {
+				const el = elementsRef.current.find((el) => el.id === selectedIdRef.current);
 				if (el) updateSelectedElement({ isLocked: !el.isLocked });
 			}
-			if (e.key === "h" && selectedId) {
-				const el = elementsRef.current.find((el) => el.id === selectedId);
+			if (e.key === "h" && selectedIdRef.current) {
+				const el = elementsRef.current.find((el) => el.id === selectedIdRef.current);
 				if (el) updateSelectedElement({ isVisible: el.isVisible === false });
 			}
 		};
 
 		const handleKeyUp = (e: KeyboardEvent) => {
-			if (e.code === "Space" && previousTool) {
-				setActiveTool(previousTool);
+			if (e.code === "Space" && previousToolRef.current) {
+				setActiveTool(previousToolRef.current);
 				setPreviousTool(null);
 			}
 		};
@@ -203,7 +214,7 @@ export default function DesignPage() {
 			window.removeEventListener("keydown", handleKeyDown);
 			window.removeEventListener("keyup", handleKeyUp);
 		};
-	}, [selectedId, handleAction, updateSelectedElement, activeTool, previousTool]);
+	}, [handleAction, updateSelectedElement]);
 
 	const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
