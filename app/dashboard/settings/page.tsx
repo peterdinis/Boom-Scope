@@ -245,8 +245,10 @@ export default function SettingsPage() {
                   ))}
                 </div>
               </section>
-          )}
             </div>
+          )}
+        </div>
+      </div>
     </div>
-        );
+  );
 }

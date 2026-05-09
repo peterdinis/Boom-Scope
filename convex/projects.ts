@@ -21,6 +21,26 @@ export const create = mutation({
 	},
 });
 
+export const update = mutation({
+	args: {
+		projectId: v.id("projects"),
+		name: v.string(),
+		description: v.optional(v.string()),
+	},
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) throw new ConvexError("Unauthorized");
+
+		const project = await ctx.db.get(args.projectId);
+		if (!project || project.userId !== userId) throw new ConvexError("Unauthorized");
+
+		await ctx.db.patch(args.projectId, {
+			name: args.name,
+			description: args.description,
+		});
+	},
+});
+
 export const list = query({
 	handler: async (ctx) => {
 		const userId = await getAuthUserId(ctx);
