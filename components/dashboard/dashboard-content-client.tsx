@@ -92,18 +92,20 @@ export function DashboardContent({ viewer }: { viewer: any }) {
 						</CardContent>
 					</Card>
 				</Link>
-				<Card className="opacity-60 cursor-not-allowed">
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="text-sm font-medium">AI Generátor</CardTitle>
-						<Sparkles className="size-4 text-muted-foreground" />
-					</CardHeader>
-					<CardContent>
-						<div className="text-2xl font-bold">Čoskoro</div>
-						<p className="text-xs text-muted-foreground">
-							Generovanie dizajnov pomocou AI
-						</p>
-					</CardContent>
-				</Card>
+				<Link href="/dashboard/design-system">
+					<Card className="hover:border-primary/50 transition-colors cursor-pointer group">
+						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+							<CardTitle className="text-sm font-medium">Design System</CardTitle>
+							<Sparkles className="size-4 text-primary animate-pulse" />
+						</CardHeader>
+						<CardContent>
+							<div className="text-2xl font-bold">AI Generátor</div>
+							<p className="text-xs text-muted-foreground group-hover:text-primary transition-colors">
+								Vytvorte si vizuálnu identitu z inšpirácie
+							</p>
+						</CardContent>
+					</Card>
+				</Link>
 			</div>
 		</div>
 	);

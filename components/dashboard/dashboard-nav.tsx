@@ -56,10 +56,10 @@ const navItems: {
 	},
 	{
 		id: "generate",
-		label: "Nový dizajn",
-		description: "Generovať nový dizajn",
+		label: "Design System",
+		description: "AI generátor vizuálnej identity",
 		icon: Sparkles,
-		soon: true,
+		href: "/dashboard/design-system",
 	},
 ];
 
@@ -97,11 +97,6 @@ function NavLinks({
 						<span className="flex min-w-0 flex-1 flex-col gap-0.5 text-left">
 							<span className="flex items-center gap-2 font-medium leading-none">
 								{item.label}
-								{item.soon ? (
-									<span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-										Čoskoro
-									</span>
-								) : null}
 							</span>
 							<span className="text-xs font-normal text-muted-foreground">
 								{item.description}
@@ -110,7 +105,7 @@ function NavLinks({
 					</>
 				);
 
-				if (item.href && !item.soon) {
+				if (item.href) {
 					return (
 						<Link
 							key={item.id}
