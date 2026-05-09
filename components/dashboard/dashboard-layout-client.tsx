@@ -5,9 +5,12 @@ import { cn } from "@/lib/utils";
 import { DashboardHeader } from "./dashboard-header";
 import { DashboardSidebarNav } from "./dashboard-nav";
 import { SidebarProvider, useSidebar } from "./sidebar-context";
+import { motion, AnimatePresence } from "motion/react";
+import { usePathname } from "next/navigation";
 
 function DashboardLayoutContent({ children }: { children: ReactNode }) {
 	const { isCollapsed } = useSidebar();
+	const pathname = usePathname();
 
 	return (
 		<div className="flex min-h-screen bg-background">
@@ -22,7 +25,26 @@ function DashboardLayoutContent({ children }: { children: ReactNode }) {
 
 			<div className="flex min-w-0 flex-1 flex-col">
 				<DashboardHeader />
-				<main className="flex-1 overflow-y-auto">{children}</main>
+				<main className="flex-1 overflow-y-auto">
+					<AnimatePresence mode="wait" initial={false}>
+						<motion.div
+							key={pathname}
+							initial={{ opacity: 0, scale: 0.98, y: 15, filter: "blur(20px)" }}
+							animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+							exit={{ opacity: 0, scale: 1.02, y: -15, filter: "blur(20px)" }}
+							transition={{ 
+								type: "spring",
+								stiffness: 260,
+								damping: 30,
+								mass: 1,
+								restDelta: 0.001
+							}}
+							className="h-full origin-top"
+						>
+							{children}
+						</motion.div>
+					</AnimatePresence>
+				</main>
 			</div>
 		</div>
 	);
