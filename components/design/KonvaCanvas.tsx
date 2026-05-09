@@ -11,12 +11,15 @@ import "konva/lib/shapes/Text";
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
+import { Trash2 } from "lucide-react";
 import {
+	Arrow,
 	Circle,
 	Image as KonvaImage,
 	Layer,
 	Line,
 	Rect,
+	Star,
 	Stage,
 	Text,
 	Transformer,
@@ -44,6 +47,11 @@ export interface CanvasElement {
 	globalCompositeOperation?: string;
 	isLocked?: boolean;
 	isVisible?: boolean;
+	fillType?: "solid" | "gradient";
+	gradientStart?: { x: number; y: number };
+	gradientEnd?: { x: number; y: number };
+	gradientColors?: string[];
+	dash?: number[];
 }
 
 interface KonvaCanvasProps {
@@ -59,6 +67,8 @@ interface KonvaCanvasProps {
 	canvasSize?: { width: number; height: number } | null;
 	zoom: number;
 	setZoom: (zoom: number | ((prev: number) => number)) => void;
+	artboardColor?: string | null;
+	readOnly?: boolean;
 }
 
 const GRID_SIZE = 20;
@@ -76,6 +86,8 @@ export default function KonvaCanvas({
 	canvasSize,
 	zoom,
 	setZoom,
+	artboardColor,
+	readOnly = false,
 }: KonvaCanvasProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const stageRef = useRef<Konva.Stage>(null);
@@ -83,6 +95,7 @@ export default function KonvaCanvas({
 	const [size, setSize] = useState({ width: 0, height: 0 });
 	const [isDrawing, setIsDrawing] = useState(false);
 	const [newElement, setNewElement] = useState<CanvasElement | null>(null);
+	const [contextMenu, setContextMenu] = useState<{ x: number, y: number, elementId: string } | null>(null);
 	const { resolvedTheme } = useTheme();
 	const isDark = resolvedTheme === "dark";
 
@@ -168,6 +181,7 @@ export default function KonvaCanvas({
 	};
 
 	const handleMouseDown = (e: KonvaEventObject<MouseEvent>) => {
+		if (readOnly) return;
 		const clickedOnStage = e.target === e.target.getStage();
 		if (clickedOnStage && (activeTool === "select" || activeTool === "hand")) {
 			onSelect(null);
@@ -228,7 +242,7 @@ export default function KonvaCanvas({
 	};
 
 	const handleMouseMove = (e: KonvaEventObject<MouseEvent>) => {
-		if (!isDrawing || !newElement) return;
+		if (readOnly || !isDrawing || !newElement) return;
 
 		const stage = e.target.getStage();
 		if (!stage) return;
@@ -340,6 +354,30 @@ export default function KonvaCanvas({
 		};
 		stage.position(newPos);
 	};
+	
+	const handleContextMenu = (e: KonvaEventObject<PointerEvent>) => {
+		// Check if we clicked on an element
+		const clickedOnElement = e.target !== stage;
+		if (clickedOnElement) {
+			const id = e.target.id();
+			if (id) {
+				setContextMenu({
+					x: pointerPosition.x,
+					y: pointerPosition.y,
+					elementId: id
+				});
+				onSelect(id);
+			}
+		} else {
+			setContextMenu(null);
+		}
+	};
+
+	useEffect(() => {
+		const handleClickOutside = () => setContextMenu(null);
+		window.addEventListener('click', handleClickOutside);
+		return () => window.removeEventListener('click', handleClickOutside);
+	}, []);
 
 	const renderGrid = () => {
 		const lines = [];
@@ -376,17 +414,18 @@ export default function KonvaCanvas({
 	};
 
 	return (
-		<div ref={containerRef} className="h-full w-full bg-background">
+		<div ref={containerRef} className="h-full w-full bg-background relative overflow-hidden">
 			<Stage
 				ref={stageRef}
 				width={size.width}
 				height={size.height}
 				onMouseDown={handleMouseDown}
 				onMouseMove={handleMouseMove}
-				onMouseUp={handleMouseUp}
+				onMouseUp={readOnly ? undefined : handleMouseUp}
 				onWheel={handleWheel}
-				draggable={activeTool === "select" || activeTool === "hand"}
-				style={{ cursor: activeTool === "hand" ? "grab" : "default" }}
+				onContextMenu={readOnly ? (e) => e.evt.preventDefault() : handleContextMenu}
+				draggable={!readOnly && (activeTool === "select" || activeTool === "hand")}
+				style={{ cursor: readOnly ? "default" : (activeTool === "hand" ? "grab" : "default") }}
 			>
 				{/* Background Grid Layer */}
 				<Layer listening={false}>{renderGrid()}</Layer>
@@ -399,7 +438,7 @@ export default function KonvaCanvas({
 							y={0}
 							width={canvasSize.width}
 							height={canvasSize.height}
-							fill={isDark ? "#18181b" : "#ffffff"}
+							fill={artboardColor || (isDark ? "#18181b" : "#ffffff")}
 							shadowColor="black"
 							shadowBlur={20}
 							shadowOpacity={0.1}
@@ -457,6 +496,27 @@ export default function KonvaCanvas({
 					)}
 				</Layer>
 			</Stage>
+
+			{/* Context Menu */}
+			{contextMenu && (
+				<div 
+					className="absolute z-[100] bg-background/80 backdrop-blur-2xl border border-border rounded-2xl shadow-2xl p-1.5 min-w-[180px] animate-in zoom-in-95 duration-200"
+					style={{ top: contextMenu.y, left: contextMenu.x }}
+				>
+					<button
+						className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-500 transition-all group"
+						onClick={(e) => {
+							e.stopPropagation();
+							setElements(elements.filter(el => el.id !== contextMenu.elementId));
+							if (selectedId === contextMenu.elementId) onSelect(null);
+							setContextMenu(null);
+						}}
+					>
+						<span className="text-[10px] font-black uppercase tracking-widest">Vymazať objekt</span>
+						<Trash2 className="size-3.5 opacity-50 group-hover:opacity-100" />
+					</button>
+				</div>
+			)}
 		</div>
 	);
 }
@@ -483,17 +543,21 @@ function RenderElement({
 		x: el.x,
 		y: el.y,
 		stroke: el.stroke,
-		fill: el.fill === "none" ? undefined : el.fill,
+		fill: el.fillType === "gradient" ? undefined : (el.fill === "none" ? undefined : el.fill),
+		fillLinearGradientStartPoint: el.fillType === "gradient" ? (el.gradientStart || { x: 0, y: 0 }) : undefined,
+		fillLinearGradientEndPoint: el.fillType === "gradient" ? (el.gradientEnd || { x: el.width || 100, y: el.height || 100 }) : undefined,
+		fillLinearGradientColorStops: el.fillType === "gradient" ? [0, el.gradientColors?.[0] || "#3b82f6", 1, el.gradientColors?.[1] || "#10b981"] : undefined,
 		strokeWidth: el.strokeWidth,
+		dash: el.dash,
 		rotation: el.rotation || 0,
 		opacity: el.opacity ?? 1,
 		onClick: onSelect,
 		onTap: onSelect,
 		draggable: draggable,
 		onDragEnd: onDragEnd,
-		shadowColor: isSelected ? "#3b82f6" : "transparent",
-		shadowBlur: isSelected ? 15 : 0,
-		shadowOpacity: 0.5,
+		shadowColor: isSelected ? "#3b82f6" : "#000000",
+		shadowBlur: isSelected ? 15 : (el.shadowBlur || 0),
+		shadowOpacity: isSelected ? 0.5 : (el.shadowBlur ? 0.3 : 0),
 		globalCompositeOperation: el.globalCompositeOperation as GlobalCompositeOperation,
 	};
 
@@ -547,6 +611,28 @@ function RenderElement({
 				image={image}
 				width={el.width}
 				height={el.height}
+			/>
+		);
+	}
+
+	if (el.type === "star") {
+		return (
+			<Star
+				{...commonProps}
+				innerRadius={Math.abs(el.width || 0) / 4}
+				outerRadius={Math.abs(el.width || 0) / 2}
+				numPoints={5}
+			/>
+		);
+	}
+
+	if (el.type === "arrow") {
+		return (
+			<Arrow
+				{...commonProps}
+				points={[0, 0, el.width || 0, el.height || 0]}
+				pointerLength={20}
+				pointerWidth={20}
 			/>
 		);
 	}
