@@ -1,4 +1,3 @@
-import { useAuthActions } from "@convex-dev/auth/react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useQuery } from "convex/react";
 import React from "react";
@@ -35,17 +34,17 @@ vi.mock("sonner", () => ({
 
 describe("Component: UserMenu", () => {
 	test("renders loading skeletons initially", () => {
-		(useQuery as any).mockReturnValue(undefined);
+		vi.mocked(useQuery).mockReturnValue(undefined);
 		const { container } = render(<UserMenu />);
 		expect(container.querySelector(".animate-pulse")).toBeDefined();
 	});
 
 	test("displays user info when loaded", () => {
-		(useQuery as any).mockReturnValue({
+		vi.mocked(useQuery).mockReturnValue({
 			name: "Peter Dinis",
 			email: "peter@example.com",
 			image: null,
-		});
+		} as any);
 
 		render(<UserMenu />);
 		expect(screen.getByText("Peter Dinis")).toBeDefined();
@@ -55,7 +54,7 @@ describe("Component: UserMenu", () => {
 	});
 
 	test("calls signOut when button is clicked", async () => {
-		(useQuery as any).mockReturnValue({ name: "User" });
+		vi.mocked(useQuery).mockReturnValue({ name: "User" } as any);
 
 		render(<UserMenu />);
 		const logoutBtn = screen.getByTitle("Odhlásiť sa");

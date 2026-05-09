@@ -21,10 +21,6 @@ import {
 	Type,
 	Undo2,
 	Unlock,
-	Facebook,
-	Twitter,
-	Instagram,
-	Linkedin,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import dynamic from "next/dynamic";
@@ -32,6 +28,12 @@ import { useTheme } from "next-themes";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Dock } from "@/components/design/Dock";
 import type { CanvasElement } from "@/components/design/KonvaCanvas";
+import {
+	FacebookIcon,
+	InstagramIcon,
+	LinkedinIcon,
+	TwitterIcon,
+} from "@/components/icons/SocialIcons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -475,10 +477,10 @@ export default function DesignPage() {
 									<div className="grid grid-cols-1 gap-2">
 										{CANVAS_PRESETS.map((preset) => {
 											const Icon = 
-												preset.icon === "facebook" ? Facebook :
-												preset.icon === "twitter" ? Twitter :
-												preset.icon === "instagram" ? Instagram :
-												Linkedin;
+												preset.icon === "facebook" ? FacebookIcon :
+												preset.icon === "twitter" ? TwitterIcon :
+												preset.icon === "instagram" ? InstagramIcon :
+												LinkedinIcon;
 											return (
 												<button
 													key={preset.id}
