@@ -56,6 +56,9 @@ interface KonvaCanvasProps {
 	fillColor: string;
 	strokeWidth: number;
 	snapToGrid?: boolean;
+	canvasSize?: { width: number; height: number } | null;
+	zoom: number;
+	setZoom: (zoom: number | ((prev: number) => number)) => void;
 }
 
 const GRID_SIZE = 20;
@@ -70,6 +73,9 @@ export default function KonvaCanvas({
 	fillColor,
 	strokeWidth,
 	snapToGrid = true,
+	canvasSize,
+	zoom,
+	setZoom,
 }: KonvaCanvasProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const stageRef = useRef<Konva.Stage>(null);
@@ -104,6 +110,32 @@ export default function KonvaCanvas({
 		return () => resizeObserver.unobserve(observeTarget);
 	}, []);
 
+	// Center stage when canvasSize changes
+	useEffect(() => {
+		if (canvasSize && stageRef.current) {
+			const stage = stageRef.current;
+			const scale = Math.min(
+				(size.width * 0.8) / canvasSize.width,
+				(size.height * 0.8) / canvasSize.height,
+				1
+			);
+			
+			stage.scale({ x: scale, y: scale });
+			setZoom(scale);
+			stage.position({
+				x: (size.width - canvasSize.width * scale) / 2,
+				y: (size.height - canvasSize.height * scale) / 2,
+			});
+		}
+	}, [canvasSize, size.width, size.height, setZoom]);
+
+	// Update stage scale when zoom prop changes
+	useEffect(() => {
+		if (stageRef.current) {
+			stageRef.current.scale({ x: zoom, y: zoom });
+		}
+	}, [zoom]);
+
 	// Handle transformer selection
 	useEffect(() => {
 		if (transformerRef.current && selectedId && stageRef.current) {
@@ -137,12 +169,12 @@ export default function KonvaCanvas({
 
 	const handleMouseDown = (e: KonvaEventObject<MouseEvent>) => {
 		const clickedOnStage = e.target === e.target.getStage();
-		if (clickedOnStage && activeTool === "select") {
+		if (clickedOnStage && (activeTool === "select" || activeTool === "hand")) {
 			onSelect(null);
 			return;
 		}
 
-		if (activeTool === "select") return;
+		if (activeTool === "select" || activeTool === "hand") return;
 
 		onSelect(null);
 		const stage = e.target.getStage();
@@ -271,22 +303,40 @@ export default function KonvaCanvas({
 		e.evt.preventDefault();
 		const stage = stageRef.current;
 		if (!stage) return;
+
+		// Handle Panning (Standard Scroll)
+		if (!e.evt.ctrlKey && !e.evt.metaKey) {
+			const dx = -e.evt.deltaX;
+			const dy = -e.evt.deltaY;
+			stage.position({
+				x: stage.x() + dx,
+				y: stage.y() + dy,
+			});
+			return;
+		}
+
+		// Handle Zooming (Ctrl/Cmd + Scroll)
 		const oldScale = stage.scaleX();
 		const pointer = stage.getPointerPosition();
+		if (!pointer) return;
 
 		const mousePointTo = {
-			x: (pointer!.x - stage.x()) / oldScale,
-			y: (pointer!.y - stage.y()) / oldScale,
+			x: (pointer.x - stage.x()) / oldScale,
+			y: (pointer.y - stage.y()) / oldScale,
 		};
 
 		const direction = e.evt.deltaY > 0 ? 1 : -1;
-		const newScale = direction > 0 ? oldScale * 0.9 : oldScale * 1.1;
+		const scaleBy = 1.1;
+		const newScale = direction > 0 ? oldScale / scaleBy : oldScale * scaleBy;
 
-		stage.scale({ x: newScale, y: newScale });
+		// Limit zoom
+		const finalScale = Math.max(0.1, Math.min(5, newScale));
+		stage.scale({ x: finalScale, y: finalScale });
+		setZoom(finalScale);
 
 		const newPos = {
-			x: pointer!.x - mousePointTo.x * newScale,
-			y: pointer!.y - mousePointTo.y * newScale,
+			x: pointer.x - mousePointTo.x * finalScale,
+			y: pointer.y - mousePointTo.y * finalScale,
 		};
 		stage.position(newPos);
 	};
@@ -335,10 +385,28 @@ export default function KonvaCanvas({
 				onMouseMove={handleMouseMove}
 				onMouseUp={handleMouseUp}
 				onWheel={handleWheel}
-				draggable={activeTool === "select"}
+				draggable={activeTool === "select" || activeTool === "hand"}
+				style={{ cursor: activeTool === "hand" ? "grab" : "default" }}
 			>
 				{/* Background Grid Layer */}
 				<Layer listening={false}>{renderGrid()}</Layer>
+
+				{/* Artboard Background */}
+				{canvasSize && (
+					<Layer listening={false}>
+						<Rect
+							x={0}
+							y={0}
+							width={canvasSize.width}
+							height={canvasSize.height}
+							fill={isDark ? "#18181b" : "#ffffff"}
+							shadowColor="black"
+							shadowBlur={20}
+							shadowOpacity={0.1}
+							shadowOffset={{ x: 0, y: 10 }}
+						/>
+					</Layer>
+				)}
 
 				{/* Main Drawing Layer */}
 				<Layer>

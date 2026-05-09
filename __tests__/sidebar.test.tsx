@@ -12,7 +12,7 @@ vi.mock("next/navigation", () => ({
 
 describe("Component: DashboardSidebarNav", () => {
 	test("renders all navigation links", () => {
-		(usePathname as any).mockReturnValue("/dashboard");
+		vi.mocked(usePathname).mockReturnValue("/dashboard");
 
 		render(
 			<SidebarProvider>
@@ -23,12 +23,12 @@ describe("Component: DashboardSidebarNav", () => {
 		expect(screen.getByText("Prehľad")).toBeDefined();
 		expect(screen.getByText("Projekty")).toBeDefined();
 		expect(screen.getByText("Poznámky")).toBeDefined();
-		expect(screen.getByText("Dizajn")).toBeDefined();
+		expect(screen.getByText("Canvas")).toBeDefined();
 		expect(screen.getByText("Design System")).toBeDefined();
 	});
 
 	test("highlights the active link", () => {
-		(usePathname as any).mockReturnValue("/dashboard/projects");
+		vi.mocked(usePathname).mockReturnValue("/dashboard/projects");
 
 		render(
 			<SidebarProvider>

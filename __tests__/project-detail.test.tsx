@@ -3,6 +3,7 @@ import { useQuery } from "convex/react";
 import { useParams } from "next/navigation";
 import React from "react";
 import { describe, expect, test, vi } from "vitest";
+import type { Id } from "../convex/_generated/dataModel";
 import ProjectDetailPage from "../app/dashboard/projects/[projectId]/page";
 
 // Mock Convex
@@ -21,9 +22,9 @@ vi.mock("next/navigation", () => ({
 
 describe("Page: Project Detail", () => {
 	test("renders project title and description", () => {
-		(useParams as any).mockReturnValue({ projectId: "test-id" });
-		(useQuery as any).mockReturnValue({
-			_id: "test-id",
+		vi.mocked(useParams).mockReturnValue({ projectId: "test-id" });
+		vi.mocked(useQuery).mockReturnValue({
+			_id: "test-id" as unknown as Id<"projects">,
 			name: "Architecture Project",
 			description: "A custom villa design",
 		});
@@ -35,9 +36,9 @@ describe("Page: Project Detail", () => {
 	});
 
 	test("shows the correct module sections", () => {
-		(useParams as any).mockReturnValue({ projectId: "test-id" });
-		(useQuery as any).mockReturnValue({
-			_id: "test-id",
+		vi.mocked(useParams).mockReturnValue({ projectId: "test-id" });
+		vi.mocked(useQuery).mockReturnValue({
+			_id: "test-id" as unknown as Id<"projects">,
 			name: "Test Project",
 		});
 
@@ -49,8 +50,8 @@ describe("Page: Project Detail", () => {
 	});
 
 	test("handles non-existent project", () => {
-		(useParams as any).mockReturnValue({ projectId: "wrong-id" });
-		(useQuery as any).mockReturnValue(null);
+		vi.mocked(useParams).mockReturnValue({ projectId: "wrong-id" });
+		vi.mocked(useQuery).mockReturnValue(null);
 
 		render(<ProjectDetailPage />);
 
