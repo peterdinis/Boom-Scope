@@ -37,7 +37,7 @@ export function NoteList() {
 						className="pl-9"
 					/>
 				</div>
-				<Link href={"/dashboard/notes/new" as any}>
+				<Link href="/dashboard/notes/new">
 					<Button size="sm" className="gap-2">
 						<Plus className="size-4" />
 						Nová poznámka

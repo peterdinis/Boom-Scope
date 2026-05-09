@@ -21,6 +21,10 @@ import {
 	Type,
 	Undo2,
 	Unlock,
+	Facebook,
+	Twitter,
+	Instagram,
+	Linkedin,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import dynamic from "next/dynamic";
@@ -29,7 +33,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Dock } from "@/components/design/Dock";
 import type { CanvasElement } from "@/components/design/KonvaCanvas";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CANVAS_PRESETS, type CanvasPreset } from "@/lib/canvas-presets";
 import { cn } from "@/lib/utils";
 
 const KonvaCanvas = dynamic(() => import("@/components/design/KonvaCanvas"), {
@@ -82,6 +88,8 @@ export default function DesignPage() {
 
 	const [leftPanelOpen, setLeftPanelOpen] = useState(true);
 	const [rightPanelOpen, setRightPanelOpen] = useState(true);
+	const [activeTab, setActiveTab] = useState<"layers" | "templates">("layers");
+	const [canvasSize, setCanvasSize] = useState<{ width: number; height: number } | null>(null);
 
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const { resolvedTheme } = useTheme();
@@ -242,6 +250,7 @@ export default function DesignPage() {
 					strokeColor={strokeColor}
 					fillColor={fillColor}
 					strokeWidth={strokeWidth}
+					canvasSize={canvasSize}
 				/>
 			</div>
 
@@ -321,27 +330,46 @@ export default function DesignPage() {
 							"shadow-[0_30px_60px_rgba(0,0,0,0.05)] dark:shadow-[0_30px_60px_rgba(0,0,0,0.5)]",
 						)}
 					>
-						<div className="flex items-center justify-between mb-10">
-							<div className="flex items-center gap-4">
-								<div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-500 border border-blue-500/20">
-									<Layers className="size-4" />
-								</div>
-								<h3 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-80">
+						<div className="flex items-center justify-between mb-8">
+							<div className="flex p-1 rounded-2xl bg-accent/50 border border-border w-full">
+								<button
+									onClick={() => setActiveTab("layers")}
+									className={cn(
+										"flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+										activeTab === "layers"
+											? "bg-background text-blue-500 shadow-sm"
+											: "text-foreground/40 hover:text-foreground",
+									)}
+								>
+									<Layers className="size-3.5" />
 									Vrstvy
-								</h3>
+								</button>
+								<button
+									onClick={() => setActiveTab("templates")}
+									className={cn(
+										"flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+										activeTab === "templates"
+											? "bg-background text-blue-500 shadow-sm"
+											: "text-foreground/40 hover:text-foreground",
+									)}
+								>
+									<Sparkles className="size-3.5" />
+									Šablóny
+								</button>
 							</div>
 							<Button
 								variant="ghost"
 								size="icon-xs"
 								onClick={() => setLeftPanelOpen(false)}
-								className="hover:bg-accent rounded-lg"
+								className="hover:bg-accent rounded-lg ml-2"
 							>
 								<PanelLeft className="size-4 opacity-40" />
 							</Button>
 						</div>
 
 						<div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-							{elements.length === 0 ? (
+							{activeTab === "layers" ? (
+								elements.length === 0 ? (
 								<div className="h-full flex flex-col items-center justify-center opacity-30 dark:opacity-10 text-center px-4">
 									<div className="size-16 rounded-[24px] border-2 border-dashed border-foreground/20 mb-6 flex items-center justify-center">
 										<Pencil className="size-6" />
@@ -441,6 +469,81 @@ export default function DesignPage() {
 										</div>
 									))
 									.reverse()
+								)
+							) : (
+								<div className="space-y-6">
+									<div className="grid grid-cols-1 gap-2">
+										{CANVAS_PRESETS.map((preset) => {
+											const Icon = 
+												preset.icon === "facebook" ? Facebook :
+												preset.icon === "twitter" ? Twitter :
+												preset.icon === "instagram" ? Instagram :
+												Linkedin;
+											return (
+												<button
+													key={preset.id}
+													onClick={() => setCanvasSize({ width: preset.width, height: preset.height })}
+													className={cn(
+														"w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-xs transition-all duration-300",
+														canvasSize?.width === preset.width && canvasSize?.height === preset.height
+															? "bg-blue-600 text-white shadow-lg scale-[1.02]"
+															: "bg-accent/30 hover:bg-accent text-foreground/70 hover:text-foreground",
+													)}
+												>
+													<div className={cn(
+														"size-8 rounded-xl flex items-center justify-center border border-border/50",
+														canvasSize?.width === preset.width && canvasSize?.height === preset.height
+															? "bg-white/20"
+															: "bg-background/40",
+													)}>
+														<Icon className="size-4" />
+													</div>
+													<div className="text-left">
+														<p className="font-black tracking-tight">{preset.name}</p>
+														<p className="text-[9px] font-bold opacity-30 uppercase tracking-widest">
+															{preset.width} × {preset.height} px
+														</p>
+													</div>
+												</button>
+											);
+										})}
+									</div>
+
+									<div className="pt-6 border-t border-border space-y-4">
+										<h4 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">
+											Vlastný rozmer
+										</h4>
+										<div className="grid grid-cols-2 gap-3">
+											<div className="space-y-2">
+												<Label className="text-[8px] font-black uppercase tracking-widest opacity-30">Šírka</Label>
+												<Input
+													type="number"
+													placeholder="1920"
+													value={canvasSize?.width || ""}
+													onChange={(e) => setCanvasSize(prev => ({ width: parseInt(e.target.value) || 0, height: prev?.height || 0 }))}
+													className="bg-accent/30 border-border rounded-xl h-10 text-xs"
+												/>
+											</div>
+											<div className="space-y-2">
+												<Label className="text-[8px] font-black uppercase tracking-widest opacity-30">Výška</Label>
+												<Input
+													type="number"
+													placeholder="1080"
+													value={canvasSize?.height || ""}
+													onChange={(e) => setCanvasSize(prev => ({ width: prev?.width || 0, height: parseInt(e.target.value) || 0 }))}
+													className="bg-accent/30 border-border rounded-xl h-10 text-xs"
+												/>
+											</div>
+										</div>
+										<Button 
+											variant="outline" 
+											className="w-full rounded-xl text-[10px] font-black uppercase tracking-widest"
+											onClick={() => setCanvasSize(null)}
+										>
+											Resetovať rozmer
+										</Button>
+									</div>
+								</div>
 							)}
 						</div>
 					</motion.div>

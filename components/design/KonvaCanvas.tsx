@@ -56,6 +56,7 @@ interface KonvaCanvasProps {
 	fillColor: string;
 	strokeWidth: number;
 	snapToGrid?: boolean;
+	canvasSize?: { width: number; height: number } | null;
 }
 
 const GRID_SIZE = 20;
@@ -70,6 +71,7 @@ export default function KonvaCanvas({
 	fillColor,
 	strokeWidth,
 	snapToGrid = true,
+	canvasSize,
 }: KonvaCanvasProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const stageRef = useRef<Konva.Stage>(null);
@@ -103,6 +105,24 @@ export default function KonvaCanvas({
 		resizeObserver.observe(observeTarget);
 		return () => resizeObserver.unobserve(observeTarget);
 	}, []);
+
+	// Center stage when canvasSize changes
+	useEffect(() => {
+		if (canvasSize && stageRef.current) {
+			const stage = stageRef.current;
+			const scale = Math.min(
+				(size.width * 0.8) / canvasSize.width,
+				(size.height * 0.8) / canvasSize.height,
+				1
+			);
+			
+			stage.scale({ x: scale, y: scale });
+			stage.position({
+				x: (size.width - canvasSize.width * scale) / 2,
+				y: (size.height - canvasSize.height * scale) / 2,
+			});
+		}
+	}, [canvasSize, size.width, size.height]);
 
 	// Handle transformer selection
 	useEffect(() => {
@@ -339,6 +359,23 @@ export default function KonvaCanvas({
 			>
 				{/* Background Grid Layer */}
 				<Layer listening={false}>{renderGrid()}</Layer>
+
+				{/* Artboard Background */}
+				{canvasSize && (
+					<Layer listening={false}>
+						<Rect
+							x={0}
+							y={0}
+							width={canvasSize.width}
+							height={canvasSize.height}
+							fill={isDark ? "#18181b" : "#ffffff"}
+							shadowColor="black"
+							shadowBlur={20}
+							shadowOpacity={0.1}
+							shadowOffset={{ x: 0, y: 10 }}
+						/>
+					</Layer>
+				)}
 
 				{/* Main Drawing Layer */}
 				<Layer>

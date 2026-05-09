@@ -13,13 +13,14 @@ vi.mock("sonner", () => ({
 
 // Mock FileReader
 class MockFileReader {
-	onload: any;
+	onload: (() => void) | null = null;
 	readAsDataURL() {
-		this.onload();
+		if (this.onload) this.onload();
 	}
 	result = "data:image/png;base64,abc";
 }
-(global as any).FileReader = MockFileReader;
+
+vi.stubGlobal("FileReader", MockFileReader);
 
 describe("Page: Design System Generator", () => {
 	test("renders initial upload state", () => {
