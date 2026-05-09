@@ -16,8 +16,10 @@ import {
 	RefreshCw,
 	Settings2,
 	Sliders,
+	Smartphone,
 	Sparkles,
 	Square,
+	Tablet,
 	Trash2,
 	Type,
 	Undo2,
@@ -521,42 +523,89 @@ export default function DesignPage() {
 									.reverse()
 								)
 							) : (
-								<div className="space-y-6">
-									<div className="grid grid-cols-1 gap-2">
-										{CANVAS_PRESETS.map((preset) => {
-											const Icon = 
-												preset.icon === "facebook" ? FacebookIcon :
-												preset.icon === "twitter" ? TwitterIcon :
-												preset.icon === "instagram" ? InstagramIcon :
-												LinkedinIcon;
-											return (
-												<button
-													key={preset.id}
-													onClick={() => setCanvasSize({ width: preset.width, height: preset.height })}
-													className={cn(
-														"w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-xs transition-all duration-300",
-														canvasSize?.width === preset.width && canvasSize?.height === preset.height
-															? "bg-blue-600 text-white shadow-lg scale-[1.02]"
-															: "bg-accent/30 hover:bg-accent text-foreground/70 hover:text-foreground",
-													)}
-												>
-													<div className={cn(
-														"size-8 rounded-xl flex items-center justify-center border border-border/50",
-														canvasSize?.width === preset.width && canvasSize?.height === preset.height
-															? "bg-white/20"
-															: "bg-background/40",
-													)}>
-														<Icon className="size-4" />
-													</div>
-													<div className="text-left">
-														<p className="font-black tracking-tight">{preset.name}</p>
-														<p className="text-[9px] font-bold opacity-30 uppercase tracking-widest">
-															{preset.width} × {preset.height} px
-														</p>
-													</div>
-												</button>
-											);
-										})}
+								<div className="space-y-8 pb-10">
+									{/* Social Media Group */}
+									<div className="space-y-3">
+										<h4 className="px-2 text-[9px] font-black uppercase tracking-[0.3em] text-blue-500/60 flex items-center gap-2">
+											<div className="size-1 bg-blue-500 rounded-full" />
+											Sociálne siete
+										</h4>
+										<div className="grid grid-cols-1 gap-2">
+											{CANVAS_PRESETS.filter(p => !["smartphone", "tablet"].includes(p.icon)).map((preset) => {
+												const Icon = 
+													preset.icon === "facebook" ? FacebookIcon :
+													preset.icon === "twitter" ? TwitterIcon :
+													preset.icon === "instagram" ? InstagramIcon :
+													LinkedinIcon;
+												return (
+													<button
+														key={preset.id}
+														onClick={() => setCanvasSize({ width: preset.width, height: preset.height })}
+														className={cn(
+															"w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-xs transition-all duration-300",
+															canvasSize?.width === preset.width && canvasSize?.height === preset.height
+																? "bg-blue-600 text-white shadow-[0_15px_30px_rgba(37,99,235,0.3)] scale-[1.02]"
+																: "bg-accent/30 hover:bg-accent text-foreground/70 hover:text-foreground",
+														)}
+													>
+														<div className={cn(
+															"size-8 rounded-xl flex items-center justify-center border border-border/50",
+															canvasSize?.width === preset.width && canvasSize?.height === preset.height
+																? "bg-white/20"
+																: "bg-background/40",
+														)}>
+															<Icon className="size-4" />
+														</div>
+														<div className="text-left">
+															<p className="font-black tracking-tight">{preset.name}</p>
+															<p className="text-[9px] font-bold opacity-30 uppercase tracking-widest">
+																{preset.width} × {preset.height} px
+															</p>
+														</div>
+													</button>
+												);
+											})}
+										</div>
+									</div>
+
+									{/* Devices Group */}
+									<div className="space-y-3">
+										<h4 className="px-2 text-[9px] font-black uppercase tracking-[0.3em] text-blue-500/60 flex items-center gap-2">
+											<div className="size-1 bg-blue-500 rounded-full" />
+											Zariadenia
+										</h4>
+										<div className="grid grid-cols-1 gap-2">
+											{CANVAS_PRESETS.filter(p => ["smartphone", "tablet"].includes(p.icon)).map((preset) => {
+												const Icon = preset.icon === "smartphone" ? Smartphone : Tablet;
+												return (
+													<button
+														key={preset.id}
+														onClick={() => setCanvasSize({ width: preset.width, height: preset.height })}
+														className={cn(
+															"w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-xs transition-all duration-300",
+															canvasSize?.width === preset.width && canvasSize?.height === preset.height
+																? "bg-blue-600 text-white shadow-[0_15px_30px_rgba(37,99,235,0.3)] scale-[1.02]"
+																: "bg-accent/30 hover:bg-accent text-foreground/70 hover:text-foreground",
+														)}
+													>
+														<div className={cn(
+															"size-8 rounded-xl flex items-center justify-center border border-border/50",
+															canvasSize?.width === preset.width && canvasSize?.height === preset.height
+																? "bg-white/20"
+																: "bg-background/40",
+														)}>
+															<Icon className="size-4" />
+														</div>
+														<div className="text-left">
+															<p className="font-black tracking-tight">{preset.name}</p>
+															<p className="text-[9px] font-bold opacity-30 uppercase tracking-widest">
+																{preset.width} × {preset.height} px
+															</p>
+														</div>
+													</button>
+												);
+											})}
+										</div>
 									</div>
 
 									<div className="pt-6 border-t border-border space-y-4">

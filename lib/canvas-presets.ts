@@ -29,6 +29,13 @@ export const CANVAS_PRESETS: CanvasPreset[] = [
 		icon: "instagram",
 	},
 	{
+		id: "ig-story",
+		name: "Instagram Story",
+		width: 1080,
+		height: 1920,
+		icon: "instagram",
+	},
+	{
 		id: "twitter-post",
 		name: "Twitter Post",
 		width: 1200,
@@ -48,5 +55,26 @@ export const CANVAS_PRESETS: CanvasPreset[] = [
 		width: 1200,
 		height: 627,
 		icon: "linkedin",
+	},
+	{
+		id: "iphone-15",
+		name: "iPhone 15 / 14",
+		width: 393,
+		height: 852,
+		icon: "smartphone",
+	},
+	{
+		id: "android-large",
+		name: "Android Large",
+		width: 360,
+		height: 800,
+		icon: "smartphone",
+	},
+	{
+		id: "ipad-pro",
+		name: "iPad Pro 11\"",
+		width: 834,
+		height: 1194,
+		icon: "tablet",
 	},
 ];
