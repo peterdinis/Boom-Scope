@@ -1,8 +1,8 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { expect, test, describe, vi } from "vitest";
-import { NoteList } from "../components/notes/NoteList";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { usePaginatedQuery } from "convex/react";
 import React from "react";
+import { describe, expect, test, vi } from "vitest";
+import { NoteList } from "../components/notes/NoteList";
 
 // Mock Convex
 vi.mock("convex/react", () => ({
@@ -23,7 +23,7 @@ describe("Component: NoteList", () => {
 			status: "LoadingFirstPage",
 			loadMore: vi.fn(),
 		});
-		
+
 		const { container } = render(<NoteList />);
 		// Skeletons are rendered as div with className containing skeleton
 		expect(container.querySelector(".animate-pulse")).toBeDefined();
@@ -35,19 +35,19 @@ describe("Component: NoteList", () => {
 			status: "Exhausted",
 			loadMore: vi.fn(),
 		});
-		
+
 		render(<NoteList />);
 		expect(screen.getByText("Žiadne poznámky")).toBeDefined();
 	});
 
 	test("renders a list of notes", () => {
 		const mockNotes = [
-			{ 
-				_id: "n1", 
-				title: "Meeting Note", 
-				content: "<p>Content</p>", 
+			{
+				_id: "n1",
+				title: "Meeting Note",
+				content: "<p>Content</p>",
 				_creationTime: Date.now(),
-				projectName: "Alpha"
+				projectName: "Alpha",
 			},
 		];
 		(usePaginatedQuery as any).mockReturnValue({
@@ -55,7 +55,7 @@ describe("Component: NoteList", () => {
 			status: "CanLoadMore",
 			loadMore: vi.fn(),
 		});
-		
+
 		render(<NoteList />);
 		expect(screen.getByText("Meeting Note")).toBeDefined();
 		expect(screen.getByText("Alpha")).toBeDefined();
@@ -68,11 +68,11 @@ describe("Component: NoteList", () => {
 			status: "Exhausted",
 			loadMore,
 		});
-		
+
 		render(<NoteList />);
 		const input = screen.getByPlaceholderText(/Hľadať v poznámkach/i);
 		fireEvent.change(input, { target: { value: "test query" } });
-		
+
 		expect((input as HTMLInputElement).value).toBe("test query");
 	});
 });

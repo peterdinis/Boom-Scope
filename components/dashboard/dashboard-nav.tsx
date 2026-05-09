@@ -62,10 +62,10 @@ const navItems: {
 	},
 	{
 		id: "design",
-		label: "Dizajn",
+		label: "Canvas",
 		description: "Pracovný priestor pre dizajn",
 		icon: Palette,
-		href: "/dashboard/design",
+		href: "/dashboard/canvas",
 	},
 	{
 		id: "generate",

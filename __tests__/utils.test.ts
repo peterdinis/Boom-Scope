@@ -1,4 +1,4 @@
-import { expect, test, describe } from "vitest";
+import { describe, expect, test } from "vitest";
 import { cn } from "../lib/utils";
 
 describe("Utility: cn", () => {

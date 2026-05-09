@@ -1,5 +1,6 @@
 "use client";
 
+import { useAction, useMutation, useQuery } from "convex/react";
 import {
 	ArrowRight,
 	Check,
@@ -19,82 +20,35 @@ import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
 
 interface GeneratedSystem {
-	colors: string[];
-	fonts: {
-		heading: string;
-		body: string;
-	};
-	vibe: string;
+	colors: { name: string; hex: string; rgb: string }[];
+	fonts: string[];
+	description?: string;
 }
 
-const FONT_PAIRS = [
-	{ heading: "Raleway", body: "Inter" },
-	{ heading: "Playfair Display", body: "Source Sans Pro" },
-	{ heading: "Montserrat", body: "Open Sans" },
-	{ heading: "Oswald", body: "Roboto" },
-	{ heading: "Outfit", body: "Geist" },
-	{ heading: "Fraunces", body: "Manrope" },
-	{ heading: "Syne", body: "Inter" },
-	{ heading: "Cabinet Grotesk", body: "Satoshi" },
-];
-
 export default function DesignSystemPage() {
+	const projects = useQuery(api.projects.list);
+	const analyzeDesign = useAction(api.openai.analyzeDesignSystem);
+	const saveSystem = useMutation(api.design_systems.create);
+
+	const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+		null,
+	);
 	const [images, setImages] = useState<{ id: string; url: string }[]>([]);
 	const [isAnalyzing, setIsAnalyzing] = useState(false);
 	const [system, setSystem] = useState<GeneratedSystem | null>(null);
 	const [copiedColor, setCopiedColor] = useState<string | null>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
-
-	const extractColors = async (imageUrl: string): Promise<string[]> => {
-		return new Promise((resolve) => {
-			const img = new Image();
-			img.crossOrigin = "Anonymous";
-			img.src = imageUrl;
-			img.onload = () => {
-				const canvas = document.createElement("canvas");
-				const ctx = canvas.getContext("2d");
-				if (!ctx)
-					return resolve([
-						"#3b82f6",
-						"#10b981",
-						"#6366f1",
-						"#f59e0b",
-						"#ef4444",
-					]);
-
-				canvas.width = 100;
-				canvas.height = 100;
-				ctx.drawImage(img, 0, 0, 100, 100);
-
-				const data = ctx.getImageData(0, 0, 100, 100).data;
-				const colorCounts: Record<string, number> = {};
-
-				for (let i = 0; i < data.length; i += 40) {
-					// Sample every 10th pixel
-					const r = data[i];
-					const g = data[i + 1];
-					const b = data[i + 2];
-					const hex = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
-					colorCounts[hex] = (colorCounts[hex] || 0) + 1;
-				}
-
-				const sortedColors = Object.entries(colorCounts)
-					.sort(([, a], [, b]) => b - a)
-					.map(([color]) => color)
-					.filter((c) => c !== "#ffffff" && c !== "#000000") // Skip pure white/black
-					.slice(0, 5);
-
-				resolve(
-					sortedColors.length >= 5
-						? sortedColors
-						: [...sortedColors, "#3b82f6", "#10b981"].slice(0, 5),
-				);
-			};
-		});
-	};
 
 	const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const files = Array.from(e.target.files || []);
@@ -112,38 +66,38 @@ export default function DesignSystemPage() {
 
 	const analyzeImages = async () => {
 		if (images.length === 0) return;
+		if (!selectedProjectId) {
+			toast.error("Najprv vyberte projekt!");
+			return;
+		}
+
 		setIsAnalyzing(true);
 		setSystem(null);
 
-		// Simulate AI delay
-		await new Promise((r) => setTimeout(r, 3000));
+		try {
+			const result = await analyzeDesign({
+				imageUrls: images.map((img) => img.url),
+			});
 
-		const allColors: string[] = [];
-		for (const img of images) {
-			const colors = await extractColors(img.url);
-			allColors.push(...colors);
+			setSystem(result as any);
+
+			// Save to Convex
+			await saveSystem({
+				projectId: selectedProjectId as any,
+				colors: (result as any).colors,
+				fonts: (result as any).fonts,
+				description: (result as any).description,
+			});
+
+			toast.success("Design System úspešne vygenerovaný a uložený!");
+		} catch (error) {
+			console.error(error);
+			toast.error(
+				"Nepodarilo sa zanalyzovať dizajn. Skontrolujte OpenAI kľúč.",
+			);
+		} finally {
+			setIsAnalyzing(false);
 		}
-
-		// Unique top colors
-		const uniqueColors = Array.from(new Set(allColors)).slice(0, 6);
-		const randomFontPair =
-			FONT_PAIRS[Math.floor(Math.random() * FONT_PAIRS.length)];
-
-		setSystem({
-			colors:
-				uniqueColors.length >= 5
-					? uniqueColors
-					: ["#3b82f6", "#10b981", "#6366f1", "#f59e0b", "#ef4444"],
-			fonts: randomFontPair,
-			vibe: [
-				"Modern Minimalist",
-				"Bold & Vibrant",
-				"Elegant Luxury",
-				"Tech Brutalist",
-			][Math.floor(Math.random() * 4)],
-		});
-		setIsAnalyzing(false);
-		toast.success("Design System Generated!");
 	};
 
 	const copyToClipboard = (text: string) => {
@@ -156,9 +110,8 @@ export default function DesignSystemPage() {
 	const copyAsCSS = () => {
 		if (!system) return;
 		const css = `:root {
-  ${system.colors.map((c, i) => `--color-${i + 1}: ${c};`).join("\n  ")}
-  --font-heading: '${system.fonts.heading}';
-  --font-body: '${system.fonts.body}';
+  ${system.colors.map((c, i) => `--color-${c.name.toLowerCase().replace(/\s+/g, "-")}: ${c.hex};`).join("\n  ")}
+  ${system.fonts.map((f, i) => `--font-${i === 0 ? "primary" : "secondary"}: '${f}';`).join("\n  ")}
 }`;
 		navigator.clipboard.writeText(css);
 		toast.success("CSS variables copied!");
@@ -222,6 +175,33 @@ export default function DesignSystemPage() {
 						</motion.div>
 					)}
 				</header>
+
+				<section className="space-y-4">
+					<div className="flex flex-col gap-2">
+						<label className="text-[10px] font-black uppercase tracking-widest opacity-40">
+							Priradiť k projektu
+						</label>
+						<Select
+							onValueChange={setSelectedProjectId}
+							value={selectedProjectId || undefined}
+						>
+							<SelectTrigger className="w-full md:w-[300px] h-12 rounded-2xl bg-background/50 backdrop-blur-xl border-border/50">
+								<SelectValue placeholder="Vyberte projekt..." />
+							</SelectTrigger>
+							<SelectContent className="rounded-2xl border-border/50 backdrop-blur-3xl">
+								{projects?.map((project) => (
+									<SelectItem
+										key={project._id}
+										value={project._id}
+										className="rounded-xl"
+									>
+										{project.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+				</section>
 
 				{/* Upload Area */}
 				<section>
@@ -333,7 +313,7 @@ export default function DesignSystemPage() {
 											Vizuálny Štýl
 										</p>
 										<h2 className="text-4xl font-black tracking-tight">
-											{system.vibe}
+											{system.description || "Nová Identita"}
 										</h2>
 									</div>
 
@@ -349,20 +329,25 @@ export default function DesignSystemPage() {
 										<div className="space-y-3">
 											{system.colors.map((color) => (
 												<button
-													key={color}
-													onClick={() => copyToClipboard(color)}
+													key={color.hex}
+													onClick={() => copyToClipboard(color.hex)}
 													className="w-full flex items-center justify-between p-4 rounded-2xl bg-foreground/5 hover:bg-foreground/10 transition-all border border-border/50 group"
 												>
 													<div className="flex items-center gap-4">
 														<div
 															className="size-8 rounded-lg shadow-inner"
-															style={{ backgroundColor: color }}
+															style={{ backgroundColor: color.hex }}
 														/>
-														<span className="font-mono text-xs font-bold uppercase tracking-wider opacity-60">
-															{color}
-														</span>
+														<div className="flex flex-col items-start">
+															<span className="text-[10px] font-black uppercase tracking-tighter opacity-40 leading-none mb-1">
+																{color.name}
+															</span>
+															<span className="font-mono text-[10px] font-bold uppercase tracking-wider opacity-60">
+																{color.hex}
+															</span>
+														</div>
 													</div>
-													{copiedColor === color ? (
+													{copiedColor === color.hex ? (
 														<Check className="size-4 text-emerald-500" />
 													) : (
 														<Copy className="size-4 opacity-0 group-hover:opacity-20 transition-opacity" />
@@ -382,28 +367,22 @@ export default function DesignSystemPage() {
 											</span>
 										</div>
 										<div className="space-y-4">
-											<div className="p-5 rounded-2xl bg-foreground/5 border border-border/50">
-												<p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-20 mb-2">
-													Nadpisy
-												</p>
-												<p
-													className="text-xl font-black"
-													style={{ fontFamily: system.fonts.heading }}
+											{system.fonts.map((font, idx) => (
+												<div
+													key={font}
+													className="p-5 rounded-2xl bg-foreground/5 border border-border/50"
 												>
-													{system.fonts.heading}
-												</p>
-											</div>
-											<div className="p-5 rounded-2xl bg-foreground/5 border border-border/50">
-												<p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-20 mb-2">
-													Text
-												</p>
-												<p
-													className="text-base font-medium"
-													style={{ fontFamily: system.fonts.body }}
-												>
-													{system.fonts.body}
-												</p>
-											</div>
+													<p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-20 mb-2">
+														{idx === 0 ? "Hlavné Písmo" : "Sekundárne Písmo"}
+													</p>
+													<p
+														className="text-xl font-black"
+														style={{ fontFamily: font }}
+													>
+														{font}
+													</p>
+												</div>
+											))}
 										</div>
 									</div>
 
@@ -444,7 +423,7 @@ export default function DesignSystemPage() {
 											<div className="space-y-4">
 												<Button
 													className="h-14 w-full rounded-2xl text-white font-bold uppercase tracking-widest text-[10px] shadow-xl"
-													style={{ backgroundColor: system.colors[0] }}
+													style={{ backgroundColor: system.colors[0]?.hex }}
 												>
 													Primary Action
 												</Button>
@@ -452,8 +431,8 @@ export default function DesignSystemPage() {
 													variant="outline"
 													className="h-14 w-full rounded-2xl border-2 font-bold uppercase tracking-widest text-[10px]"
 													style={{
-														borderColor: system.colors[1],
-														color: system.colors[1],
+														borderColor: system.colors[1]?.hex,
+														color: system.colors[1]?.hex,
 													}}
 												>
 													Secondary Option
@@ -470,7 +449,7 @@ export default function DesignSystemPage() {
 												<div className="relative">
 													<div
 														className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20"
-														style={{ color: system.colors[0] }}
+														style={{ color: system.colors[0]?.hex }}
 													>
 														<Sparkles className="size-4" />
 													</div>
@@ -482,9 +461,9 @@ export default function DesignSystemPage() {
 												<div className="flex gap-2">
 													{system.colors.map((c) => (
 														<div
-															key={`swatch-${c}`}
+															key={`swatch-${c.hex}`}
 															className="size-6 rounded-lg shadow-sm"
-															style={{ backgroundColor: c }}
+															style={{ backgroundColor: c.hex }}
 														/>
 													))}
 												</div>
@@ -503,20 +482,22 @@ export default function DesignSystemPage() {
 												<div className="flex items-center gap-4">
 													<div
 														className="size-12 rounded-2xl flex items-center justify-center text-white"
-														style={{ backgroundColor: system.colors[2] }}
+														style={{ backgroundColor: system.colors[2]?.hex }}
 													>
 														<Layout className="size-6" />
 													</div>
 													<div>
 														<h4
 															className="font-black text-lg"
-															style={{ fontFamily: system.fonts.heading }}
+															style={{ fontFamily: system.fonts[0] }}
 														>
 															Vizuálna Integrita
 														</h4>
 														<p
 															className="text-xs font-medium opacity-40"
-															style={{ fontFamily: system.fonts.body }}
+															style={{
+																fontFamily: system.fonts[1] || system.fonts[0],
+															}}
 														>
 															Harmonické farby extrahované z vašej inšpirácie.
 														</p>
@@ -525,11 +506,11 @@ export default function DesignSystemPage() {
 												<div className="flex gap-4">
 													<div
 														className="flex-1 h-2 rounded-full opacity-10"
-														style={{ backgroundColor: system.colors[0] }}
+														style={{ backgroundColor: system.colors[0]?.hex }}
 													/>
 													<div
 														className="w-1/3 h-2 rounded-full opacity-10"
-														style={{ backgroundColor: system.colors[3] }}
+														style={{ backgroundColor: system.colors[3]?.hex }}
 													/>
 												</div>
 											</div>

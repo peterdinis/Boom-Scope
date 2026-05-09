@@ -80,12 +80,12 @@ export default function ProjectDetailPage() {
 		},
 		{
 			id: "designs",
-			label: "Dizajny",
+			label: "Canvas",
 			icon: Palette,
 			color: "text-emerald-500",
 			bgColor: "bg-emerald-500/10",
 			count: 0,
-			href: `/dashboard/design?projectId=${projectId}`,
+			href: `/dashboard/canvas?projectId=${projectId}`,
 		},
 		{
 			id: "systems",
