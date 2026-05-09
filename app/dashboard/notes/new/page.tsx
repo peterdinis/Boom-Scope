@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { noteSchema } from "@/lib/validations";
 
 export default function NewNotePage() {
 	const router = useRouter();
@@ -25,8 +26,10 @@ export default function NewNotePage() {
 	const [isSaving, setIsSaving] = useState(false);
 
 	const handleSave = async () => {
-		if (!title.trim()) {
-			toast.error("Zadajte prosím názov poznámky.");
+		const validation = noteSchema.safeParse({ title, content, projectId });
+		
+		if (!validation.success) {
+			toast.error(validation.error.message);
 			return;
 		}
 
@@ -38,7 +41,7 @@ export default function NewNotePage() {
 				projectId,
 			});
 			toast.success("Poznámka bola vytvorená.");
-			router.push(`/dashboard/notes/${id}` as any);
+			router.push(`/dashboard/notes/${id}`);
 		} catch (error) {
 			console.error(error);
 			toast.error("Nepodarilo sa vytvoriť poznámku.");
@@ -51,7 +54,7 @@ export default function NewNotePage() {
 		<div className="mx-auto w-full max-w-4xl px-4 py-8 md:px-8 md:py-10">
 			<div className="flex flex-col gap-8">
 				<div className="flex items-center justify-between gap-4">
-					<Link href={"/dashboard/notes" as any}>
+					<Link href="/dashboard/notes">
 						<Button variant="ghost" size="sm" className="gap-2">
 							<ChevronLeft className="size-4" />
 							Späť na zoznam

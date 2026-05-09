@@ -3,14 +3,11 @@
 import { useQuery } from "convex/react";
 import {
 	ArrowLeft,
-	Calendar,
 	ChevronRight,
 	Clock,
-	ExternalLink,
 	FileText,
 	Layout,
 	Palette,
-	PencilLine,
 	Plus,
 	Settings2,
 	Sparkles,
@@ -21,7 +18,9 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
+import { UrlObject } from "url";
 
 export default function ProjectDetailPage() {
 	const params = useParams();
@@ -33,7 +32,7 @@ export default function ProjectDetailPage() {
 
 	const project = useQuery(
 		api.projects.getById,
-		projectId ? { projectId: projectId as any } : "skip",
+		projectId ? { projectId: projectId as Id<"projects"> } : "skip",
 	);
 
 	if (project === undefined) {
@@ -161,7 +160,7 @@ export default function ProjectDetailPage() {
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: i * 0.1 }}
 						>
-							<Link href={section.href}>
+							<Link href={section.href as unknown as UrlObject}>
 								<div className="group h-full p-10 rounded-[48px] bg-background/40 backdrop-blur-3xl border border-border hover:border-foreground/20 transition-all duration-500 flex flex-col justify-between shadow-2xl overflow-hidden relative">
 									{/* Glow Effect */}
 									<div

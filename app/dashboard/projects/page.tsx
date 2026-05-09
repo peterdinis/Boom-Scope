@@ -3,9 +3,7 @@
 import { useMutation, useQuery } from "convex/react";
 import {
 	ArrowRight,
-	Calendar,
 	Clock,
-	ExternalLink,
 	FolderKanban,
 	MoreVertical,
 	Plus,
@@ -25,6 +23,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { projectSchema } from "@/lib/validations";
 
 export default function ProjectsPage() {
 	const projects = useQuery(api.projects.list);
@@ -41,24 +41,30 @@ export default function ProjectsPage() {
 
 	const handleCreate = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!newProjectName.trim()) return;
+		
+		const validation = projectSchema.safeParse({ name: newProjectName });
+		
+		if (!validation.success) {
+			toast.error(validation.error.message);
+			return;
+		}
 
 		try {
 			await createProject({ name: newProjectName });
 			setNewProjectName("");
 			setIsCreateModalOpen(false);
 			toast.success("Projekt vytvorený!");
-		} catch (error) {
+		} catch {
 			toast.error("Nepodarilo sa vytvoriť projekt.");
 		}
 	};
 
-	const handleDelete = async (projectId: any) => {
+	const handleDelete = async (projectId: Id<"projects">) => {
 		if (!confirm("Naozaj chcete vymazať tento projekt?")) return;
 		try {
 			await deleteProject({ projectId });
 			toast.success("Projekt vymazaný.");
-		} catch (error) {
+		} catch {
 			toast.error("Chyba pri mazaní projektu.");
 		}
 	};

@@ -2,11 +2,9 @@
 
 import { useAction, useMutation, useQuery } from "convex/react";
 import {
-	ArrowRight,
 	Check,
 	Copy,
 	Download,
-	Image as ImageIcon,
 	Layout,
 	Palette,
 	RefreshCw,
@@ -17,7 +15,7 @@ import {
 	Wand2,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,11 +28,22 @@ import {
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
 
-interface GeneratedSystem {
-	colors: { name: string; hex: string; rgb: string }[];
-	fonts: string[];
-	description?: string;
-}
+import { z } from "zod";
+import { Id } from "@/convex/_generated/dataModel";
+
+const aiSystemSchema = z.object({
+	colors: z.array(
+		z.object({
+			name: z.string(),
+			hex: z.string().regex(/^#/, "Farba musí byť v HEX formáte"),
+			rgb: z.string(),
+		}),
+	),
+	fonts: z.array(z.string()),
+	description: z.string().optional(),
+});
+
+type GeneratedSystem = z.infer<typeof aiSystemSchema>;
 
 export default function DesignSystemPage() {
 	const projects = useQuery(api.projects.list);
@@ -79,14 +88,19 @@ export default function DesignSystemPage() {
 				imageUrls: images.map((img) => img.url),
 			});
 
-			setSystem(result as any);
+			const parsed = aiSystemSchema.safeParse(result);
+			if (!parsed.success) {
+				throw new Error("AI vrátila neplatné dáta.");
+			}
+
+			setSystem(parsed.data);
 
 			// Save to Convex
 			await saveSystem({
-				projectId: selectedProjectId as any,
-				colors: (result as any).colors,
-				fonts: (result as any).fonts,
-				description: (result as any).description,
+				projectId: selectedProjectId as Id<"projects">,
+				colors: parsed.data.colors,
+				fonts: parsed.data.fonts,
+				description: parsed.data.description,
 			});
 
 			toast.success("Design System úspešne vygenerovaný a uložený!");
@@ -110,7 +124,7 @@ export default function DesignSystemPage() {
 	const copyAsCSS = () => {
 		if (!system) return;
 		const css = `:root {
-  ${system.colors.map((c, i) => `--color-${c.name.toLowerCase().replace(/\s+/g, "-")}: ${c.hex};`).join("\n  ")}
+  ${system.colors.map((c) => `--color-${c.name.toLowerCase().replace(/\s+/g, "-")}: ${c.hex};`).join("\n  ")}
   ${system.fonts.map((f, i) => `--font-${i === 0 ? "primary" : "secondary"}: '${f}';`).join("\n  ")}
 }`;
 		navigator.clipboard.writeText(css);
@@ -185,7 +199,7 @@ export default function DesignSystemPage() {
 							onValueChange={setSelectedProjectId}
 							value={selectedProjectId || undefined}
 						>
-							<SelectTrigger className="w-full md:w-[300px] h-12 rounded-2xl bg-background/50 backdrop-blur-xl border-border/50">
+							<SelectTrigger className="w-full md:w-75 h-12 rounded-2xl bg-background/50 backdrop-blur-xl border-border/50">
 								<SelectValue placeholder="Vyberte projekt..." />
 							</SelectTrigger>
 							<SelectContent className="rounded-2xl border-border/50 backdrop-blur-3xl">
@@ -525,8 +539,8 @@ export default function DesignSystemPage() {
 
 			{/* Background Blobs */}
 			<div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none opacity-20 dark:opacity-10">
-				<div className="absolute top-0 right-0 size-[800px] bg-blue-500/20 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2" />
-				<div className="absolute bottom-0 left-0 size-[600px] bg-emerald-500/10 blur-[100px] rounded-full -translate-x-1/2 translate-y-1/2" />
+				<div className="absolute top-0 right-0 size-200 bg-blue-500/20 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2" />
+				<div className="absolute bottom-0 left-0 size-150 bg-emerald-500/10 blur-[100px] rounded-full -translate-x-1/2 translate-y-1/2" />
 			</div>
 		</div>
 	);

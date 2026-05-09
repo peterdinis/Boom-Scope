@@ -34,21 +34,21 @@ export const list = query({
 });
 
 export const getById = query({
-	args: { projectId: v.string() }, // Accept string and validate manually if needed, or keep v.id
+	args: { projectId: v.id("projects") },
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
 		if (!userId) return null;
 
 		try {
-			const project = await ctx.db.get(args.projectId as any);
+			const project = await ctx.db.get(args.projectId);
 			if (!project) return null;
 
 			// Narrowing for TypeScript
-			if ("userId" in project && project.userId === userId) {
-				return project as any;
+			if (project.userId === userId) {
+				return project;
 			}
 			return null;
-		} catch (e) {
+		} catch {
 			return null;
 		}
 	},

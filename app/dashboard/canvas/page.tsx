@@ -2,19 +2,16 @@
 
 import {
 	Circle,
-	Eraser as EraserIcon,
 	Eye,
 	EyeOff,
 	Image as ImageIcon,
 	Layers,
 	Lock,
 	Maximize2,
-	Move,
 	Palette,
 	PanelLeft,
 	PanelRight,
 	Pencil,
-	Redo2,
 	RefreshCw,
 	Settings2,
 	Sliders,
@@ -32,7 +29,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Dock } from "@/components/design/Dock";
 import type { CanvasElement } from "@/components/design/KonvaCanvas";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
@@ -116,7 +112,20 @@ export default function DesignPage() {
 	}, []);
 
 	const elementsRef = useRef(elements);
-	elementsRef.current = elements;
+	
+	useEffect(() => {
+		elementsRef.current = elements;
+	}, [elements]);
+
+	const updateSelectedElement = useCallback(
+		(updates: Partial<CanvasElement>) => {
+			if (!selectedId) return;
+			setElements((prev) =>
+				prev.map((el) => (el.id === selectedId ? { ...el, ...updates } : el)),
+			);
+		},
+		[selectedId, setElements],
+	);
 
 	// Keyboard Shortcuts
 	useEffect(() => {
@@ -155,7 +164,7 @@ export default function DesignPage() {
 
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [selectedId, handleAction]);
+	}, [selectedId, handleAction, updateSelectedElement]);
 
 	const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -187,12 +196,6 @@ export default function DesignPage() {
 
 	const selectedElement = elements.find((el) => el.id === selectedId);
 
-	const updateSelectedElement = (updates: Partial<CanvasElement>) => {
-		if (!selectedId) return;
-		setElements((prev) =>
-			prev.map((el) => (el.id === selectedId ? { ...el, ...updates } : el)),
-		);
-	};
 
 	const toggleElementProperty = (
 		id: string,
@@ -349,7 +352,7 @@ export default function DesignPage() {
 								</div>
 							) : (
 								elements
-									.map((el, i) => (
+									.map((el) => (
 										<div key={el.id} className="relative group">
 											<button
 												onClick={() => setSelectedId(el.id)}
@@ -721,7 +724,7 @@ export default function DesignPage() {
 										<p className="text-xs font-black uppercase tracking-[0.2em]">
 											Žiadny Výber
 										</p>
-										<p className="text-[10px] font-medium tracking-widest max-w-[140px]">
+										<p className="text-[10px] font-medium tracking-widest max-w-35">
 											Vyberte objekt na úpravu jeho vlastností
 										</p>
 									</div>

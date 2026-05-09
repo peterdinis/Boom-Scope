@@ -4,7 +4,7 @@ import { useMutation } from "convex/react";
 import { ChevronLeft, Download, Loader2, Save, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { NoteEditor } from "@/components/notes/NoteEditor";
 import { ProjectSelector } from "@/components/notes/ProjectSelector";
@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { downloadNoteAsTxt } from "@/lib/notes";
+import { noteSchema } from "@/lib/validations";
 
 interface NoteFormProps {
 	initialData: {
@@ -37,8 +38,10 @@ export function NoteForm({ initialData }: NoteFormProps) {
 	const [isDeleting, setIsDeleting] = useState(false);
 
 	const handleSave = async () => {
-		if (!title.trim()) {
-			toast.error("Názov poznámky nemôže byť prázdny.");
+		const validation = noteSchema.safeParse({ title, content, projectId });
+		
+		if (!validation.success) {
+			toast.error(validation.error.errors[0].message);
 			return;
 		}
 
@@ -66,7 +69,7 @@ export function NoteForm({ initialData }: NoteFormProps) {
 		try {
 			await removeNote({ noteId: initialData._id });
 			toast.success("Poznámka bola odstránená.");
-			router.push("/dashboard/notes" as any);
+			router.push("/dashboard/notes");
 		} catch (error) {
 			console.error(error);
 			toast.error("Nepodarilo sa odstrániť poznámku.");
@@ -77,7 +80,7 @@ export function NoteForm({ initialData }: NoteFormProps) {
 	return (
 		<div className="flex flex-col gap-8">
 			<div className="flex items-center justify-between gap-4">
-				<Link href={"/dashboard/notes" as any}>
+				<Link href="/dashboard/notes">
 					<Button variant="ghost" size="sm" className="gap-2">
 						<ChevronLeft className="size-4" />
 						Späť
