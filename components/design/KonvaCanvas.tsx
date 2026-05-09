@@ -13,11 +13,13 @@ import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
 import { Trash2 } from "lucide-react";
 import {
+	Arrow,
 	Circle,
 	Image as KonvaImage,
 	Layer,
 	Line,
 	Rect,
+	Star,
 	Stage,
 	Text,
 	Transformer,
@@ -45,6 +47,10 @@ export interface CanvasElement {
 	globalCompositeOperation?: string;
 	isLocked?: boolean;
 	isVisible?: boolean;
+	fillType?: "solid" | "gradient";
+	gradientStart?: { x: number; y: number };
+	gradientEnd?: { x: number; y: number };
+	gradientColors?: string[];
 }
 
 interface KonvaCanvasProps {
@@ -540,7 +546,10 @@ function RenderElement({
 		x: el.x,
 		y: el.y,
 		stroke: el.stroke,
-		fill: el.fill === "none" ? undefined : el.fill,
+		fill: el.fillType === "gradient" ? undefined : (el.fill === "none" ? undefined : el.fill),
+		fillLinearGradientStartPoint: el.fillType === "gradient" ? (el.gradientStart || { x: 0, y: 0 }) : undefined,
+		fillLinearGradientEndPoint: el.fillType === "gradient" ? (el.gradientEnd || { x: el.width || 100, y: el.height || 100 }) : undefined,
+		fillLinearGradientColorStops: el.fillType === "gradient" ? [0, el.gradientColors?.[0] || "#3b82f6", 1, el.gradientColors?.[1] || "#10b981"] : undefined,
 		strokeWidth: el.strokeWidth,
 		rotation: el.rotation || 0,
 		opacity: el.opacity ?? 1,
@@ -548,9 +557,9 @@ function RenderElement({
 		onTap: onSelect,
 		draggable: draggable,
 		onDragEnd: onDragEnd,
-		shadowColor: isSelected ? "#3b82f6" : "transparent",
-		shadowBlur: isSelected ? 15 : 0,
-		shadowOpacity: 0.5,
+		shadowColor: isSelected ? "#3b82f6" : "#000000",
+		shadowBlur: isSelected ? 15 : (el.shadowBlur || 0),
+		shadowOpacity: isSelected ? 0.5 : (el.shadowBlur ? 0.3 : 0),
 		globalCompositeOperation: el.globalCompositeOperation as GlobalCompositeOperation,
 	};
 
@@ -604,6 +613,28 @@ function RenderElement({
 				image={image}
 				width={el.width}
 				height={el.height}
+			/>
+		);
+	}
+
+	if (el.type === "star") {
+		return (
+			<Star
+				{...commonProps}
+				innerRadius={Math.abs(el.width || 0) / 4}
+				outerRadius={Math.abs(el.width || 0) / 2}
+				numPoints={5}
+			/>
+		);
+	}
+
+	if (el.type === "arrow") {
+		return (
+			<Arrow
+				{...commonProps}
+				points={[0, 0, el.width || 0, el.height || 0]}
+				pointerLength={20}
+				pointerWidth={20}
 			/>
 		);
 	}

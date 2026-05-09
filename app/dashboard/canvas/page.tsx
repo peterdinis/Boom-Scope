@@ -90,7 +90,7 @@ export default function DesignPage() {
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 
 	const [strokeColor, setStrokeColor] = useState("#3b82f6");
-	const [fillColor] = useState("none");
+	const [fillColor, setFillColor] = useState("none");
 	const [strokeWidth] = useState(2);
 
 	const [leftPanelOpen, setLeftPanelOpen] = useState(true);
@@ -808,6 +808,104 @@ export default function DesignPage() {
 												))}
 											</div>
 										</div>
+
+										<div className="space-y-6">
+											<div className="flex items-center justify-between">
+												<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">
+													Výplň
+												</p>
+												<div className="flex p-1 rounded-lg bg-accent/50 border border-border">
+													<button
+														onClick={() => updateSelectedElement({ fillType: "solid" })}
+														className={cn(
+															"px-3 py-1 rounded-md text-[8px] font-black uppercase transition-all",
+															selectedElement.fillType !== "gradient" ? "bg-background text-blue-500 shadow-sm" : "text-foreground/40"
+														)}
+													>
+														Jednoliata
+													</button>
+													<button
+														onClick={() => updateSelectedElement({ fillType: "gradient" })}
+														className={cn(
+															"px-3 py-1 rounded-md text-[8px] font-black uppercase transition-all",
+															selectedElement.fillType === "gradient" ? "bg-background text-blue-500 shadow-sm" : "text-foreground/40"
+														)}
+													>
+														Prechod
+													</button>
+												</div>
+											</div>
+
+											{selectedElement.fillType === "gradient" ? (
+												<div className="grid grid-cols-2 gap-3">
+													<div className="space-y-3">
+														<p className="text-[8px] font-black uppercase opacity-20">Začiatok</p>
+														<div className="grid grid-cols-4 gap-1.5">
+															{PALETTE.slice(0, 8).map((color) => (
+																<button
+																	key={`grad-1-${color}`}
+																	onClick={() => updateSelectedElement({
+																		gradientColors: [color, selectedElement.gradientColors?.[1] || "#10b981"]
+																	})}
+																	className={cn(
+																		"size-6 rounded-lg border transition-all",
+																		selectedElement.gradientColors?.[0] === color ? "border-blue-500 scale-110" : "border-transparent"
+																	)}
+																	style={{ backgroundColor: color }}
+																/>
+															))}
+														</div>
+													</div>
+													<div className="space-y-3">
+														<p className="text-[8px] font-black uppercase opacity-20">Koniec</p>
+														<div className="grid grid-cols-4 gap-1.5">
+															{PALETTE.slice(0, 8).map((color) => (
+																<button
+																	key={`grad-2-${color}`}
+																	onClick={() => updateSelectedElement({
+																		gradientColors: [selectedElement.gradientColors?.[0] || "#3b82f6", color]
+																	})}
+																	className={cn(
+																		"size-6 rounded-lg border transition-all",
+																		selectedElement.gradientColors?.[1] === color ? "border-blue-500 scale-110" : "border-transparent"
+																	)}
+																	style={{ backgroundColor: color }}
+																/>
+															))}
+														</div>
+													</div>
+												</div>
+											) : (
+												<div className="grid grid-cols-6 gap-2.5">
+													<button
+														onClick={() => {
+															setFillColor("none");
+															updateSelectedElement({ fill: "none" });
+														}}
+														className={cn(
+															"size-8 rounded-xl border-2 flex items-center justify-center transition-all",
+															selectedElement.fill === "none" ? "border-blue-500" : "border-transparent bg-foreground/5"
+														)}
+													>
+														<div className="w-full h-[2px] bg-red-500 rotate-45" />
+													</button>
+													{PALETTE.map((color) => (
+														<button
+															key={`fill-${color}`}
+															onClick={() => {
+																setFillColor(color);
+																updateSelectedElement({ fill: color });
+															}}
+															className={cn(
+																"size-8 rounded-xl border-2 transition-all",
+																selectedElement.fill === color ? "border-blue-500 scale-110" : "border-transparent"
+															)}
+															style={{ backgroundColor: color }}
+														/>
+													))}
+												</div>
+											)}
+										</div>
 									</div>
 
 									{/* Geometry Section */}
@@ -840,6 +938,56 @@ export default function DesignPage() {
 												onChange={(e) =>
 													updateSelectedElement({
 														rotation: parseInt(e.target.value),
+													})
+												}
+												className="w-full accent-blue-500 bg-foreground/10 rounded-full h-1 appearance-none cursor-pointer hover:bg-foreground/20 transition-colors"
+											/>
+										</div>
+
+										{/* Corner Radius (Rect Only) */}
+										{selectedElement.type === "rect" && (
+											<div className="space-y-5">
+												<div className="flex justify-between items-center">
+													<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">
+														Zaoblenie rohov
+													</p>
+													<span className="text-[10px] font-mono font-bold opacity-60">
+														{selectedElement.cornerRadius || 0}px
+													</span>
+												</div>
+												<input
+													type="range"
+													min="0"
+													max="100"
+													value={selectedElement.cornerRadius || 0}
+													onChange={(e) =>
+														updateSelectedElement({
+															cornerRadius: parseInt(e.target.value),
+														})
+													}
+													className="w-full accent-blue-500 bg-foreground/10 rounded-full h-1 appearance-none cursor-pointer hover:bg-foreground/20 transition-colors"
+												/>
+											</div>
+										)}
+
+										{/* Shadow Blur */}
+										<div className="space-y-5">
+											<div className="flex justify-between items-center">
+												<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">
+													Tieň (Rozostrenie)
+												</p>
+												<span className="text-[10px] font-mono font-bold opacity-60">
+													{selectedElement.shadowBlur || 0}px
+												</span>
+											</div>
+											<input
+												type="range"
+												min="0"
+												max="100"
+												value={selectedElement.shadowBlur || 0}
+												onChange={(e) =>
+													updateSelectedElement({
+														shadowBlur: parseInt(e.target.value),
 													})
 												}
 												className="w-full accent-blue-500 bg-foreground/10 rounded-full h-1 appearance-none cursor-pointer hover:bg-foreground/20 transition-colors"
