@@ -78,7 +78,7 @@ export default function ProjectsPage() {
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
-							className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20 text-[10px] font-black uppercase tracking-[0.2em]"
+							className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-[10px] font-black uppercase tracking-[0.2em]"
 						>
 							<FolderKanban className="size-3" />
 							Centrálny Dashboard
@@ -89,7 +89,7 @@ export default function ProjectsPage() {
 							transition={{ delay: 0.1 }}
 							className="text-5xl lg:text-7xl font-black tracking-tighter"
 						>
-							Vaše <span className="text-blue-500">Projekty</span>
+							Vaše <span className="text-primary">Projekty</span>
 						</motion.h1>
 					</div>
 
@@ -105,7 +105,7 @@ export default function ProjectsPage() {
 						</div>
 						<Button
 							onClick={() => setIsCreateModalOpen(true)}
-							className="h-14 px-8 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-[0_20px_40px_rgba(37,99,235,0.3)] transition-all"
+							className="h-14 px-8 rounded-2xl bg-primary hover:bg-blue-700 text-white shadow-[0_20px_40px_rgba(37,99,235,0.3)] transition-all"
 						>
 							<Plus className="size-5 mr-2" />
 							Nový Projekt
@@ -126,13 +126,13 @@ export default function ProjectsPage() {
 								className="group relative"
 							>
 								<Link href={`/dashboard/projects/${project._id}`}>
-									<div className="h-64 p-8 rounded-[40px] bg-background/40 backdrop-blur-3xl border border-border hover:border-blue-500/30 transition-all duration-500 shadow-xl group-hover:shadow-blue-500/5 group-hover:-translate-y-2 flex flex-col justify-between overflow-hidden">
+									<div className="h-64 p-8 rounded-[40px] bg-background/40 backdrop-blur-3xl border border-border hover:border-primary/30 transition-all duration-500 shadow-xl group-hover:shadow-primary/5 group-hover:-translate-y-2 flex flex-col justify-between overflow-hidden">
 										{/* Background Accent */}
-										<div className="absolute -right-4 -top-4 size-32 bg-blue-500/5 blur-3xl group-hover:bg-blue-500/10 transition-colors" />
+										<div className="absolute -right-4 -top-4 size-32 bg-primary/5 blur-3xl group-hover:bg-primary/10 transition-colors" />
 
 										<div className="space-y-4">
 											<div className="flex items-start justify-between">
-												<div className="size-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20 group-hover:scale-110 transition-transform duration-500">
+												<div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 group-hover:scale-110 transition-transform duration-500">
 													<FolderKanban className="size-6" />
 												</div>
 												<DropdownMenu>
@@ -178,7 +178,7 @@ export default function ProjectsPage() {
 													<Clock className="size-3" /> Nedávno
 												</span>
 											</div>
-											<div className="size-10 rounded-full bg-foreground/5 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
+											<div className="size-10 rounded-full bg-foreground/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-500">
 												<ArrowRight className="size-4" />
 											</div>
 										</div>
@@ -225,7 +225,7 @@ export default function ProjectsPage() {
 							className="relative w-full max-w-lg p-10 rounded-[40px] bg-background border border-border shadow-2xl"
 						>
 							<h2 className="text-3xl font-black tracking-tight mb-8">
-								Nový <span className="text-blue-500">Projekt</span>
+								Nový <span className="text-primary">Projekt</span>
 							</h2>
 							<form onSubmit={handleCreate} className="space-y-8">
 								<div className="space-y-4">
@@ -237,7 +237,7 @@ export default function ProjectsPage() {
 										value={newProjectName}
 										onChange={(e) => setNewProjectName(e.target.value)}
 										placeholder="Napr. Moderná Vila, Web App..."
-										className="h-16 rounded-[24px] bg-foreground/5 border-border text-lg font-bold px-8 focus:ring-2 focus:ring-blue-500/20"
+										className="h-16 rounded-[24px] bg-foreground/5 border-border text-lg font-bold px-8 focus:ring-2 focus:ring-primary/20"
 									/>
 								</div>
 								<div className="flex gap-4">
@@ -252,7 +252,7 @@ export default function ProjectsPage() {
 									<Button
 										type="submit"
 										disabled={!newProjectName.trim()}
-										className="flex-2 h-16 px-10 rounded-[24px] bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-xs shadow-xl"
+										className="flex-2 h-16 px-10 rounded-[24px] bg-primary hover:bg-blue-700 text-white font-black uppercase tracking-widest text-xs shadow-xl"
 									>
 										Vytvoriť Projekt
 									</Button>

@@ -152,7 +152,7 @@ function DockIcon({
 				className={cn(
 					"flex items-center justify-center rounded-[18px] transition-all duration-300",
 					isActive
-						? "bg-blue-600 text-white shadow-[0_10px_20px_rgba(37,99,235,0.4)]"
+						? "bg-primary text-white shadow-[0_10px_20px_rgba(37,99,235,0.4)]"
 						: cn(
 								"bg-foreground/5 text-foreground/40 hover:bg-foreground/10 hover:text-foreground",
 								color,
@@ -173,7 +173,7 @@ function DockIcon({
 			{isActive && (
 				<motion.div
 					layoutId="active-pill"
-					className="absolute -bottom-2 size-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"
+					className="absolute -bottom-2 size-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(59,130,246,0.8)]"
 				/>
 			)}
 		</button>

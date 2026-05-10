@@ -53,7 +53,7 @@ const KonvaCanvas = dynamic(() => import("@/components/design/KonvaCanvas"), {
 	loading: () => (
 		<div className="flex h-full w-full items-center justify-center bg-background">
 			<div className="flex flex-col items-center gap-4">
-				<div className="h-12 w-12 animate-spin rounded-full border-2 border-blue-500 border-t-transparent shadow-[0_0_30px_rgba(59,130,246,0.3)]" />
+				<div className="h-12 w-12 animate-spin rounded-full border-2 border-primary border-t-transparent shadow-[0_0_30px_rgba(59,130,246,0.3)]" />
 				<p className="text-[10px] font-bold text-foreground/40 tracking-[0.3em] uppercase animate-pulse">
 					Syncing Engine
 				</p>
@@ -308,7 +308,7 @@ export default function DesignPage() {
 	};
 
 	return (
-		<div className="relative h-[calc(100vh-3.5rem)] w-full overflow-hidden bg-background text-foreground selection:bg-blue-500/30">
+		<div className="relative h-[calc(100vh-3.5rem)] w-full overflow-hidden bg-background text-foreground selection:bg-primary/30">
 			<input
 				type="file"
 				ref={fileInputRef}
@@ -363,7 +363,7 @@ export default function DesignPage() {
 						onClick={() => setSnapToGrid(!snapToGrid)}
 						className={cn(
 							"rounded-xl",
-							snapToGrid ? "bg-blue-600 text-white" : "hover:bg-accent",
+							snapToGrid ? "bg-primary text-white" : "hover:bg-accent",
 						)}
 					>
 						<Grid className="size-3.5" />
@@ -385,7 +385,7 @@ export default function DesignPage() {
 							className={cn(
 								"size-2 rounded-full",
 								activeTool === "select"
-									? "bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"
+									? "bg-primary shadow-[0_0_10px_rgba(59,130,246,0.8)]"
 									: "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]",
 							)}
 						/>
@@ -454,7 +454,7 @@ export default function DesignPage() {
 									className={cn(
 										"flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
 										activeTab === "layers"
-											? "bg-background text-blue-500 shadow-sm"
+											? "bg-background text-primary shadow-sm"
 											: "text-foreground/40 hover:text-foreground",
 									)}
 								>
@@ -466,7 +466,7 @@ export default function DesignPage() {
 									className={cn(
 										"flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
 										activeTab === "templates"
-											? "bg-background text-blue-500 shadow-sm"
+											? "bg-background text-primary shadow-sm"
 											: "text-foreground/40 hover:text-foreground",
 									)}
 								>
@@ -504,7 +504,7 @@ export default function DesignPage() {
 													className={cn(
 														"w-full flex items-center justify-between px-5 py-4 rounded-2xl text-xs transition-all duration-500",
 														selectedId === el.id
-															? "bg-blue-600 text-white shadow-[0_15px_30px_rgba(37,99,235,0.3)] scale-[1.02]"
+															? "bg-primary text-white shadow-[0_15px_30px_rgba(37,99,235,0.3)] scale-[1.02]"
 															: "hover:bg-accent text-foreground/50 hover:text-foreground",
 													)}
 												>
@@ -607,8 +607,8 @@ export default function DesignPage() {
 								<div className="space-y-8 pb-10">
 									{/* Social Media Group */}
 									<div className="space-y-3">
-										<h4 className="px-2 text-[9px] font-black uppercase tracking-[0.3em] text-blue-500/60 flex items-center gap-2">
-											<div className="size-1 bg-blue-500 rounded-full" />
+										<h4 className="px-2 text-[9px] font-black uppercase tracking-[0.3em] text-primary/60 flex items-center gap-2">
+											<div className="size-1 bg-primary rounded-full" />
 											Sociálne siete
 										</h4>
 										<div className="grid grid-cols-1 gap-2">
@@ -636,7 +636,7 @@ export default function DesignPage() {
 															"w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-xs transition-all duration-300",
 															canvasSize?.width === preset.width &&
 																canvasSize?.height === preset.height
-																? "bg-blue-600 text-white shadow-[0_15px_30px_rgba(37,99,235,0.3)] scale-[1.02]"
+																? "bg-primary text-white shadow-[0_15px_30px_rgba(37,99,235,0.3)] scale-[1.02]"
 																: "bg-accent/30 hover:bg-accent text-foreground/70 hover:text-foreground",
 														)}
 													>
@@ -667,8 +667,8 @@ export default function DesignPage() {
 
 									{/* Devices Group */}
 									<div className="space-y-3">
-										<h4 className="px-2 text-[9px] font-black uppercase tracking-[0.3em] text-blue-500/60 flex items-center gap-2">
-											<div className="size-1 bg-blue-500 rounded-full" />
+										<h4 className="px-2 text-[9px] font-black uppercase tracking-[0.3em] text-primary/60 flex items-center gap-2">
+											<div className="size-1 bg-primary rounded-full" />
 											Zariadenia
 										</h4>
 										<div className="grid grid-cols-1 gap-2">
@@ -690,7 +690,7 @@ export default function DesignPage() {
 															"w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-xs transition-all duration-300",
 															canvasSize?.width === preset.width &&
 																canvasSize?.height === preset.height
-																? "bg-blue-600 text-white shadow-[0_15px_30px_rgba(37,99,235,0.3)] scale-[1.02]"
+																? "bg-primary text-white shadow-[0_15px_30px_rgba(37,99,235,0.3)] scale-[1.02]"
 																: "bg-accent/30 hover:bg-accent text-foreground/70 hover:text-foreground",
 														)}
 													>
@@ -838,8 +838,8 @@ export default function DesignPage() {
 
 									<div className="flex items-center justify-between">
 										<div className="flex items-center gap-3">
-											<div className="size-8 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shadow-sm">
-												<Sliders className="size-4 text-blue-500" />
+											<div className="size-8 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-sm">
+												<Sliders className="size-4 text-primary" />
 											</div>
 											<div>
 												<h2 className="text-[10px] font-black uppercase tracking-[0.3em]">
@@ -874,7 +874,7 @@ export default function DesignPage() {
 									{/* Geometry Section */}
 									<div className="space-y-6">
 										<div className="flex items-center gap-3">
-											<Maximize2 className="size-3.5 text-blue-500/60" />
+											<Maximize2 className="size-3.5 text-primary/60" />
 											<Label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">
 												Geometria
 											</Label>
@@ -975,7 +975,7 @@ export default function DesignPage() {
 														rotation: parseInt(e.target.value),
 													})
 												}
-												className="w-full accent-blue-500 bg-foreground/10 rounded-full h-1 appearance-none cursor-pointer hover:bg-foreground/20 transition-colors"
+												className="w-full accent-primary bg-foreground/10 rounded-full h-1 appearance-none cursor-pointer hover:bg-foreground/20 transition-colors"
 											/>
 										</div>
 									</div>
@@ -983,7 +983,7 @@ export default function DesignPage() {
 									{/* Visual Settings */}
 									<div className="space-y-8">
 										<div className="flex items-center gap-3">
-											<Palette className="size-3.5 text-blue-500/60" />
+											<Palette className="size-3.5 text-primary/60" />
 											<Label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">
 												Vizuál
 											</Label>
@@ -1002,7 +1002,7 @@ export default function DesignPage() {
 													className={cn(
 														"py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
 														selectedElement.fillType !== "gradient"
-															? "bg-background text-blue-500 shadow-sm border border-border"
+															? "bg-background text-primary shadow-sm border border-border"
 															: "opacity-40 hover:opacity-100",
 													)}
 												>
@@ -1015,7 +1015,7 @@ export default function DesignPage() {
 													className={cn(
 														"py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
 														selectedElement.fillType === "gradient"
-															? "bg-background text-blue-500 shadow-sm border border-border"
+															? "bg-background text-primary shadow-sm border border-border"
 															: "opacity-40 hover:opacity-100",
 													)}
 												>
@@ -1052,7 +1052,7 @@ export default function DesignPage() {
 															"size-8 rounded-xl border-2 transition-all duration-300 hover:scale-110 active:scale-90",
 															selectedElement.fill === color ||
 																selectedElement.gradientColors?.[0] === color
-																? "border-blue-500 scale-110 shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+																? "border-primary scale-110 shadow-[0_0_20px_rgba(59,130,246,0.3)]"
 																: "border-transparent hover:border-foreground/20",
 														)}
 														style={{ backgroundColor: color }}
@@ -1083,7 +1083,7 @@ export default function DesignPage() {
 															className={cn(
 																"size-8 rounded-xl border-2 transition-all duration-300 hover:scale-110 active:scale-90",
 																selectedElement.stroke === color
-																	? "border-blue-500 scale-110 shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+																	? "border-primary scale-110 shadow-[0_0_20px_rgba(59,130,246,0.3)]"
 																	: "border-transparent hover:border-foreground/20",
 															)}
 															style={{ backgroundColor: color }}
@@ -1102,7 +1102,7 @@ export default function DesignPage() {
 															strokeWidth: parseInt(e.target.value),
 														})
 													}
-													className="w-full accent-blue-500 bg-foreground/10 rounded-full h-1 appearance-none cursor-pointer hover:bg-foreground/20 transition-colors"
+													className="w-full accent-primary bg-foreground/10 rounded-full h-1 appearance-none cursor-pointer hover:bg-foreground/20 transition-colors"
 												/>
 												<div className="grid grid-cols-3 gap-2">
 													{[
@@ -1119,7 +1119,7 @@ export default function DesignPage() {
 																"py-2 rounded-lg text-[8px] font-black uppercase tracking-widest border transition-all",
 																JSON.stringify(selectedElement.dash) ===
 																	JSON.stringify(style.value)
-																	? "bg-blue-500/10 border-blue-500/30 text-blue-500"
+																	? "bg-primary/10 border-primary/30 text-primary"
 																	: "bg-foreground/5 border-transparent opacity-40 hover:opacity-100",
 															)}
 														>
@@ -1151,24 +1151,24 @@ export default function DesignPage() {
 														opacity: parseFloat(e.target.value),
 													})
 												}
-												className="w-full accent-blue-500 bg-foreground/10 rounded-full h-1 appearance-none cursor-pointer hover:bg-foreground/20 transition-colors"
+												className="w-full accent-primary bg-foreground/10 rounded-full h-1 appearance-none cursor-pointer hover:bg-foreground/20 transition-colors"
 											/>
 										</div>
 
 										{/* Text Specifics */}
 										{selectedElement.type === "text" && (
 											<div className="space-y-6 pt-6 border-t border-border animate-in fade-in duration-500">
-												<div className="flex items-center justify-between p-4 rounded-[20px] bg-blue-500/5 border border-blue-500/10 shadow-sm">
+												<div className="flex items-center justify-between p-4 rounded-[20px] bg-primary/5 border border-primary/10 shadow-sm">
 													<div className="flex items-center gap-3">
-														<Sparkles className="size-4 text-blue-500" />
-														<span className="text-[10px] font-black uppercase tracking-widest opacity-80 text-blue-500">
+														<Sparkles className="size-4 text-primary" />
+														<span className="text-[10px] font-black uppercase tracking-widest opacity-80 text-primary">
 															Náhodný Štýl
 														</span>
 													</div>
 													<Button
 														size="xs"
 														variant="outline"
-														className="rounded-full bg-blue-500/20 border-blue-500/40 hover:bg-blue-500 text-white"
+														className="rounded-full bg-primary/20 border-primary/40 hover:bg-primary text-white"
 														onClick={randomizeText}
 													>
 														<RefreshCw className="size-3" />
@@ -1184,7 +1184,7 @@ export default function DesignPage() {
 														onChange={(e) =>
 															updateSelectedElement({ text: e.target.value })
 														}
-														className="w-full bg-background border border-border focus:border-blue-500/50 transition-all rounded-2xl p-4 text-xs h-24 outline-none resize-none font-bold"
+														className="w-full bg-background border border-border focus:border-primary/50 transition-all rounded-2xl p-4 text-xs h-24 outline-none resize-none font-bold"
 													/>
 												</div>
 											</div>
@@ -1246,8 +1246,8 @@ export default function DesignPage() {
 							) : (
 								<div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-700">
 									<div className="flex items-center gap-4">
-										<div className="size-10 rounded-[18px] bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shadow-sm">
-											<Palette className="size-5 text-blue-500" />
+										<div className="size-10 rounded-[18px] bg-primary/10 flex items-center justify-center border border-primary/20 shadow-sm">
+											<Palette className="size-5 text-primary" />
 										</div>
 										<div>
 											<h2 className="text-[10px] font-black uppercase tracking-[0.3em]">
@@ -1314,7 +1314,7 @@ export default function DesignPage() {
 														className={cn(
 															"size-9 rounded-xl border border-border shadow-sm transition-all hover:scale-110",
 															artboardColor === color
-																? "ring-2 ring-blue-500 ring-offset-4"
+																? "ring-2 ring-primary ring-offset-4"
 																: "",
 															!color &&
 																"bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] bg-repeat",
@@ -1326,8 +1326,8 @@ export default function DesignPage() {
 										</div>
 									</div>
 
-									<div className="p-8 rounded-[32px] bg-blue-500/5 border border-blue-500/10 space-y-4 shadow-sm">
-										<p className="text-[10px] font-bold text-blue-500/60 leading-relaxed uppercase tracking-widest text-center">
+									<div className="p-8 rounded-[32px] bg-primary/5 border border-primary/10 space-y-4 shadow-sm">
+										<p className="text-[10px] font-bold text-primary/60 leading-relaxed uppercase tracking-widest text-center">
 											Vyberte objekt pre špecifické úpravy alebo nastavte
 											globálne parametre projektu vyššie.
 										</p>

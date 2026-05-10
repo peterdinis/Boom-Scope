@@ -139,7 +139,7 @@ export default function DesignSystemPage() {
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
-							className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20 text-[10px] font-black uppercase tracking-[0.2em]"
+							className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-[10px] font-black uppercase tracking-[0.2em]"
 						>
 							<Sparkles className="size-3" />
 							AI Powered Engine
@@ -150,7 +150,7 @@ export default function DesignSystemPage() {
 							transition={{ delay: 0.1 }}
 							className="text-5xl lg:text-7xl font-black tracking-tighter"
 						>
-							Design <span className="text-blue-500">System</span>
+							Design <span className="text-primary">System</span>
 						</motion.h1>
 						<motion.p
 							initial={{ opacity: 0, y: 20 }}
@@ -172,7 +172,7 @@ export default function DesignSystemPage() {
 								size="lg"
 								onClick={analyzeImages}
 								disabled={isAnalyzing}
-								className="h-16 px-10 rounded-[24px] bg-blue-600 hover:bg-blue-700 text-white shadow-[0_20px_40px_rgba(37,99,235,0.3)] transition-all group overflow-hidden relative"
+								className="h-16 px-10 rounded-[24px] bg-primary hover:bg-blue-700 text-white shadow-[0_20px_40px_rgba(37,99,235,0.3)] transition-all group overflow-hidden relative"
 							>
 								{isAnalyzing ? (
 									<RefreshCw className="size-5 animate-spin" />
@@ -223,7 +223,7 @@ export default function DesignSystemPage() {
 						className={cn(
 							"relative group cursor-pointer rounded-[40px] border-2 border-dashed transition-all duration-700 overflow-hidden",
 							images.length > 0 ? "h-64" : "h-96",
-							"bg-background/20 backdrop-blur-3xl border-foreground/5 hover:border-blue-500/30",
+							"bg-background/20 backdrop-blur-3xl border-foreground/5 hover:border-primary/30",
 						)}
 					>
 						<input
@@ -275,7 +275,7 @@ export default function DesignSystemPage() {
 										</button>
 									</div>
 								))}
-								<div className="min-w-48 h-48 rounded-[28px] border-2 border-dashed border-foreground/5 flex flex-col items-center justify-center hover:border-blue-500/20 transition-all">
+								<div className="min-w-48 h-48 rounded-[28px] border-2 border-dashed border-foreground/5 flex flex-col items-center justify-center hover:border-primary/20 transition-all">
 									<Upload className="size-6 opacity-10" />
 								</div>
 							</div>
@@ -294,11 +294,11 @@ export default function DesignSystemPage() {
 							className="py-32 flex flex-col items-center justify-center space-y-12"
 						>
 							<div className="relative size-32">
-								<div className="absolute inset-0 rounded-full border-4 border-blue-500/10 animate-ping" />
-								<div className="absolute inset-4 rounded-full border-4 border-blue-500/20 animate-pulse" />
-								<div className="h-full w-full rounded-full border-4 border-t-blue-500 animate-spin" />
+								<div className="absolute inset-0 rounded-full border-4 border-primary/10 animate-ping" />
+								<div className="absolute inset-4 rounded-full border-4 border-primary/20 animate-pulse" />
+								<div className="h-full w-full rounded-full border-4 border-t-primary animate-spin" />
 								<div className="absolute inset-0 flex items-center justify-center">
-									<Sparkles className="size-8 text-blue-500" />
+									<Sparkles className="size-8 text-primary" />
 								</div>
 							</div>
 							<div className="text-center space-y-4">
@@ -323,7 +323,7 @@ export default function DesignSystemPage() {
 							<div className="lg:col-span-4 space-y-8">
 								<div className="p-8 rounded-[40px] bg-background/40 backdrop-blur-3xl border border-border shadow-2xl space-y-8">
 									<div className="space-y-2">
-										<p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">
+										<p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
 											Vizuálny Štýl
 										</p>
 										<h2 className="text-4xl font-black tracking-tight">
@@ -469,7 +469,7 @@ export default function DesignSystemPage() {
 													</div>
 													<input
 														placeholder="Píšte sem..."
-														className="w-full h-14 bg-foreground/5 border border-border/50 rounded-2xl pl-12 pr-4 text-xs font-bold outline-none focus:border-blue-500 transition-all shadow-inner"
+														className="w-full h-14 bg-foreground/5 border border-border/50 rounded-2xl pl-12 pr-4 text-xs font-bold outline-none focus:border-primary transition-all shadow-inner"
 													/>
 												</div>
 												<div className="flex gap-2">
@@ -539,7 +539,7 @@ export default function DesignSystemPage() {
 
 			{/* Background Blobs */}
 			<div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none opacity-20 dark:opacity-10">
-				<div className="absolute top-0 right-0 size-200 bg-blue-500/20 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2" />
+				<div className="absolute top-0 right-0 size-200 bg-primary/20 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2" />
 				<div className="absolute bottom-0 left-0 size-150 bg-emerald-500/10 blur-[100px] rounded-full -translate-x-1/2 translate-y-1/2" />
 			</div>
 		</div>
