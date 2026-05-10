@@ -7,6 +7,7 @@ import {
 	Circle,
 	Eye,
 	EyeOff,
+	FolderKanban,
 	Grid,
 	Image as ImageIcon,
 	Layers,
@@ -32,6 +33,7 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Dock } from "@/components/design/Dock";
 import type { CanvasElement } from "@/components/design/KonvaCanvas";
 import { ShareDialog } from "@/components/design/ShareDialog";
@@ -42,9 +44,25 @@ import {
 	TwitterIcon,
 } from "@/components/icons/SocialIcons";
 import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { CANVAS_PRESETS } from "@/lib/canvas-presets";
 import { cn } from "@/lib/utils";
 
@@ -109,6 +127,9 @@ export default function DesignPage() {
 	const [previousTool, setPreviousTool] = useState<string | null>(null);
 	const [isShareOpen, setIsShareOpen] = useState(false);
 	const [sharedDesignId, setSharedDesignId] = useState<string | null>(null);
+	const [isProjectPickerOpen, setIsProjectPickerOpen] = useState(false);
+	const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+	const [isSaving, setIsSaving] = useState(false);
 
 	const projects = useQuery(api.projects.list);
 	const saveDesign = useMutation(api.designs.saveDesign);
@@ -157,22 +178,13 @@ export default function DesignPage() {
 				return;
 			}
 			if (toolId === "share") {
-				const firstProject = projects?.[0];
-				if (!firstProject) {
-					alert("Najprv si vytvorte projekt v dashboarde!");
+				if (!projects || projects.length === 0) {
+					toast.error("Najprv si vytvorte projekt v dashboarde!");
 					return;
 				}
-
-				saveDesign({
-					name: `Design - ${new Date().toLocaleDateString()}`,
-					elements: JSON.stringify(elementsRef.current),
-					projectId: firstProject._id,
-					canvasSize: canvasSize || { width: 1920, height: 1080 },
-					artboardColor: artboardColor || undefined,
-				}).then((id) => {
-					setSharedDesignId(id);
-					setIsShareOpen(true);
-				});
+				// Open project picker dialog
+				setSelectedProjectId(projects[0]._id);
+				setIsProjectPickerOpen(true);
 				return;
 			}
 			setActiveTool(toolId);
@@ -182,6 +194,31 @@ export default function DesignPage() {
 		},
 		[projects, saveDesign, canvasSize, artboardColor],
 	);
+
+	const handleSaveToProject = useCallback(async () => {
+		if (!selectedProjectId) {
+			toast.error("Vyberte projekt!");
+			return;
+		}
+		setIsSaving(true);
+		try {
+			const id = await saveDesign({
+				name: `Design - ${new Date().toLocaleDateString()}`,
+				elements: JSON.stringify(elementsRef.current),
+				projectId: selectedProjectId as Id<"projects">,
+				canvasSize: canvasSize || { width: 1920, height: 1080 },
+				artboardColor: artboardColor || undefined,
+			});
+			setIsProjectPickerOpen(false);
+			setSharedDesignId(id);
+			setIsShareOpen(true);
+			toast.success("Design uložený do projektu!");
+		} catch {
+			toast.error("Nepodarilo sa uložiť design.");
+		} finally {
+			setIsSaving(false);
+		}
+	}, [selectedProjectId, saveDesign, canvasSize, artboardColor]);
 
 	const updateSelectedElement = useCallback(
 		(updates: Partial<CanvasElement>) => {
@@ -1359,6 +1396,74 @@ export default function DesignPage() {
 
 			{/* The Magic Dock */}
 			<Dock activeTool={activeTool} onToolChange={handleAction} />
+
+			{/* Project Picker Dialog */}
+			<Dialog open={isProjectPickerOpen} onOpenChange={setIsProjectPickerOpen}>
+				<DialogContent className="rounded-3xl border border-border bg-background/95 backdrop-blur-3xl shadow-2xl sm:max-w-md">
+					<DialogHeader className="pb-2">
+						<div className="flex items-center gap-3 mb-2">
+							<div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20">
+								<FolderKanban className="size-5" />
+							</div>
+							<DialogTitle className="text-lg font-black tracking-tight">
+								Priradiť k projektu
+							</DialogTitle>
+						</div>
+						<DialogDescription className="text-xs text-muted-foreground font-medium">
+							Vyberte projekt, do ktorého sa má tento canvas design uložiť.
+						</DialogDescription>
+					</DialogHeader>
+
+					<div className="py-4 space-y-3">
+						<Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+							Projekt
+						</Label>
+						<Select
+							value={selectedProjectId || undefined}
+							onValueChange={setSelectedProjectId}
+						>
+							<SelectTrigger className="h-12 rounded-2xl bg-accent/30 border-border/60 font-medium">
+								<SelectValue placeholder="Vyberte projekt..." />
+							</SelectTrigger>
+							<SelectContent className="rounded-2xl border-border/50 backdrop-blur-3xl">
+								{projects?.map((project) => (
+									<SelectItem
+										key={project._id}
+										value={project._id}
+										className="rounded-xl"
+									>
+										<div className="flex items-center gap-2">
+											<FolderKanban className="size-3.5 text-primary opacity-60" />
+											{project.name}
+										</div>
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+
+					<DialogFooter className="gap-2 pt-2">
+						<Button
+							variant="outline"
+							className="rounded-xl h-11 font-bold"
+							onClick={() => setIsProjectPickerOpen(false)}
+						>
+							Zrušiť
+						</Button>
+						<Button
+							className="rounded-xl h-11 font-black uppercase tracking-wider text-xs bg-primary hover:bg-primary/90"
+							onClick={handleSaveToProject}
+							disabled={!selectedProjectId || isSaving}
+						>
+							{isSaving ? (
+								<RefreshCw className="size-4 animate-spin" />
+							) : (
+								"Uložiť & Zdieľať"
+							)}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 
 			<ShareDialog
 				isOpen={isShareOpen}
