@@ -313,6 +313,31 @@ function DesignPageContent() {
 
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
+	const handleSaveToProject = useCallback(async () => {
+		if (!selectedProjectId) {
+			toast.error("Vyberte projekt!");
+			return;
+		}
+		setIsSaving(true);
+		try {
+			const id = await saveDesign({
+				name: `Design - ${new Date().toLocaleDateString()}`,
+				elements: JSON.stringify(elementsRef.current),
+				projectId: selectedProjectId as Id<"projects">,
+				canvasSize: canvasSize || { width: 1920, height: 1080 },
+				artboardColor: artboardColor || undefined,
+			});
+			setIsProjectPickerOpen(false);
+			setSharedDesignId(id);
+			setIsShareOpen(true);
+			toast.success("Design uložený do projektu!");
+		} catch {
+			toast.error("Nepodarilo sa uložiť design.");
+		} finally {
+			setIsSaving(false);
+		}
+	}, [selectedProjectId, saveDesign, canvasSize, artboardColor]);
+
 	const handleAction = useCallback(
 		async (toolId: string) => {
 			if (toolId === "undo") {
@@ -383,6 +408,8 @@ function DesignPageContent() {
 					} finally {
 						setIsSaving(false);
 					}
+				} else if (selectedProjectId) {
+					handleSaveToProject();
 				} else {
 					handleAction("share");
 				}
@@ -393,33 +420,8 @@ function DesignPageContent() {
 				setSelectedIds([]);
 			}
 		},
-		[projects, commitElements],
+		[projects, commitElements, sharedDesignId, selectedProjectId, updateDesign, handleSaveToProject, canvasSize, artboardColor],
 	);
-
-	const handleSaveToProject = useCallback(async () => {
-		if (!selectedProjectId) {
-			toast.error("Vyberte projekt!");
-			return;
-		}
-		setIsSaving(true);
-		try {
-			const id = await saveDesign({
-				name: `Design - ${new Date().toLocaleDateString()}`,
-				elements: JSON.stringify(elementsRef.current),
-				projectId: selectedProjectId as Id<"projects">,
-				canvasSize: canvasSize || { width: 1920, height: 1080 },
-				artboardColor: artboardColor || undefined,
-			});
-			setIsProjectPickerOpen(false);
-			setSharedDesignId(id);
-			setIsShareOpen(true);
-			toast.success("Design uložený do projektu!");
-		} catch {
-			toast.error("Nepodarilo sa uložiť design.");
-		} finally {
-			setIsSaving(false);
-		}
-	}, [selectedProjectId, saveDesign, canvasSize, artboardColor]);
 
 	const updateSelectedElement = useCallback(
 		(updates: Partial<CanvasElement>) => {
@@ -745,6 +747,17 @@ function DesignPageContent() {
 						<span className="flex items-center gap-2 uppercase">
 							<RefreshCw className="size-3" /> Auto-Save
 						</span>
+						<button
+							onClick={() => handleAction("save")}
+							className="flex items-center gap-2 uppercase opacity-100 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors pointer-events-auto"
+						>
+							{isSaving ? (
+								<RefreshCw className="size-3 animate-spin" />
+							) : (
+								<FolderKanban className="size-3" />
+							)}
+							{sharedDesignId ? "Aktualizovať" : "Uložiť do projektu"}
+						</button>
 						<button
 							onClick={() => setIsNoteOpen(true)}
 							className="flex items-center gap-2 uppercase opacity-100 px-3 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors pointer-events-auto"

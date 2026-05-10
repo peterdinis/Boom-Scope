@@ -3,6 +3,18 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import DesignPage from "../app/dashboard/canvas/page";
 
+// Mock next/navigation
+vi.mock("next/navigation", () => ({
+	useRouter: () => ({
+		push: vi.fn(),
+		back: vi.fn(),
+	}),
+	useParams: vi.fn(() => ({})),
+	useSearchParams: vi.fn(() => ({
+		get: vi.fn(),
+	})),
+}));
+
 // Mock convex
 vi.mock("convex/react", () => ({
 	useQuery: vi.fn(),

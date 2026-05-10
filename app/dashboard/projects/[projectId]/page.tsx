@@ -239,6 +239,209 @@ export default function ProjectDetailPage() {
 					))}
 				</div>
 
+				{/* Designs Section */}
+				<section className="space-y-10">
+					<div className="flex items-center justify-between">
+						<div className="space-y-2">
+							<h2 className="text-3xl font-black tracking-tight flex items-center gap-3">
+								<Palette className="size-8 text-emerald-500" />
+								Dostupné Canvasi
+							</h2>
+							<p className="text-sm font-medium opacity-40">
+								Vyberte si existujúci design alebo vytvorte nový.
+							</p>
+						</div>
+						<Button
+							onClick={() => router.push(`/dashboard/canvas?projectId=${projectId}`)}
+							className="h-12 px-6 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 font-bold gap-2"
+						>
+							<Plus className="size-4" /> Nový Canvas
+						</Button>
+					</div>
+
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+						{designs?.map((design) => (
+							<Link
+								key={design._id}
+								href={`/dashboard/canvas?projectId=${projectId}&designId=${design._id}`}
+							>
+								<div className="group relative aspect-video rounded-3xl border border-border bg-background/40 backdrop-blur-3xl overflow-hidden hover:border-emerald-500/50 transition-all duration-500 shadow-xl">
+									<div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+									
+									{/* Preview Placeholder */}
+									<div className="h-full w-full flex items-center justify-center opacity-20 group-hover:opacity-40 transition-opacity">
+										<Palette className="size-12" />
+									</div>
+
+									<div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-background to-transparent translate-y-2 group-hover:translate-y-0 transition-transform">
+										<p className="text-xs font-black uppercase tracking-widest text-emerald-500 mb-1">
+											Design
+										</p>
+										<h4 className="text-lg font-bold tracking-tight truncate">
+											{design.name}
+										</h4>
+										<p className="text-[10px] font-medium opacity-40 uppercase tracking-widest mt-2 flex items-center gap-2">
+											<Clock className="size-3" />
+											{new Date(design._creationTime).toLocaleDateString()}
+										</p>
+									</div>
+
+									<div className="absolute top-4 right-4 size-10 rounded-full bg-emerald-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all shadow-lg">
+										<ChevronRight className="size-5" />
+									</div>
+								</div>
+							</Link>
+						))}
+
+						{designs?.length === 0 && (
+							<div className="col-span-full py-20 rounded-[40px] border border-border border-dashed flex flex-col items-center justify-center text-center opacity-20 space-y-4">
+								<Palette className="size-12" />
+								<p className="text-sm font-black uppercase tracking-widest">
+									Zatiaľ žiadne canvasi v tomto projekte
+								</p>
+							</div>
+						)}
+					</div>
+				</section>
+
+				{/* Designs Section */}
+				<section className="space-y-10">
+					<div className="flex items-center justify-between">
+						<div className="space-y-2">
+							<h2 className="text-3xl font-black tracking-tight flex items-center gap-3">
+								<Palette className="size-8 text-emerald-500" />
+								Dostupné Canvasi
+							</h2>
+							<p className="text-sm font-medium opacity-40">
+								Vyberte si existujúci design alebo vytvorte nový.
+							</p>
+						</div>
+						<Button
+							onClick={() => router.push(`/dashboard/canvas?projectId=${projectId}`)}
+							className="h-12 px-6 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 font-bold gap-2"
+						>
+							<Plus className="size-4" /> Nový Canvas
+						</Button>
+					</div>
+
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+						{designs?.map((design) => (
+							<Link
+								key={design._id}
+								href={`/dashboard/canvas?projectId=${projectId}&designId=${design._id}`}
+							>
+								<div className="group relative aspect-video rounded-3xl border border-border bg-background/40 backdrop-blur-3xl overflow-hidden hover:border-emerald-500/50 transition-all duration-500 shadow-xl">
+									<div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+									
+									<div className="h-full w-full flex items-center justify-center opacity-20 group-hover:opacity-40 transition-opacity">
+										<Palette className="size-12" />
+									</div>
+
+									<div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-background to-transparent translate-y-2 group-hover:translate-y-0 transition-transform">
+										<p className="text-xs font-black uppercase tracking-widest text-emerald-500 mb-1">
+											Design
+										</p>
+										<h4 className="text-lg font-bold tracking-tight truncate">
+											{design.name}
+										</h4>
+										<p className="text-[10px] font-medium opacity-40 uppercase tracking-widest mt-2 flex items-center gap-2">
+											<Clock className="size-3" />
+											{new Date(design._creationTime).toLocaleDateString()}
+										</p>
+									</div>
+
+									<div className="absolute top-4 right-4 size-10 rounded-full bg-emerald-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all shadow-lg">
+										<ChevronRight className="size-5" />
+									</div>
+								</div>
+							</Link>
+						))}
+
+						{designs?.length === 0 && (
+							<div className="col-span-full py-20 rounded-[40px] border border-border border-dashed flex flex-col items-center justify-center text-center opacity-20 space-y-4">
+								<Palette className="size-12" />
+								<p className="text-sm font-black uppercase tracking-widest">
+									Zatiaľ žiadne canvasi v tomto projekte
+								</p>
+							</div>
+						)}
+					</div>
+				</section>
+
+				{/* Design Systems Section */}
+				<section className="space-y-10">
+					<div className="flex items-center justify-between">
+						<div className="space-y-2">
+							<h2 className="text-3xl font-black tracking-tight flex items-center gap-3">
+								<Sparkles className="size-8 text-purple-500" />
+								Design Systémy
+							</h2>
+							<p className="text-sm font-medium opacity-40">
+								Vaše vizuálne identity a farebné palety.
+							</p>
+						</div>
+						<Button
+							onClick={() => router.push(`/dashboard/design-system?projectId=${projectId}`)}
+							className="h-12 px-6 rounded-xl bg-purple-500 text-white hover:bg-purple-600 font-bold gap-2"
+						>
+							<Plus className="size-4" /> Nový Systém
+						</Button>
+					</div>
+
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+						{designSystems?.map((sys) => (
+							<Link
+								key={sys._id}
+								href={`/dashboard/design-system?projectId=${projectId}&systemId=${sys._id}`}
+							>
+								<div className="group relative p-8 rounded-[40px] border border-border bg-background/40 backdrop-blur-3xl hover:border-purple-500/50 transition-all duration-500 shadow-xl overflow-hidden">
+									<div className="absolute -right-4 -top-4 size-24 bg-purple-500/10 blur-2xl group-hover:bg-purple-500/20 transition-all" />
+									
+									<div className="flex gap-2 mb-6">
+										{sys.colors.slice(0, 4).map((c, i) => (
+											<div 
+												key={i}
+												className="size-8 rounded-full border-2 border-background shadow-sm"
+												style={{ backgroundColor: c.hex }}
+											/>
+										))}
+									</div>
+
+									<div className="space-y-2">
+										<p className="text-[10px] font-black uppercase tracking-widest text-purple-500">
+											Design System
+										</p>
+										<h4 className="text-lg font-bold tracking-tight truncate">
+											{sys.description || "Bez popisu"}
+										</h4>
+										<div className="flex items-center gap-4 pt-4">
+											<div className="flex items-center gap-1.5 text-[10px] font-bold opacity-40 uppercase tracking-widest">
+												<Palette className="size-3" /> {sys.colors.length}
+											</div>
+											<div className="flex items-center gap-1.5 text-[10px] font-bold opacity-40 uppercase tracking-widest">
+												<Type className="size-3" /> {sys.fonts.length}
+											</div>
+										</div>
+									</div>
+
+									<div className="absolute bottom-6 right-6 size-10 rounded-full bg-purple-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all shadow-lg">
+										<ChevronRight className="size-5" />
+									</div>
+								</div>
+							</Link>
+						))}
+
+						{designSystems?.length === 0 && (
+							<div className="col-span-full py-20 rounded-[40px] border border-border border-dashed flex flex-col items-center justify-center text-center opacity-20 space-y-4">
+								<Sparkles className="size-12" />
+								<p className="text-sm font-black uppercase tracking-widest">
+									Zatiaľ žiadne design systémy
+								</p>
+							</div>
+						)}
+					</div>
+				</section>
+
 				{/* Recent Activity / Feed Placeholder */}
 				<section className="pt-16 space-y-10">
 					<div className="flex items-center justify-between">

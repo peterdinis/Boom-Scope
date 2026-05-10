@@ -1,9 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import { useQuery } from "convex/react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import React from "react";
 import { describe, expect, test, vi } from "vitest";
 import ProjectDetailPage from "../app/dashboard/projects/[projectId]/page";
+import { api } from "../convex/_generated/api";
 import type { Id } from "../convex/_generated/dataModel";
 
 // Mock Convex
@@ -18,15 +19,26 @@ vi.mock("next/navigation", () => ({
 		back: vi.fn(),
 	}),
 	useParams: vi.fn(),
+	useSearchParams: vi.fn(() => ({
+		get: vi.fn(),
+	})),
 }));
 
 describe("Page: Project Detail", () => {
 	test("renders project title and description", () => {
 		vi.mocked(useParams).mockReturnValue({ projectId: "test-id" });
-		vi.mocked(useQuery).mockReturnValue({
-			_id: "test-id" as unknown as Id<"projects">,
-			name: "Architecture Project",
-			description: "A custom villa design",
+		vi.mocked(useQuery).mockImplementation((query) => {
+			if (query === api.projects.getById) {
+				return {
+					_id: "test-id" as unknown as Id<"projects">,
+					name: "Architecture Project",
+					description: "A custom villa design",
+				};
+			}
+			if (query === api.designs.listByProject) return [];
+			if (query === api.design_systems.getByProject) return [];
+			if (query === api.notes.list) return { page: [] };
+			return null;
 		});
 
 		render(<ProjectDetailPage />);
@@ -37,9 +49,17 @@ describe("Page: Project Detail", () => {
 
 	test("shows the correct module sections", () => {
 		vi.mocked(useParams).mockReturnValue({ projectId: "test-id" });
-		vi.mocked(useQuery).mockReturnValue({
-			_id: "test-id" as unknown as Id<"projects">,
-			name: "Test Project",
+		vi.mocked(useQuery).mockImplementation((query) => {
+			if (query === api.projects.getById) {
+				return {
+					_id: "test-id" as unknown as Id<"projects">,
+					name: "Test Project",
+				};
+			}
+			if (query === api.designs.listByProject) return [];
+			if (query === api.design_systems.getByProject) return [];
+			if (query === api.notes.list) return { page: [] };
+			return null;
 		});
 
 		render(<ProjectDetailPage />);
@@ -51,7 +71,10 @@ describe("Page: Project Detail", () => {
 
 	test("handles non-existent project", () => {
 		vi.mocked(useParams).mockReturnValue({ projectId: "wrong-id" });
-		vi.mocked(useQuery).mockReturnValue(null);
+		vi.mocked(useQuery).mockImplementation((query) => {
+			if (query === api.projects.getById) return null;
+			return [];
+		});
 
 		render(<ProjectDetailPage />);
 

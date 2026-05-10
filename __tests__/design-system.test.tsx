@@ -4,6 +4,18 @@ import { toast } from "sonner";
 import { describe, expect, test, vi } from "vitest";
 import DesignSystemPage from "../app/dashboard/design-system/page";
 
+// Mock next/navigation
+vi.mock("next/navigation", () => ({
+	useRouter: () => ({
+		push: vi.fn(),
+		back: vi.fn(),
+	}),
+	useParams: vi.fn(() => ({})),
+	useSearchParams: vi.fn(() => ({
+		get: vi.fn(),
+	})),
+}));
+
 // Mock Convex hooks so the page renders without a ConvexProvider in tests.
 vi.mock("convex/react", () => ({
 	useQuery: vi.fn(() => []),

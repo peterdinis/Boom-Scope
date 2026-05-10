@@ -21,7 +21,8 @@ import {
 	Wand2,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { QuickNoteDialog } from "@/components/notes/QuickNoteDialog";
@@ -57,12 +58,14 @@ const aiSystemSchema = z.object({
 
 type GeneratedSystem = z.infer<typeof aiSystemSchema>;
 
-export default function DesignSystemPage() {
+function DesignSystemPageContent() {
 	const projects = useQuery(api.projects.list);
 	const historyList = useQuery(api.design_systems.listByUser);
 	const analyzeDesign = useAction(api.openai.analyzeDesignSystem);
 	const generateDesign = useAction(api.openai.generateDesignFromImages);
 	const saveSystem = useMutation(api.design_systems.create);
+	const updateSystem = useMutation(api.design_systems.update);
+	const saveDesign = useMutation(api.designs.saveDesign);
 	const setPublicMutation = useMutation(api.design_systems.setPublic);
 	const deleteSystemMutation = useMutation(api.design_systems.remove);
 
@@ -86,7 +89,41 @@ export default function DesignSystemPage() {
 	const [sharePublic, setSharePublic] = useState(false);
 	const [copiedColor, setCopiedColor] = useState<string | null>(null);
 	const [isNoteOpen, setIsNoteOpen] = useState(false);
+	const [isSaving, setIsSaving] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	const searchParams = useSearchParams();
+	const systemIdParam = searchParams.get("systemId");
+	const projectIdParam = searchParams.get("projectId");
+
+	const existingSystem = useQuery(
+		api.design_systems.getById,
+		systemIdParam ? { id: systemIdParam as Id<"design_systems"> } : "skip",
+	);
+
+	useEffect(() => {
+		if (existingSystem) {
+			setSystem({
+				colors: existingSystem.colors,
+				fonts: existingSystem.fonts,
+				description: existingSystem.description,
+				goodThings: existingSystem.goodThings,
+				badThings: existingSystem.badThings,
+				suggestions: existingSystem.suggestions,
+			});
+			setLocalColors([]);
+			setLocalFonts([]);
+			setLastSavedId(existingSystem._id);
+			setSharePublic(existingSystem.isPublic ?? false);
+			setSelectedProjectId(existingSystem.projectId);
+		}
+	}, [existingSystem]);
+
+	useEffect(() => {
+		if (projectIdParam && !selectedProjectId && !systemIdParam) {
+			setSelectedProjectId(projectIdParam);
+		}
+	}, [projectIdParam, selectedProjectId, systemIdParam]);
 
 	const merged = useMemo(() => {
 		const baseColors = system?.colors ?? [];
@@ -122,23 +159,39 @@ export default function DesignSystemPage() {
 			toast.error("Pridajte aspoň jednu farbu alebo font.");
 			return;
 		}
+		setIsSaving(true);
 		try {
-			const id = await saveSystem({
-				projectId: selectedProjectId as Id<"projects">,
-				colors:
-					merged.colors.length > 0
-						? merged.colors
-						: [{ name: "Neutral", hex: "#71717a", rgb: "rgb(113, 113, 122)" }],
-				fonts,
-				description: merged.description || "Design system",
-				goodThings: merged.goodThings,
-				badThings: merged.badThings,
-				suggestions: merged.suggestions,
-			});
-			setLastSavedId(id);
-			toast.success("Design system uložený!");
+			if (lastSavedId) {
+				await updateSystem({
+					id: lastSavedId,
+					colors: merged.colors,
+					fonts,
+					description: merged.description || "Design system",
+					goodThings: merged.goodThings,
+					badThings: merged.badThings,
+					suggestions: merged.suggestions,
+				});
+				toast.success("Design system aktualizovaný!");
+			} else {
+				const id = await saveSystem({
+					projectId: selectedProjectId as Id<"projects">,
+					colors:
+						merged.colors.length > 0
+							? merged.colors
+							: [{ name: "Neutral", hex: "#71717a", rgb: "rgb(113, 113, 122)" }],
+					fonts,
+					description: merged.description || "Design system",
+					goodThings: merged.goodThings,
+					badThings: merged.badThings,
+					suggestions: merged.suggestions,
+				});
+				setLastSavedId(id);
+				toast.success("Design system uložený!");
+			}
 		} catch {
 			toast.error("Ukladanie zlyhalo.");
+		} finally {
+			setIsSaving(false);
 		}
 	};
 
@@ -1097,5 +1150,19 @@ export default function DesignSystemPage() {
 				defaultProjectId={selectedProjectId}
 			/>
 		</div>
+	);
+}
+
+export default function DesignSystemPage() {
+	return (
+		<Suspense
+			fallback={
+				<div className="flex h-screen w-full items-center justify-center bg-background">
+					<div className="size-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+				</div>
+			}
+		>
+			<DesignSystemPageContent />
+		</Suspense>
 	);
 }
