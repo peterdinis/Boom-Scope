@@ -64,4 +64,33 @@ describe("Page: Design System Generator", () => {
 
 		expect(toast.error).toHaveBeenCalledWith("Najprv vyberte projekt!");
 	});
+
+	test("shows Generovať Design button after image upload", async () => {
+		const { container } = render(<DesignSystemPage />);
+		const input = container.querySelector(
+			"input[type='file']",
+		) as HTMLInputElement;
+
+		const file = new File(["dummy content"], "test.png", { type: "image/png" });
+		fireEvent.change(input, { target: { files: [file] } });
+
+		await waitFor(() => {
+			expect(screen.getByText(/Generovať Design/i)).toBeDefined();
+		});
+	});
+
+	test("Generovať Design requires a project", async () => {
+		const { container } = render(<DesignSystemPage />);
+		const input = container.querySelector(
+			"input[type='file']",
+		) as HTMLInputElement;
+
+		const file = new File(["dummy content"], "test.png", { type: "image/png" });
+		fireEvent.change(input, { target: { files: [file] } });
+
+		const generateBtn = await screen.findByText(/Generovať Design/i);
+		fireEvent.click(generateBtn);
+
+		expect(toast.error).toHaveBeenCalledWith("Najprv vyberte projekt!");
+	});
 });

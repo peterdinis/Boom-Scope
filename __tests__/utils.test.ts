@@ -14,3 +14,18 @@ describe("Utility: cn", () => {
 		expect(cn()).toBe("");
 	});
 });
+
+import { designSystemToFigmaTokensJson } from "../lib/figma-tokens";
+
+describe("Utility: Figma Tokens", () => {
+	test("generates valid JSON with colors and fonts", () => {
+		const colors = [{ name: "Primary Blue", hex: "#0000ff" }];
+		const fonts = ["Inter", "Roboto"];
+		const json = designSystemToFigmaTokensJson(colors, fonts);
+		const parsed = JSON.parse(json);
+
+		expect(parsed.tokens["color/primary-blue"]).toBeDefined();
+		expect(parsed.tokens["fontFamily/primary"].value).toBe("Inter");
+		expect(parsed.tokens["fontFamily/alt-1"].value).toBe("Roboto");
+	});
+});
