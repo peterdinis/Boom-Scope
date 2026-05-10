@@ -67,7 +67,7 @@ describe("Lib: Canvas Elements", () => {
 		const group = next![0];
 		expect(group.type).toBe("group");
 		expect(group.children).toHaveLength(2);
-		
+
 		// BBox of rect (10,10,110,60) and circle (50-40, 50-40, 50+40, 50+40) = (10,10, 110,60) is wrong
 		// Circle bbox: x-r, y-r, x+r, y+r where r = sqrt(w*w+h*h)
 		// For 40x40 circle, r = sqrt(1600+1600) = sqrt(3200) approx 56.5
