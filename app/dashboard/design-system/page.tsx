@@ -190,6 +190,15 @@ export default function DesignSystemPage() {
 							</Button>
 						</motion.div>
 					)}
+
+					<Button
+						variant="outline"
+						onClick={() => setIsNoteOpen(true)}
+						className="h-12 px-6 rounded-2xl border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 font-black uppercase tracking-widest text-[10px] gap-2"
+					>
+						<NotebookPen className="size-4" />
+						Rýchla poznámka
+					</Button>
 				</header>
 
 				<section className="space-y-4">
@@ -545,6 +554,12 @@ export default function DesignSystemPage() {
 				<div className="absolute top-0 right-0 size-200 bg-primary/20 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2" />
 				<div className="absolute bottom-0 left-0 size-150 bg-emerald-500/10 blur-[100px] rounded-full -translate-x-1/2 translate-y-1/2" />
 			</div>
+
+			<QuickNoteDialog
+				open={isNoteOpen}
+				onOpenChange={setIsNoteOpen}
+				defaultProjectId={selectedProjectId}
+			/>
 		</div>
 	);
 }
