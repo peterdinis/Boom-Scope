@@ -49,3 +49,67 @@ export const analyzeDesignSystem = action({
 		return JSON.parse(content);
 	},
 });
+export const generateDesignFromImages = action({
+	args: {
+		imageUrls: v.array(v.string()),
+	},
+	handler: async (ctx, args) => {
+		const openai = getOpenAI();
+		const response = await openai.chat.completions.create({
+			model: "gpt-4o-mini",
+			messages: [
+				{
+					role: "system",
+					content: `You are a professional UI/UX designer and design engineer. 
+Analyze the provided images and generate a high-quality UI layout or component (like a professional button, card, or hero section) inspired by them.
+Return a JSON object with: 
+{ 
+  "name": "Design Name",
+  "canvasSize": { "width": 1920, "height": 1080 },
+  "elements": [
+    {
+      "id": "unique-id",
+      "type": "rect" | "circle" | "text" | "star" | "arrow",
+      "x": number,
+      "y": number,
+      "width": number,
+      "height": number,
+      "stroke": "color-hex",
+      "fill": "color-hex" | "none",
+      "strokeWidth": number,
+      "rotation": number (0-360),
+      "opacity": number (0-1),
+      "cornerRadius": number (for rect),
+      "text": "string" (for text),
+      "fontSize": number (for text),
+      "fontFamily": "string" (for text)
+    }
+  ]
+}
+Ensure coordinates (x, y) and sizes (width, height) fit within the canvas size. 
+Create a sophisticated, premium-looking design with harmonious colors and balanced spacing. 
+Return ONLY valid JSON.`,
+				},
+				{
+					role: "user",
+					content: [
+						{
+							type: "text",
+							text: "Generate a beautiful UI design based on these inspiration images. Use at least 5-10 elements to create a cohesive section.",
+						},
+						...args.imageUrls.map((url) => ({
+							type: "image_url" as const,
+							image_url: { url },
+						})),
+					],
+				},
+			],
+			response_format: { type: "json_object" },
+		});
+
+		const content = response.choices[0].message.content;
+		if (!content) throw new ConvexError("Failed to get response from OpenAI");
+
+		return JSON.parse(content);
+	},
+});

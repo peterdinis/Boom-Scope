@@ -17,6 +17,7 @@ import {
 	Type,
 	Upload,
 	Wand2,
+	ExternalLink,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo, useRef, useState } from "react";
@@ -59,6 +60,7 @@ export default function DesignSystemPage() {
 	const projects = useQuery(api.projects.list);
 	const historyList = useQuery(api.design_systems.listByUser);
 	const analyzeDesign = useAction(api.openai.analyzeDesignSystem);
+	const generateDesign = useAction(api.openai.generateDesignFromImages);
 	const saveSystem = useMutation(api.design_systems.create);
 	const setPublicMutation = useMutation(api.design_systems.setPublic);
 	const deleteSystemMutation = useMutation(api.design_systems.remove);
@@ -68,6 +70,7 @@ export default function DesignSystemPage() {
 	);
 	const [images, setImages] = useState<{ id: string; url: string }[]>([]);
 	const [isAnalyzing, setIsAnalyzing] = useState(false);
+	const [isGeneratingDesign, setIsGeneratingDesign] = useState(false);
 	const [system, setSystem] = useState<GeneratedSystem | null>(null);
 	const [localColors, setLocalColors] = useState<
 		{ name: string; hex: string; rgb: string }[]
@@ -291,6 +294,44 @@ export default function DesignSystemPage() {
 		}
 	};
 
+	const handleGenerateDesign = async () => {
+		if (images.length === 0) {
+			toast.error("Najprv nahrajte inšpiráciu!");
+			return;
+		}
+		if (!selectedProjectId) {
+			toast.error("Najprv vyberte projekt!");
+			return;
+		}
+
+		setIsGeneratingDesign(true);
+
+		try {
+			const result = await generateDesign({
+				imageUrls: images.map((img) => img.url),
+			});
+
+			const id = await saveDesign({
+				name: result.name || "AI Generated Design",
+				elements: JSON.stringify(result.elements),
+				projectId: selectedProjectId as Id<"projects">,
+				canvasSize: result.canvasSize || { width: 1920, height: 1080 },
+			});
+
+			toast.success("Design úspešne vygenerovaný!", {
+				action: {
+					label: "Otvoriť v Canvas",
+					onClick: () => (window.location.href = "/dashboard/canvas"),
+				},
+			});
+		} catch (error) {
+			console.error(error);
+			toast.error("Nepodarilo sa vygenerovať design.");
+		} finally {
+			setIsGeneratingDesign(false);
+		}
+	};
+
 	const copyToClipboard = (text: string) => {
 		navigator.clipboard.writeText(text);
 		setCopiedColor(text);
@@ -345,11 +386,12 @@ export default function DesignSystemPage() {
 						<motion.div
 							initial={{ opacity: 0, scale: 0.9 }}
 							animate={{ opacity: 1, scale: 1 }}
+							className="flex flex-wrap gap-4"
 						>
 							<Button
 								size="lg"
 								onClick={analyzeImages}
-								disabled={isAnalyzing}
+								disabled={isAnalyzing || isGeneratingDesign}
 								className="h-16 px-10 rounded-[24px] bg-primary hover:bg-blue-700 text-white shadow-[0_20px_40px_rgba(37,99,235,0.3)] transition-all group overflow-hidden relative"
 							>
 								{isAnalyzing ? (
@@ -359,6 +401,25 @@ export default function DesignSystemPage() {
 										<Wand2 className="size-5 group-hover:rotate-12 transition-transform" />
 										<span className="font-black uppercase tracking-widest text-xs">
 											Generovať Identitu
+										</span>
+									</div>
+								)}
+							</Button>
+
+							<Button
+								size="lg"
+								onClick={handleGenerateDesign}
+								disabled={isAnalyzing || isGeneratingDesign}
+								variant="outline"
+								className="h-16 px-10 rounded-[24px] border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition-all group"
+							>
+								{isGeneratingDesign ? (
+									<RefreshCw className="size-5 animate-spin" />
+								) : (
+									<div className="flex items-center gap-3">
+										<Layout className="size-5 group-hover:scale-110 transition-transform" />
+										<span className="font-black uppercase tracking-widest text-xs">
+											Generovať Design
 										</span>
 									</div>
 								)}
