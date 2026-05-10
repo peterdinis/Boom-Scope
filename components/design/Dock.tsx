@@ -10,6 +10,8 @@ import {
 	MoveUp,
 	Pencil,
 	Redo,
+	RotateCw,
+	Save,
 	Share2,
 	Square,
 	Star,
@@ -63,6 +65,7 @@ const tools: ToolItem[] = [
 		label: "Export",
 		color: "text-green-500/60",
 	},
+	{ id: "save", icon: Save, label: "Uložiť", color: "text-primary" },
 	{ id: "share", icon: Share2, label: "Zdieľať" },
 ];
 

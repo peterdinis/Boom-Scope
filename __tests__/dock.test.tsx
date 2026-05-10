@@ -10,6 +10,7 @@ describe("Component: Dock", () => {
 		expect(screen.getByText(/Pero/i)).toBeDefined();
 		expect(screen.getByText(/Obdĺžnik/i)).toBeDefined();
 		expect(screen.getByText(/Text/i)).toBeDefined();
+		expect(screen.getByText(/Uložiť/i)).toBeDefined();
 	});
 
 	test("calls onToolChange when a tool is clicked", () => {

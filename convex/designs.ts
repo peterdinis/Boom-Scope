@@ -41,3 +41,32 @@ export const getDesign = query({
 		return await ctx.db.get(args.designId);
 	},
 });
+export const updateDesign = mutation({
+	args: {
+		id: v.id("designs"),
+		elements: v.string(),
+		canvasSize: v.optional(
+			v.object({
+				width: v.number(),
+				height: v.number(),
+			}),
+		),
+		artboardColor: v.optional(v.string()),
+	},
+	handler: async (ctx, args) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) throw new ConvexError("Unauthorized");
+
+		const userId = await auth.getUserId(ctx);
+		if (!userId) throw new ConvexError("User not found");
+
+		const existing = await ctx.db.get(args.id);
+		if (!existing || existing.userId !== userId) throw new ConvexError("Unauthorized");
+
+		await ctx.db.patch(args.id, {
+			elements: args.elements,
+			canvasSize: args.canvasSize,
+			artboardColor: args.artboardColor,
+		});
+	},
+});

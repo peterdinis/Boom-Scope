@@ -218,11 +218,13 @@ export default function KonvaCanvas({
 
 		setIsDrawing(true);
 		const id = `el-${Date.now()}`;
+		const isFreeHand = activeTool === "pencil" || activeTool === "eraser";
+
 		const element: CanvasElement = {
 			id,
 			type: activeTool === "eraser" ? "pencil" : activeTool,
-			x: snappedX,
-			y: snappedY,
+			x: isFreeHand ? 0 : snappedX,
+			y: isFreeHand ? 0 : snappedY,
 			stroke:
 				activeTool === "eraser"
 					? isDark
@@ -239,7 +241,7 @@ export default function KonvaCanvas({
 				activeTool === "eraser" ? "destination-out" : "source-over",
 		};
 
-		if (activeTool === "pencil" || activeTool === "eraser") {
+		if (isFreeHand) {
 			element.points = [pos.x, pos.y];
 		} else if (activeTool === "text") {
 			element.text = "Napíšte text...";

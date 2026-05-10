@@ -93,4 +93,9 @@ describe("Page: Design System Generator", () => {
 
 		expect(toast.error).toHaveBeenCalledWith("Najprv vyberte projekt!");
 	});
+
+	test("header Uložiť button is rendered", () => {
+		render(<DesignSystemPage />);
+		expect(screen.getByText(/^Uložiť$/i)).toBeDefined();
+	});
 });

@@ -167,6 +167,7 @@ export default function DesignPage() {
 
 	const projects = useQuery(api.projects.list);
 	const saveDesign = useMutation(api.designs.saveDesign);
+	const updateDesign = useMutation(api.designs.updateDesign);
 
 	const elementsRef = useRef(elements);
 	const activeToolRef = useRef(activeTool);
@@ -279,7 +280,7 @@ export default function DesignPage() {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const handleAction = useCallback(
-		(toolId: string) => {
+		async (toolId: string) => {
 			if (toolId === "undo") {
 				const idx = historyIndexRef.current;
 				if (idx > 0) {
@@ -330,6 +331,27 @@ export default function DesignPage() {
 				// Open project picker dialog
 				setSelectedProjectId(projects[0]._id);
 				setIsProjectPickerOpen(true);
+				return;
+			}
+			if (toolId === "save") {
+				if (sharedDesignId) {
+					setIsSaving(true);
+					try {
+						await updateDesign({
+							id: sharedDesignId as Id<"designs">,
+							elements: JSON.stringify(elementsRef.current),
+							canvasSize: canvasSize || { width: 1920, height: 1080 },
+							artboardColor: artboardColor || undefined,
+						});
+						toast.success("Design aktualizovaný!");
+					} catch {
+						toast.error("Nepodarilo sa aktualizovať design.");
+					} finally {
+						setIsSaving(false);
+					}
+				} else {
+					handleAction("share");
+				}
 				return;
 			}
 			setActiveTool(toolId);

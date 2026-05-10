@@ -13,6 +13,7 @@ import {
 	NotebookPen,
 	Palette,
 	RefreshCw,
+	Save,
 	Sparkles,
 	Trash2,
 	Type,
@@ -426,14 +427,26 @@ export default function DesignSystemPage() {
 						</motion.div>
 					)}
 
-					<Button
-						variant="outline"
-						onClick={() => setIsNoteOpen(true)}
-						className="h-12 px-6 rounded-2xl border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 font-black uppercase tracking-widest text-[10px] gap-2"
-					>
-						<NotebookPen className="size-4" />
-						Rýchla poznámka
-					</Button>
+					<div className="flex flex-wrap gap-4">
+						<Button
+							variant="outline"
+							onClick={persistSystem}
+							disabled={!selectedProjectId}
+							className="h-12 px-6 rounded-2xl border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 font-black uppercase tracking-widest text-[10px] gap-2"
+						>
+							<Save className="size-4" />
+							Uložiť
+						</Button>
+
+						<Button
+							variant="outline"
+							onClick={() => setIsNoteOpen(true)}
+							className="h-12 px-6 rounded-2xl border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 font-black uppercase tracking-widest text-[10px] gap-2"
+						>
+							<NotebookPen className="size-4" />
+							Rýchla poznámka
+						</Button>
+					</div>
 				</header>
 
 				<section className="space-y-4">
