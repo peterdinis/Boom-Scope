@@ -82,7 +82,7 @@ const navItems: {
 		label: "Nastavenia",
 		description: "Správa účtu a preferencií",
 		icon: SettingsIcon,
-		href: "/dashboard/settings",
+		href: "/dashboard/settings" as Route,
 	},
 ];
 

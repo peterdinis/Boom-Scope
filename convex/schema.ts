@@ -50,6 +50,10 @@ export default defineSchema({
 		),
 		fonts: v.array(v.string()),
 		description: v.optional(v.string()),
+		goodThings: v.optional(v.array(v.string())),
+		badThings: v.optional(v.array(v.string())),
+		suggestions: v.optional(v.array(v.string())),
+		isPublic: v.optional(v.boolean()),
 	})
 		.index("by_userId", ["userId"])
 		.index("by_projectId", ["projectId"]),

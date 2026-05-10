@@ -43,7 +43,7 @@ export function ShareDialog({ isOpen, onClose, designId }: ShareDialogProps) {
 						exit={{ scale: 0.9, opacity: 0, y: 20 }}
 						className="relative w-full max-w-lg bg-background border border-border rounded-[40px] shadow-2xl overflow-hidden p-10"
 					>
-						<div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
+						<div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-primary via-purple-500 to-pink-500" />
 
 						<button
 							onClick={onClose}
@@ -54,8 +54,8 @@ export function ShareDialog({ isOpen, onClose, designId }: ShareDialogProps) {
 
 						<div className="space-y-10">
 							<div className="flex items-center gap-6">
-								<div className="size-16 rounded-[24px] bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shadow-inner">
-									<Share2 className="size-8 text-blue-500" />
+								<div className="size-16 rounded-[24px] bg-primary/10 flex items-center justify-center border border-primary/20 shadow-inner">
+									<Share2 className="size-8 text-primary" />
 								</div>
 								<div>
 									<h2 className="text-2xl font-black tracking-tight">
@@ -71,8 +71,8 @@ export function ShareDialog({ isOpen, onClose, designId }: ShareDialogProps) {
 								<p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30 px-2">
 									Verejný Odkaz
 								</p>
-								<div className="group relative flex items-center gap-4 p-5 rounded-[28px] bg-accent border border-border hover:border-blue-500/30 transition-all shadow-inner">
-									<Globe className="size-5 text-blue-500/60" />
+								<div className="group relative flex items-center gap-4 p-5 rounded-[28px] bg-accent border border-border hover:border-primary/30 transition-all shadow-inner">
+									<Globe className="size-5 text-primary/60" />
 									<div className="flex-1 min-w-0">
 										<p className="text-xs font-mono font-bold truncate opacity-60">
 											{shareUrl || "Generujem odkaz..."}
@@ -85,7 +85,7 @@ export function ShareDialog({ isOpen, onClose, designId }: ShareDialogProps) {
 											"h-12 px-6 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all",
 											copied
 												? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30"
-												: "bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/30",
+												: "bg-primary hover:bg-primary text-white shadow-lg shadow-primary/30",
 										)}
 									>
 										{copied ? (
@@ -101,8 +101,8 @@ export function ShareDialog({ isOpen, onClose, designId }: ShareDialogProps) {
 
 							<div className="grid grid-cols-2 gap-4">
 								<div className="p-6 rounded-[32px] bg-foreground/5 border border-border space-y-3">
-									<div className="size-10 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/10">
-										<Link className="size-4 text-blue-500" />
+									<div className="size-10 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/10">
+										<Link className="size-4 text-primary" />
 									</div>
 									<h3 className="text-xs font-black uppercase tracking-widest">
 										Read-Only

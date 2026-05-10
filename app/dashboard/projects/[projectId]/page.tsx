@@ -38,7 +38,7 @@ export default function ProjectDetailPage() {
 	if (project === undefined) {
 		return (
 			<div className="flex h-screen items-center justify-center">
-				<div className="size-12 rounded-full border-4 border-blue-500/20 border-t-blue-500 animate-spin" />
+				<div className="size-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
 			</div>
 		);
 	}
@@ -72,8 +72,8 @@ export default function ProjectDetailPage() {
 			id: "notes",
 			label: "Poznámky",
 			icon: FileText,
-			color: "text-blue-500",
-			bgColor: "bg-blue-500/10",
+			color: "text-primary",
+			bgColor: "bg-primary/10",
 			count: 0,
 			href: `/dashboard/notes?projectId=${projectId}`,
 		},
@@ -118,11 +118,11 @@ export default function ProjectDetailPage() {
 								animate={{ opacity: 1, x: 0 }}
 								className="flex items-center gap-4"
 							>
-								<div className="size-20 rounded-[32px] bg-blue-600 text-white flex items-center justify-center shadow-[0_20px_40px_rgba(37,99,235,0.3)]">
+								<div className="size-20 rounded-[32px] bg-primary text-white flex items-center justify-center shadow-[0_20px_40px_rgba(37,99,235,0.3)]">
 									<Layout className="size-8" />
 								</div>
 								<div>
-									<p className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500 mb-1">
+									<p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-1">
 										Projektový Priestor
 									</p>
 									<h1 className="text-5xl lg:text-7xl font-black tracking-tighter">
@@ -201,7 +201,7 @@ export default function ProjectDetailPage() {
 									<div className="pt-10 flex items-center justify-between">
 										<Button
 											variant="ghost"
-											className="p-0 h-auto font-black uppercase tracking-widest text-[10px] opacity-40 group-hover:opacity-100 group-hover:text-blue-500 transition-all"
+											className="p-0 h-auto font-black uppercase tracking-widest text-[10px] opacity-40 group-hover:opacity-100 group-hover:text-primary transition-all"
 										>
 											Otvoriť Sekciu <ChevronRight className="size-3 ml-2" />
 										</Button>
@@ -221,7 +221,7 @@ export default function ProjectDetailPage() {
 						<h2 className="text-2xl font-black tracking-tight">
 							Nedávna Aktivita
 						</h2>
-						<Button variant="link" className="text-blue-500 font-bold">
+						<Button variant="link" className="text-primary font-bold">
 							Zobraziť všetko
 						</Button>
 					</div>

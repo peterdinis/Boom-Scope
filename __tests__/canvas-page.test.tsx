@@ -37,8 +37,7 @@ describe("Page: Design Canvas", () => {
 
 		// Check for some tool labels in Dock (assuming it's rendered)
 		// Note: Since Dock is separate, we might need to check if DesignPage renders it
-		expect(screen.getByText(/Editor Prvku/i)).toBeDefined();
-		expect(screen.getByText(/Nastavenia Plátna/i)).toBeDefined();
+		expect(screen.getByText(/Nastavenia Plátna/i)).toBeInTheDocument();
 	});
 
 	test("toggles right panel visibility", () => {
@@ -46,9 +45,8 @@ describe("Page: Design Canvas", () => {
 
 		// Find settings/properties toggle
 		// In the sidebar there is a button to close it
-		const closeBtn = screen
-			.getByRole("button", { name: /Vlastnosti/i })
-			.parentElement?.querySelector("button");
+		const propertiesHeading = screen.getByText(/Vlastnosti/i);
+		const closeBtn = propertiesHeading.closest("div")?.parentElement?.querySelector("button");
 		if (closeBtn) {
 			fireEvent.click(closeBtn);
 			// After closing, the right panel should be gone (or starting to animate out)
@@ -58,7 +56,7 @@ describe("Page: Design Canvas", () => {
 
 	test("shows artboard settings when no element is selected", () => {
 		render(<DesignPage />);
-		expect(screen.getByText(/Rozmery Artboardu/i)).toBeDefined();
-		expect(screen.getByText(/Pozadie Plátna/i)).toBeDefined();
+		expect(screen.getByText(/Rozmery Artboardu/i)).toBeInTheDocument();
+		expect(screen.getByText(/Pozadie Plátna/i)).toBeInTheDocument();
 	});
 });

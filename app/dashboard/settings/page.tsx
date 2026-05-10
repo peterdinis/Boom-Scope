@@ -59,7 +59,7 @@ export default function SettingsPage() {
   if (!user) {
     return (
       <div className="flex h-[calc(100vh-100px)] w-full items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-blue-500 opacity-20" />
+        <Loader2 className="size-8 animate-spin text-primary opacity-20" />
       </div>
     );
   }
@@ -68,8 +68,8 @@ export default function SettingsPage() {
     <div className="max-w-6xl mx-auto py-10 px-6 space-y-12">
       <div className="space-y-4">
         <div className="flex items-center gap-4">
-          <div className="size-12 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shadow-sm">
-            <SettingsIcon className="size-6 text-blue-500" />
+          <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-sm">
+            <SettingsIcon className="size-6 text-primary" />
           </div>
           <div>
             <h1 className="text-3xl font-black tracking-tight">Nastavenia</h1>
@@ -88,11 +88,11 @@ export default function SettingsPage() {
               className={cn(
                 "flex items-center gap-4 px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-300",
                 activeTab === tab.id
-                  ? "bg-background text-blue-500 shadow-xl shadow-blue-500/5 border border-border"
+                  ? "bg-background text-primary shadow-xl shadow-primary/5 border border-border"
                   : "text-foreground/40 hover:text-foreground hover:bg-foreground/5"
               )}
             >
-              <tab.icon className={cn("size-4", activeTab === tab.id ? "text-blue-500" : "opacity-40")} />
+              <tab.icon className={cn("size-4", activeTab === tab.id ? "text-primary" : "opacity-40")} />
               {tab.label}
             </button>
           ))}
@@ -105,7 +105,7 @@ export default function SettingsPage() {
               <section className="space-y-8">
                 <div className="flex items-center gap-8">
                   <div className="relative group">
-                    <div className="size-32 rounded-[40px] bg-foreground/5 border-2 border-border overflow-hidden shadow-inner flex items-center justify-center group-hover:border-blue-500/50 transition-all duration-500">
+                    <div className="size-32 rounded-[40px] bg-foreground/5 border-2 border-border overflow-hidden shadow-inner flex items-center justify-center group-hover:border-primary/50 transition-all duration-500">
                       {user.image ? (
                         <img src={user.image} alt={user.name || ""} className="size-full object-cover" />
                       ) : (
@@ -151,7 +151,7 @@ export default function SettingsPage() {
                   <Button
                     onClick={handleUpdateProfile}
                     disabled={isUpdating || name === user.name}
-                    className="h-14 px-10 rounded-2xl bg-blue-500 hover:bg-blue-600 text-white font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-blue-500/20 gap-3"
+                    className="h-14 px-10 rounded-2xl bg-primary hover:bg-primary text-white font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-primary/20 gap-3"
                   >
                     {isUpdating ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
                     Uložiť zmeny
@@ -159,10 +159,10 @@ export default function SettingsPage() {
                 </div>
               </section>
 
-              <div className="p-8 rounded-[40px] bg-blue-500/5 border border-blue-500/10 space-y-4">
+              <div className="p-8 rounded-[40px] bg-primary/5 border border-primary/10 space-y-4">
                 <div className="flex items-center gap-3">
-                  <Shield className="size-4 text-blue-500" />
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-500">Vaše súkromie</h4>
+                  <Shield className="size-4 text-primary" />
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-primary">Vaše súkromie</h4>
                 </div>
                 <p className="text-xs font-bold leading-relaxed opacity-60">
                   Vaše údaje sú v bezpečí a nikdy ich nezdieľame s tretími stranami. Svoje dáta si môžete kedykoľvek stiahnuť alebo zmazať svoj účet.
@@ -191,21 +191,21 @@ export default function SettingsPage() {
                       className={cn(
                         "group relative p-8 rounded-[32px] border-2 transition-all duration-500 flex flex-col items-center gap-6",
                         theme === mode.id
-                          ? "bg-background border-blue-500 shadow-2xl shadow-blue-500/10"
+                          ? "bg-background border-primary shadow-2xl shadow-primary/10"
                           : "bg-foreground/5 border-transparent hover:border-foreground/10"
                       )}
                     >
                       <div className={cn(
                         "size-16 rounded-2xl flex items-center justify-center transition-all duration-500",
-                        theme === mode.id ? "bg-blue-500/10" : "bg-foreground/5"
+                        theme === mode.id ? "bg-primary/10" : "bg-foreground/5"
                       )}>
-                        <mode.icon className={cn("size-8", theme === mode.id ? "text-blue-500" : "opacity-20 group-hover:opacity-40")} />
+                        <mode.icon className={cn("size-8", theme === mode.id ? "text-primary" : "opacity-20 group-hover:opacity-40")} />
                       </div>
-                      <span className={cn("text-[11px] font-black uppercase tracking-widest", theme === mode.id ? "text-blue-500" : "opacity-40")}>
+                      <span className={cn("text-[11px] font-black uppercase tracking-widest", theme === mode.id ? "text-primary" : "opacity-40")}>
                         {mode.label}
                       </span>
                       {theme === mode.id && (
-                        <div className="absolute top-4 right-4 size-6 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                        <div className="absolute top-4 right-4 size-6 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
                           <Check className="size-3 text-white" />
                         </div>
                       )}
@@ -220,7 +220,7 @@ export default function SettingsPage() {
                   <p className="text-[10px] font-bold opacity-30 uppercase tracking-widest">Vyberte si hlavnú farbu rozhrania</p>
                 </div>
                 <div className="flex gap-4">
-                  {["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"].map((color) => (
+                  {["var(--primary)", "var(--success)", "#f59e0b", "var(--destructive)", "#8b5cf6"].map((color) => (
                     <button
                       key={color}
                       onClick={async () => {

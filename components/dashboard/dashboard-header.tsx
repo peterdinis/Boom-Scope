@@ -17,6 +17,7 @@ export function DashboardHeader() {
 	if (pathname.startsWith("/dashboard/notes")) activeId = "notes";
 	if (pathname.startsWith("/dashboard/canvas")) activeId = "design";
 	if (pathname.startsWith("/dashboard/design-system")) activeId = "generate";
+	if (pathname.startsWith("/dashboard/settings")) activeId = "settings";
 
 	const titles: Record<DashboardNavId, { title: string; subtitle: string }> = {
 		overview: {
@@ -32,6 +33,10 @@ export function DashboardHeader() {
 		generate: {
 			title: "Design System",
 			subtitle: "AI generátor vizuálnej identity",
+		},
+		settings: {
+			title: "Nastavenia",
+			subtitle: "Správa účtu a preferencií",
 		},
 	};
 

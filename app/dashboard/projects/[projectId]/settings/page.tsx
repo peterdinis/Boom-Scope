@@ -56,7 +56,7 @@ export default function ProjectSettingsPage() {
   if (project === undefined) {
     return (
       <div className="flex h-[calc(100vh-100px)] w-full items-center justify-center">
-        <Loader2 className="size-8 animate-spin opacity-20 text-[var(--user-accent)]" />
+        <Loader2 className="size-8 animate-spin opacity-20 text-primary" />
       </div>
     );
   }
@@ -129,8 +129,8 @@ export default function ProjectSettingsPage() {
           </Button>
 
           <div className="flex items-center gap-6">
-            <div className="size-16 rounded-[24px] flex items-center justify-center border shadow-sm" style={{ backgroundColor: 'color-mix(in srgb, var(--user-accent) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--user-accent) 20%, transparent)' }}>
-              <Settings2 className="size-8 text-[var(--user-accent)]" />
+            <div className="size-16 rounded-[24px] flex items-center justify-center border border-primary/20 bg-primary/10 shadow-sm">
+              <Settings2 className="size-8 text-primary" />
             </div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-40 mb-1">
@@ -160,7 +160,7 @@ export default function ProjectSettingsPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Zadajte názov"
-                  className="h-14 bg-background border-border rounded-2xl px-6 text-sm font-bold focus:border-[var(--user-accent)] transition-all"
+                  className="h-14 bg-background border-border rounded-2xl px-6 text-sm font-bold focus:border-primary transition-all"
                 />
               </div>
 
@@ -170,7 +170,7 @@ export default function ProjectSettingsPage() {
                   value={description}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
                   placeholder="Pridajte krátky popis projektu..."
-                  className="min-h-[120px] bg-background border-border rounded-2xl p-6 text-sm font-medium resize-y focus:border-[var(--user-accent)] transition-all"
+                  className="min-h-[120px] bg-background border-border rounded-2xl p-6 text-sm font-medium resize-y focus:border-primary transition-all"
                 />
               </div>
 
@@ -178,8 +178,7 @@ export default function ProjectSettingsPage() {
                 <Button 
                   onClick={handleUpdate}
                   disabled={isUpdating || (name === project.name && description === (project.description || ""))}
-                  className="h-14 px-10 rounded-2xl text-white font-black uppercase tracking-[0.2em] text-[11px] shadow-xl gap-3 bg-[var(--user-accent)] hover:opacity-90"
-                  style={{ boxShadow: "0 20px 25px -5px color-mix(in srgb, var(--user-accent) 20%, transparent)" }}
+                  className="h-14 px-10 rounded-2xl text-white font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-primary/20 gap-3 bg-primary hover:bg-primary/90"
                 >
                   {isUpdating ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
                   Uložiť zmeny

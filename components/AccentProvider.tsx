@@ -14,9 +14,9 @@ export function AccentProvider({ children }: { children: React.ReactNode }) {
       // We can also set a custom one if needed, e.g. --user-accent
       document.documentElement.style.setProperty("--user-accent", user.accentColor);
     } else {
-      // Default blue-500 from tailwind
-      document.documentElement.style.setProperty("--primary", "#3b82f6");
-      document.documentElement.style.setProperty("--user-accent", "#3b82f6");
+      // Default primary from tailwind
+      document.documentElement.style.setProperty("--primary", "var(--primary)");
+      document.documentElement.style.setProperty("--user-accent", "var(--primary)");
     }
   }, [user?.accentColor]);
 
