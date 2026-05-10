@@ -37,6 +37,8 @@ import {
 	Ungroup,
 	Undo2,
 	Unlock,
+	ZoomIn,
+	ZoomOut,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import dynamic from "next/dynamic";
@@ -98,11 +100,11 @@ const PALETTE = [
 	"#ffffff",
 	"#000000",
 	"#71717a",
-	"#ef4444",
+	"var(--destructive)",
 	"#f97316",
 	"#f59e0b",
-	"#10b981",
-	"#3b82f6",
+	"var(--success)",
+	"var(--primary)",
 	"#6366f1",
 	"#a855f7",
 	"#ec4899",
@@ -124,7 +126,7 @@ export default function DesignPage() {
 	const [elements, setElements] = useState<CanvasElement[]>([]);
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-	const [strokeColor, setStrokeColor] = useState("#3b82f6");
+	const [strokeColor, setStrokeColor] = useState("var(--primary)");
 	const [fillColor] = useState("none");
 	const [strokeWidth] = useState(2);
 
@@ -603,7 +605,7 @@ export default function DesignPage() {
 						onClick={() => setZoom((prev) => Math.max(0.1, prev - 0.1))}
 						className="rounded-xl hover:bg-accent"
 					>
-						<Undo2 className="size-3.5" />
+						<ZoomOut className="size-3.5" />
 					</Button>
 					<div className="px-3 text-[10px] font-black uppercase tracking-widest min-w-[60px] text-center">
 						{Math.round(zoom * 100)}%
@@ -614,7 +616,7 @@ export default function DesignPage() {
 						onClick={() => setZoom((prev) => Math.min(5, prev + 0.1))}
 						className="rounded-xl hover:bg-accent"
 					>
-						<RefreshCw className="size-3.5" />
+						<ZoomIn className="size-3.5" />
 					</Button>
 					<div className="w-px h-6 bg-border mx-1" />
 					<Button
@@ -1383,8 +1385,8 @@ export default function DesignPage() {
 															if (selectedElement.fillType === "gradient") {
 																const colors =
 																	selectedElement.gradientColors || [
-																		"#3b82f6",
-																		"#10b981",
+																		"var(--primary)",
+																		"var(--success)",
 																	];
 																updateSelectedElement({
 																	gradientColors: [color, colors[1]],

@@ -15,8 +15,8 @@ export function AccentProvider({ children }: { children: React.ReactNode }) {
       document.documentElement.style.setProperty("--user-accent", user.accentColor);
     } else {
       // Default primary from tailwind
-      document.documentElement.style.setProperty("--primary", "#3b82f6");
-      document.documentElement.style.setProperty("--user-accent", "#3b82f6");
+      document.documentElement.style.setProperty("--primary", "var(--primary)");
+      document.documentElement.style.setProperty("--user-accent", "var(--primary)");
     }
   }, [user?.accentColor]);
 

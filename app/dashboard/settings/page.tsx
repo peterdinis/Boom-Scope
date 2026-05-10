@@ -220,7 +220,7 @@ export default function SettingsPage() {
                   <p className="text-[10px] font-bold opacity-30 uppercase tracking-widest">Vyberte si hlavnú farbu rozhrania</p>
                 </div>
                 <div className="flex gap-4">
-                  {["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"].map((color) => (
+                  {["var(--primary)", "var(--success)", "#f59e0b", "var(--destructive)", "#8b5cf6"].map((color) => (
                     <button
                       key={color}
                       onClick={async () => {

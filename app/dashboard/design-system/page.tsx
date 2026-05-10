@@ -69,7 +69,7 @@ export default function DesignSystemPage() {
 	>([]);
 	const [localFonts, setLocalFonts] = useState<string[]>([]);
 	const [newColorName, setNewColorName] = useState("");
-	const [newColorHex, setNewColorHex] = useState("#3b82f6");
+	const [newColorHex, setNewColorHex] = useState("var(--primary)");
 	const [newFont, setNewFont] = useState("");
 	const [lastSavedId, setLastSavedId] = useState<Id<"design_systems"> | null>(
 		null,

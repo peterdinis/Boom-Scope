@@ -12,6 +12,7 @@ import type { KonvaEventObject } from "konva/lib/Node";
 import { Trash2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
+import { getCSSVariable } from "@/lib/utils";
 import {
 	Arrow,
 	Circle,
@@ -87,7 +88,7 @@ export default function KonvaCanvas({
 	selectedIds,
 	onSelectionChange,
 	onElementPointer,
-	strokeColor = "#3b82f6",
+	strokeColor = "var(--primary)",
 	fillColor = "none",
 	strokeWidth = 2,
 	snapToGrid = true,
@@ -542,9 +543,9 @@ export default function KonvaCanvas({
 							}}
 							anchorSize={10}
 							anchorCornerRadius={3}
-							anchorStroke="#3b82f6"
+							anchorStroke={getCSSVariable("--primary")}
 							anchorFill="#ffffff"
-							borderStroke="#3b82f6"
+							borderStroke={getCSSVariable("--primary")}
 							borderStrokeWidth={1}
 							rotateAnchorOffset={20}
 						/>
@@ -616,13 +617,13 @@ function RenderElement({
 		id: el.id,
 		x: el.x,
 		y: el.y,
-		stroke: el.stroke,
+		stroke: el.stroke?.startsWith("var") ? getCSSVariable(el.stroke.slice(4, -1)) : el.stroke,
 		fill:
 			el.fillType === "gradient"
 				? undefined
 				: el.fill === "none"
 					? undefined
-					: el.fill,
+					: el.fill?.startsWith("var") ? getCSSVariable(el.fill.slice(4, -1)) : el.fill,
 		fillLinearGradientStartPoint:
 			el.fillType === "gradient"
 				? el.gradientStart || { x: 0, y: 0 }
@@ -635,9 +636,9 @@ function RenderElement({
 			el.fillType === "gradient"
 				? [
 						0,
-						el.gradientColors?.[0] || "#3b82f6",
+						el.gradientColors?.[0]?.startsWith("var") ? getCSSVariable(el.gradientColors[0].slice(4, -1)) : el.gradientColors?.[0] || getCSSVariable("--primary"),
 						1,
-						el.gradientColors?.[1] || "#10b981",
+						el.gradientColors?.[1]?.startsWith("var") ? getCSSVariable(el.gradientColors[1].slice(4, -1)) : el.gradientColors?.[1] || getCSSVariable("--success"),
 					]
 				: undefined,
 		strokeWidth: el.strokeWidth,
@@ -648,7 +649,7 @@ function RenderElement({
 		onTap: clickSelect,
 		draggable: draggable,
 		onDragEnd: onDragEnd,
-		shadowColor: isSelected ? "#3b82f6" : "#000000",
+		shadowColor: isSelected ? getCSSVariable("--primary") : "#000000",
 		shadowBlur: isSelected ? 15 : el.shadowBlur || 0,
 		shadowOpacity: isSelected ? 0.5 : el.shadowBlur ? 0.3 : 0,
 		globalCompositeOperation:
