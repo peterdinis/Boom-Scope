@@ -32,7 +32,8 @@ export const update = mutation({
 		if (!userId) throw new ConvexError("Unauthorized");
 
 		const project = await ctx.db.get(args.projectId);
-		if (!project || project.userId !== userId) throw new ConvexError("Unauthorized");
+		if (!project || project.userId !== userId)
+			throw new ConvexError("Unauthorized");
 
 		await ctx.db.patch(args.projectId, {
 			name: args.name,
@@ -81,7 +82,8 @@ export const remove = mutation({
 		if (!userId) throw new ConvexError("Unauthorized");
 
 		const project = await ctx.db.get(args.projectId);
-		if (!project || project.userId !== userId) throw new ConvexError("Unauthorized");
+		if (!project || project.userId !== userId)
+			throw new ConvexError("Unauthorized");
 
 		// TODO: Cleanup related notes, designs, etc.
 		await ctx.db.delete(args.projectId);

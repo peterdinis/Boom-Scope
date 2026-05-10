@@ -159,7 +159,9 @@ export function QuickNoteDialog({
 						<Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
 							<FolderKanban className="size-3" />
 							Priradiť k projektu{" "}
-							<span className="normal-case font-normal opacity-50">(voliteľné)</span>
+							<span className="normal-case font-normal opacity-50">
+								(voliteľné)
+							</span>
 						</Label>
 						<Select
 							value={projectId ?? "none"}
@@ -169,7 +171,10 @@ export function QuickNoteDialog({
 								<SelectValue placeholder="Bez projektu" />
 							</SelectTrigger>
 							<SelectContent className="rounded-2xl border-border/50 backdrop-blur-3xl">
-								<SelectItem value="none" className="rounded-xl text-muted-foreground">
+								<SelectItem
+									value="none"
+									className="rounded-xl text-muted-foreground"
+								>
 									<span className="flex items-center gap-2 opacity-60">
 										Bez projektu
 									</span>

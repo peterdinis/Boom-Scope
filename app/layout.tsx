@@ -31,7 +31,6 @@ export const metadata: Metadata = {
 	description: "Boom Scope app",
 };
 
-
 export default function RootLayout({
 	children,
 }: Readonly<{
@@ -60,9 +59,7 @@ export default function RootLayout({
 				>
 					<Suspense fallback={<GlobalLoading />}>
 						<ConvexAuthNextjsServerProvider>
-							<ConvexClientProvider>
-								{children}
-							</ConvexClientProvider>
+							<ConvexClientProvider>{children}</ConvexClientProvider>
 						</ConvexAuthNextjsServerProvider>
 					</Suspense>
 					<Toaster />

@@ -46,7 +46,9 @@ describe("Page: Design Canvas", () => {
 		// Find settings/properties toggle
 		// In the sidebar there is a button to close it
 		const propertiesHeading = screen.getByText(/Vlastnosti/i);
-		const closeBtn = propertiesHeading.closest("div")?.parentElement?.querySelector("button");
+		const closeBtn = propertiesHeading
+			.closest("div")
+			?.parentElement?.querySelector("button");
 		if (closeBtn) {
 			fireEvent.click(closeBtn);
 			// After closing, the right panel should be gone (or starting to animate out)

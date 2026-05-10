@@ -12,7 +12,6 @@ import type { KonvaEventObject } from "konva/lib/Node";
 import { Trash2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
-import { getCSSVariable } from "@/lib/utils";
 import {
 	Arrow,
 	Circle,
@@ -27,6 +26,7 @@ import {
 	Transformer,
 } from "react-konva";
 import useImage from "use-image";
+import { getCSSVariable } from "@/lib/utils";
 
 export interface CanvasElement {
 	id: string;
@@ -64,10 +64,7 @@ interface KonvaCanvasProps {
 	commitElements: (next: CanvasElement[]) => void;
 	selectedIds: string[];
 	onSelectionChange: (ids: string[]) => void;
-	onElementPointer: (
-		id: string,
-		opts: { shiftKey: boolean },
-	) => void;
+	onElementPointer: (id: string, opts: { shiftKey: boolean }) => void;
 	strokeColor?: string;
 	fillColor?: string;
 	strokeWidth?: number;
@@ -168,8 +165,7 @@ export default function KonvaCanvas({
 			const nodes = selectedIds
 				.map((sid) => stageRef.current?.findOne(`#${sid}`))
 				.filter(
-					(n): n is NonNullable<typeof n> =>
-						n !== null && n !== undefined,
+					(n): n is NonNullable<typeof n> => n !== null && n !== undefined,
 				);
 			const locked = selectedIds.some((sid) => {
 				const element = elementsRef.current.find((el) => el.id === sid);
@@ -309,9 +305,7 @@ export default function KonvaCanvas({
 						x: snap(node.x()),
 						y: snap(node.y()),
 						rotation: node.rotation(),
-						width: el.width
-							? snap(Math.max(5, el.width * scaleX))
-							: el.width,
+						width: el.width ? snap(Math.max(5, el.width * scaleX)) : el.width,
 						height: el.height
 							? snap(Math.max(5, el.height * scaleY))
 							: el.height,
@@ -608,8 +602,7 @@ function RenderElement({
 		((ev: KonvaEventObject<Event>) => {
 			ev.cancelBubble = true;
 			const e = ev.evt as MouseEvent | PointerEvent | KeyboardEvent;
-			const shift =
-				"shiftKey" in e ? Boolean(e.shiftKey) : false;
+			const shift = "shiftKey" in e ? Boolean(e.shiftKey) : false;
 			reportSelect(shift);
 		});
 
@@ -617,13 +610,17 @@ function RenderElement({
 		id: el.id,
 		x: el.x,
 		y: el.y,
-		stroke: el.stroke?.startsWith("var") ? getCSSVariable(el.stroke.slice(4, -1)) : el.stroke,
+		stroke: el.stroke?.startsWith("var")
+			? getCSSVariable(el.stroke.slice(4, -1))
+			: el.stroke,
 		fill:
 			el.fillType === "gradient"
 				? undefined
 				: el.fill === "none"
 					? undefined
-					: el.fill?.startsWith("var") ? getCSSVariable(el.fill.slice(4, -1)) : el.fill,
+					: el.fill?.startsWith("var")
+						? getCSSVariable(el.fill.slice(4, -1))
+						: el.fill,
 		fillLinearGradientStartPoint:
 			el.fillType === "gradient"
 				? el.gradientStart || { x: 0, y: 0 }
@@ -636,9 +633,13 @@ function RenderElement({
 			el.fillType === "gradient"
 				? [
 						0,
-						el.gradientColors?.[0]?.startsWith("var") ? getCSSVariable(el.gradientColors[0].slice(4, -1)) : el.gradientColors?.[0] || getCSSVariable("--primary"),
+						el.gradientColors?.[0]?.startsWith("var")
+							? getCSSVariable(el.gradientColors[0].slice(4, -1))
+							: el.gradientColors?.[0] || getCSSVariable("--primary"),
 						1,
-						el.gradientColors?.[1]?.startsWith("var") ? getCSSVariable(el.gradientColors[1].slice(4, -1)) : el.gradientColors?.[1] || getCSSVariable("--success"),
+						el.gradientColors?.[1]?.startsWith("var")
+							? getCSSVariable(el.gradientColors[1].slice(4, -1))
+							: el.gradientColors?.[1] || getCSSVariable("--success"),
 					]
 				: undefined,
 		strokeWidth: el.strokeWidth,

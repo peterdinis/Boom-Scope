@@ -23,9 +23,7 @@ function DashboardLayoutContent({ children }: { children: ReactNode }) {
 			<div className="flex min-w-0 flex-1 flex-col">
 				<DashboardHeader />
 				<main className="flex-1 overflow-y-auto">
-					<div className="h-full">
-						{children}
-					</div>
+					<div className="h-full">{children}</div>
 				</main>
 			</div>
 		</div>

@@ -6,6 +6,7 @@ import {
 	CheckCircle2,
 	Copy,
 	Download,
+	ExternalLink,
 	Layout,
 	Lightbulb,
 	Link2,
@@ -17,7 +18,6 @@ import {
 	Type,
 	Upload,
 	Wand2,
-	ExternalLink,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo, useRef, useState } from "react";
@@ -206,8 +206,7 @@ export default function DesignSystemPage() {
 			toast.error("Najprv uložte design system.");
 			return;
 		}
-		const origin =
-			typeof window !== "undefined" ? window.location.origin : "";
+		const origin = typeof window !== "undefined" ? window.location.origin : "";
 		const url = `${origin}/share/design-system/${lastSavedId}`;
 		await navigator.clipboard.writeText(url);
 		toast.success("Zdieľateľný link skopírovaný!");
@@ -471,7 +470,8 @@ export default function DesignSystemPage() {
 								Vlastné farby a fonty
 							</h2>
 							<p className="text-sm text-muted-foreground mt-1">
-								Pridajte tokeny ručne bez AI. Po uložení sa objavia v náhľade a v histórii.
+								Pridajte tokeny ručne bez AI. Po uložení sa objavia v náhľade a
+								v histórii.
 							</p>
 						</div>
 						<div className="flex flex-wrap gap-2">
@@ -756,302 +756,319 @@ export default function DesignSystemPage() {
 					)}
 
 					{!isAnalyzing &&
-						(system ||
-							localColors.length > 0 ||
-							localFonts.length > 0) && (
-						<motion.div
-							key="result"
-							initial={{ opacity: 0, y: 50 }}
-							animate={{ opacity: 1, y: 0 }}
-							className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12"
-						>
-							{/* Sidebar: Summary */}
-							<div className="lg:col-span-4 space-y-8">
-								<div className="p-8 rounded-[40px] bg-background/40 backdrop-blur-3xl border border-border shadow-2xl space-y-8">
-									<div className="space-y-2">
-										<p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-											Vizuálny Štýl
-										</p>
-										<h2 className="text-4xl font-black tracking-tight">
-											{merged.description || "Nová Identita"}
-										</h2>
-									</div>
-
-									<div className="space-y-6">
-										<div className="flex items-center gap-4">
-											<div className="p-2.5 rounded-xl bg-foreground/5">
-												<Palette className="size-4 opacity-40" />
-											</div>
-											<span className="text-[10px] font-black uppercase tracking-widest opacity-40">
-												Farebná Paleta
-											</span>
+						(system || localColors.length > 0 || localFonts.length > 0) && (
+							<motion.div
+								key="result"
+								initial={{ opacity: 0, y: 50 }}
+								animate={{ opacity: 1, y: 0 }}
+								className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12"
+							>
+								{/* Sidebar: Summary */}
+								<div className="lg:col-span-4 space-y-8">
+									<div className="p-8 rounded-[40px] bg-background/40 backdrop-blur-3xl border border-border shadow-2xl space-y-8">
+										<div className="space-y-2">
+											<p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
+												Vizuálny Štýl
+											</p>
+											<h2 className="text-4xl font-black tracking-tight">
+												{merged.description || "Nová Identita"}
+											</h2>
 										</div>
-										<div className="space-y-3">
-											{merged.colors.map((color) => (
-												<button
-													key={color.hex}
-													onClick={() => copyToClipboard(color.hex)}
-													className="w-full flex items-center justify-between p-4 rounded-2xl bg-foreground/5 hover:bg-foreground/10 transition-all border border-border/50 group"
+
+										<div className="space-y-6">
+											<div className="flex items-center gap-4">
+												<div className="p-2.5 rounded-xl bg-foreground/5">
+													<Palette className="size-4 opacity-40" />
+												</div>
+												<span className="text-[10px] font-black uppercase tracking-widest opacity-40">
+													Farebná Paleta
+												</span>
+											</div>
+											<div className="space-y-3">
+												{merged.colors.map((color) => (
+													<button
+														key={color.hex}
+														onClick={() => copyToClipboard(color.hex)}
+														className="w-full flex items-center justify-between p-4 rounded-2xl bg-foreground/5 hover:bg-foreground/10 transition-all border border-border/50 group"
+													>
+														<div className="flex items-center gap-4">
+															<div
+																className="size-8 rounded-lg shadow-inner"
+																style={{ backgroundColor: color.hex }}
+															/>
+															<div className="flex flex-col items-start">
+																<span className="text-[10px] font-black uppercase tracking-tighter opacity-40 leading-none mb-1">
+																	{color.name}
+																</span>
+																<span className="font-mono text-[10px] font-bold uppercase tracking-wider opacity-60">
+																	{color.hex}
+																</span>
+															</div>
+														</div>
+														{copiedColor === color.hex ? (
+															<Check className="size-4 text-emerald-500" />
+														) : (
+															<Copy className="size-4 opacity-0 group-hover:opacity-20 transition-opacity" />
+														)}
+													</button>
+												))}
+											</div>
+										</div>
+
+										<div className="pt-8 border-t border-border/50 space-y-6">
+											<div className="flex items-center gap-4">
+												<div className="p-2.5 rounded-xl bg-foreground/5">
+													<Type className="size-4 opacity-40" />
+												</div>
+												<span className="text-[10px] font-black uppercase tracking-widest opacity-40">
+													Typografia
+												</span>
+											</div>
+											<div className="space-y-4">
+												{merged.fonts.map((font, idx) => (
+													<div
+														key={font}
+														className="p-5 rounded-2xl bg-foreground/5 border border-border/50"
+													>
+														<p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-20 mb-2">
+															{idx === 0 ? "Hlavné Písmo" : "Sekundárne Písmo"}
+														</p>
+														<p
+															className="text-xl font-black"
+															style={{ fontFamily: font }}
+														>
+															{font}
+														</p>
+													</div>
+												))}
+											</div>
+										</div>
+
+										{/* Design Audit Section */}
+										{(merged.goodThings ||
+											merged.badThings ||
+											merged.suggestions) && (
+											<div className="pt-8 border-t border-border/50 space-y-8">
+												<div className="flex items-center gap-4">
+													<div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+														<Sparkles className="size-4" />
+													</div>
+													<span className="text-[10px] font-black uppercase tracking-widest opacity-60">
+														Design Audit
+													</span>
+												</div>
+
+												<div className="space-y-6">
+													{merged.goodThings &&
+														merged.goodThings.length > 0 && (
+															<div className="space-y-3">
+																<div className="flex items-center gap-2 text-emerald-500">
+																	<CheckCircle2 className="size-3.5" />
+																	<span className="text-[9px] font-black uppercase tracking-widest">
+																		Silné stránky
+																	</span>
+																</div>
+																<ul className="space-y-2">
+																	{merged.goodThings.map((item, i) => (
+																		<li
+																			key={i}
+																			className="text-xs font-medium text-foreground/60 flex items-start gap-2"
+																		>
+																			<span className="size-1 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+																			{item}
+																		</li>
+																	))}
+																</ul>
+															</div>
+														)}
+
+													{merged.badThings && merged.badThings.length > 0 && (
+														<div className="space-y-3">
+															<div className="flex items-center gap-2 text-red-500">
+																<AlertCircle className="size-3.5" />
+																<span className="text-[9px] font-black uppercase tracking-widest">
+																	Potenciálne chyby
+																</span>
+															</div>
+															<ul className="space-y-2">
+																{merged.badThings.map((item, i) => (
+																	<li
+																		key={i}
+																		className="text-xs font-medium text-foreground/60 flex items-start gap-2"
+																	>
+																		<span className="size-1 rounded-full bg-red-500 mt-1.5 shrink-0" />
+																		{item}
+																	</li>
+																))}
+															</ul>
+														</div>
+													)}
+
+													{merged.suggestions &&
+														merged.suggestions.length > 0 && (
+															<div className="space-y-3">
+																<div className="flex items-center gap-2 text-amber-500">
+																	<Lightbulb className="size-3.5" />
+																	<span className="text-[9px] font-black uppercase tracking-widest">
+																		Návrhy na zlepšenie
+																	</span>
+																</div>
+																<ul className="space-y-2">
+																	{merged.suggestions.map((item, i) => (
+																		<li
+																			key={i}
+																			className="text-xs font-medium text-foreground/60 flex items-start gap-2"
+																		>
+																			<span className="size-1 rounded-full bg-amber-500 mt-1.5 shrink-0" />
+																			{item}
+																		</li>
+																	))}
+																</ul>
+															</div>
+														)}
+												</div>
+											</div>
+										)}
+
+										<div className="flex gap-3">
+											<Button
+												onClick={copyAsCSS}
+												className="flex-1 h-14 rounded-2xl bg-foreground text-background hover:opacity-90 font-black uppercase tracking-widest text-[10px]"
+											>
+												<Download className="size-4 mr-3" /> Exportovať CSS
+											</Button>
+										</div>
+									</div>
+								</div>
+
+								{/* Main: Component Preview */}
+								<div className="lg:col-span-8 space-y-8">
+									<div className="p-10 lg:p-16 rounded-[40px] bg-background/40 backdrop-blur-3xl border border-border shadow-2xl space-y-16 overflow-hidden relative">
+										<div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none">
+											<Layout className="size-64 rotate-12" />
+										</div>
+
+										<div className="space-y-4">
+											<p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500">
+												Live Preview
+											</p>
+											<h2 className="text-4xl font-black tracking-tight">
+												Komponenty
+											</h2>
+										</div>
+
+										{/* Preview Sections */}
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+											{/* Buttons */}
+											<div className="space-y-8">
+												<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">
+													Tlačidlá
+												</p>
+												<div className="space-y-4">
+													<Button
+														className="h-14 w-full rounded-2xl text-white font-bold uppercase tracking-widest text-[10px] shadow-xl"
+														style={{ backgroundColor: merged.colors[0]?.hex }}
+													>
+														Primary Action
+													</Button>
+													<Button
+														variant="outline"
+														className="h-14 w-full rounded-2xl border-2 font-bold uppercase tracking-widest text-[10px]"
+														style={{
+															borderColor: merged.colors[1]?.hex,
+															color: merged.colors[1]?.hex,
+														}}
+													>
+														Secondary Option
+													</Button>
+												</div>
+											</div>
+
+											{/* Inputs */}
+											<div className="space-y-8">
+												<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">
+													Inputy
+												</p>
+												<div className="space-y-4">
+													<div className="relative">
+														<div
+															className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20"
+															style={{ color: merged.colors[0]?.hex }}
+														>
+															<Sparkles className="size-4" />
+														</div>
+														<input
+															placeholder="Píšte sem..."
+															className="w-full h-14 bg-foreground/5 border border-border/50 rounded-2xl pl-12 pr-4 text-xs font-bold outline-none focus:border-primary transition-all shadow-inner"
+														/>
+													</div>
+													<div className="flex gap-2">
+														{merged.colors.map((c) => (
+															<div
+																key={`swatch-${c.hex}`}
+																className="size-6 rounded-lg shadow-sm"
+																style={{ backgroundColor: c.hex }}
+															/>
+														))}
+													</div>
+												</div>
+											</div>
+
+											{/* Card Preview */}
+											<div className="md:col-span-2 space-y-8">
+												<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">
+													Karty & Layout
+												</p>
+												<div
+													className="p-8 rounded-[32px] border border-border/50 space-y-6 shadow-2xl relative overflow-hidden"
+													style={{
+														backgroundColor: merged.colors[0]?.hex
+															? `${merged.colors[0].hex}14`
+															: undefined,
+													}}
 												>
 													<div className="flex items-center gap-4">
 														<div
-															className="size-8 rounded-lg shadow-inner"
-															style={{ backgroundColor: color.hex }}
-														/>
-														<div className="flex flex-col items-start">
-															<span className="text-[10px] font-black uppercase tracking-tighter opacity-40 leading-none mb-1">
-																{color.name}
-															</span>
-															<span className="font-mono text-[10px] font-bold uppercase tracking-wider opacity-60">
-																{color.hex}
-															</span>
+															className="size-12 rounded-2xl flex items-center justify-center text-white"
+															style={{ backgroundColor: merged.colors[2]?.hex }}
+														>
+															<Layout className="size-6" />
+														</div>
+														<div>
+															<h4
+																className="font-black text-lg"
+																style={{ fontFamily: merged.fonts[0] }}
+															>
+																Vizuálna Integrita
+															</h4>
+															<p
+																className="text-xs font-medium opacity-40"
+																style={{
+																	fontFamily:
+																		merged.fonts[1] || merged.fonts[0],
+																}}
+															>
+																Harmonické farby extrahované z vašej inšpirácie.
+															</p>
 														</div>
 													</div>
-													{copiedColor === color.hex ? (
-														<Check className="size-4 text-emerald-500" />
-													) : (
-														<Copy className="size-4 opacity-0 group-hover:opacity-20 transition-opacity" />
-													)}
-												</button>
-											))}
-										</div>
-									</div>
-
-									<div className="pt-8 border-t border-border/50 space-y-6">
-										<div className="flex items-center gap-4">
-											<div className="p-2.5 rounded-xl bg-foreground/5">
-												<Type className="size-4 opacity-40" />
-											</div>
-											<span className="text-[10px] font-black uppercase tracking-widest opacity-40">
-												Typografia
-											</span>
-										</div>
-										<div className="space-y-4">
-											{merged.fonts.map((font, idx) => (
-												<div
-													key={font}
-													className="p-5 rounded-2xl bg-foreground/5 border border-border/50"
-												>
-													<p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-20 mb-2">
-														{idx === 0 ? "Hlavné Písmo" : "Sekundárne Písmo"}
-													</p>
-													<p
-														className="text-xl font-black"
-														style={{ fontFamily: font }}
-													>
-														{font}
-													</p>
-												</div>
-											))}
-										</div>
-									</div>
-
-									{/* Design Audit Section */}
-									{(merged.goodThings || merged.badThings || merged.suggestions) && (
-										<div className="pt-8 border-t border-border/50 space-y-8">
-											<div className="flex items-center gap-4">
-												<div className="p-2.5 rounded-xl bg-primary/10 text-primary">
-													<Sparkles className="size-4" />
-												</div>
-												<span className="text-[10px] font-black uppercase tracking-widest opacity-60">
-													Design Audit
-												</span>
-											</div>
-
-											<div className="space-y-6">
-												{merged.goodThings && merged.goodThings.length > 0 && (
-													<div className="space-y-3">
-														<div className="flex items-center gap-2 text-emerald-500">
-															<CheckCircle2 className="size-3.5" />
-															<span className="text-[9px] font-black uppercase tracking-widest">Silné stránky</span>
-														</div>
-														<ul className="space-y-2">
-															{merged.goodThings.map((item, i) => (
-																<li key={i} className="text-xs font-medium text-foreground/60 flex items-start gap-2">
-																	<span className="size-1 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
-																	{item}
-																</li>
-															))}
-														</ul>
-													</div>
-												)}
-
-												{merged.badThings && merged.badThings.length > 0 && (
-													<div className="space-y-3">
-														<div className="flex items-center gap-2 text-red-500">
-															<AlertCircle className="size-3.5" />
-															<span className="text-[9px] font-black uppercase tracking-widest">Potenciálne chyby</span>
-														</div>
-														<ul className="space-y-2">
-															{merged.badThings.map((item, i) => (
-																<li key={i} className="text-xs font-medium text-foreground/60 flex items-start gap-2">
-																	<span className="size-1 rounded-full bg-red-500 mt-1.5 shrink-0" />
-																	{item}
-																</li>
-															))}
-														</ul>
-													</div>
-												)}
-
-												{merged.suggestions && merged.suggestions.length > 0 && (
-													<div className="space-y-3">
-														<div className="flex items-center gap-2 text-amber-500">
-															<Lightbulb className="size-3.5" />
-															<span className="text-[9px] font-black uppercase tracking-widest">Návrhy na zlepšenie</span>
-														</div>
-														<ul className="space-y-2">
-															{merged.suggestions.map((item, i) => (
-																<li key={i} className="text-xs font-medium text-foreground/60 flex items-start gap-2">
-																	<span className="size-1 rounded-full bg-amber-500 mt-1.5 shrink-0" />
-																	{item}
-																</li>
-															))}
-														</ul>
-													</div>
-												)}
-											</div>
-										</div>
-									)}
-
-									<div className="flex gap-3">
-										<Button
-											onClick={copyAsCSS}
-											className="flex-1 h-14 rounded-2xl bg-foreground text-background hover:opacity-90 font-black uppercase tracking-widest text-[10px]"
-										>
-											<Download className="size-4 mr-3" /> Exportovať CSS
-										</Button>
-									</div>
-								</div>
-							</div>
-
-							{/* Main: Component Preview */}
-							<div className="lg:col-span-8 space-y-8">
-								<div className="p-10 lg:p-16 rounded-[40px] bg-background/40 backdrop-blur-3xl border border-border shadow-2xl space-y-16 overflow-hidden relative">
-									<div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none">
-										<Layout className="size-64 rotate-12" />
-									</div>
-
-									<div className="space-y-4">
-										<p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500">
-											Live Preview
-										</p>
-										<h2 className="text-4xl font-black tracking-tight">
-											Komponenty
-										</h2>
-									</div>
-
-									{/* Preview Sections */}
-									<div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-										{/* Buttons */}
-										<div className="space-y-8">
-											<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">
-												Tlačidlá
-											</p>
-											<div className="space-y-4">
-												<Button
-													className="h-14 w-full rounded-2xl text-white font-bold uppercase tracking-widest text-[10px] shadow-xl"
-													style={{ backgroundColor: merged.colors[0]?.hex }}
-												>
-													Primary Action
-												</Button>
-												<Button
-													variant="outline"
-													className="h-14 w-full rounded-2xl border-2 font-bold uppercase tracking-widest text-[10px]"
-													style={{
-														borderColor: merged.colors[1]?.hex,
-														color: merged.colors[1]?.hex,
-													}}
-												>
-													Secondary Option
-												</Button>
-											</div>
-										</div>
-
-										{/* Inputs */}
-										<div className="space-y-8">
-											<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">
-												Inputy
-											</p>
-											<div className="space-y-4">
-												<div className="relative">
-													<div
-														className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20"
-														style={{ color: merged.colors[0]?.hex }}
-													>
-														<Sparkles className="size-4" />
-													</div>
-													<input
-														placeholder="Píšte sem..."
-														className="w-full h-14 bg-foreground/5 border border-border/50 rounded-2xl pl-12 pr-4 text-xs font-bold outline-none focus:border-primary transition-all shadow-inner"
-													/>
-												</div>
-												<div className="flex gap-2">
-													{merged.colors.map((c) => (
+													<div className="flex gap-4">
 														<div
-															key={`swatch-${c.hex}`}
-															className="size-6 rounded-lg shadow-sm"
-															style={{ backgroundColor: c.hex }}
+															className="flex-1 h-2 rounded-full opacity-10"
+															style={{ backgroundColor: merged.colors[0]?.hex }}
 														/>
-													))}
-												</div>
-											</div>
-										</div>
-
-										{/* Card Preview */}
-										<div className="md:col-span-2 space-y-8">
-											<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">
-												Karty & Layout
-											</p>
-											<div
-												className="p-8 rounded-[32px] border border-border/50 space-y-6 shadow-2xl relative overflow-hidden"
-												style={{
-													backgroundColor: merged.colors[0]?.hex
-														? `${merged.colors[0].hex}14`
-														: undefined,
-												}}
-											>
-												<div className="flex items-center gap-4">
-													<div
-														className="size-12 rounded-2xl flex items-center justify-center text-white"
-														style={{ backgroundColor: merged.colors[2]?.hex }}
-													>
-														<Layout className="size-6" />
+														<div
+															className="w-1/3 h-2 rounded-full opacity-10"
+															style={{ backgroundColor: merged.colors[3]?.hex }}
+														/>
 													</div>
-													<div>
-														<h4
-															className="font-black text-lg"
-															style={{ fontFamily: merged.fonts[0] }}
-														>
-															Vizuálna Integrita
-														</h4>
-														<p
-															className="text-xs font-medium opacity-40"
-															style={{
-																fontFamily:
-																	merged.fonts[1] || merged.fonts[0],
-															}}
-														>
-															Harmonické farby extrahované z vašej inšpirácie.
-														</p>
-													</div>
-												</div>
-												<div className="flex gap-4">
-													<div
-														className="flex-1 h-2 rounded-full opacity-10"
-														style={{ backgroundColor: merged.colors[0]?.hex }}
-													/>
-													<div
-														className="w-1/3 h-2 rounded-full opacity-10"
-														style={{ backgroundColor: merged.colors[3]?.hex }}
-													/>
 												</div>
 											</div>
 										</div>
 									</div>
 								</div>
-							</div>
-						</motion.div>
-					)}
+							</motion.div>
+						)}
 				</AnimatePresence>
 			</div>
 

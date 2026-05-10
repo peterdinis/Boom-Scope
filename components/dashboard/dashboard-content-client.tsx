@@ -10,8 +10,7 @@ type ViewerSummary = {
 } | null;
 
 export function DashboardContent({ viewer }: { viewer: ViewerSummary }) {
-	const greeting =
-		viewer?.name ?? viewer?.email?.split("@")[0] ?? "Užívateľ";
+	const greeting = viewer?.name ?? viewer?.email?.split("@")[0] ?? "Užívateľ";
 
 	return (
 		<div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 md:px-8">

@@ -84,7 +84,9 @@ export function groupElementsAtIndices(
 	elements: CanvasElement[],
 	indices: number[],
 ): CanvasElement[] | null {
-	const sorted = [...new Set(indices)].filter((i) => i >= 0).sort((a, b) => a - b);
+	const sorted = [...new Set(indices)]
+		.filter((i) => i >= 0)
+		.sort((a, b) => a - b);
 	if (sorted.length < 2) return null;
 
 	const picked = sorted.map((i) => elements[i]).filter(Boolean);
@@ -143,7 +145,10 @@ export function groupElementsAtIndices(
 	return next;
 }
 
-export function ungroupElement(elements: CanvasElement[], groupId: string): CanvasElement[] | null {
+export function ungroupElement(
+	elements: CanvasElement[],
+	groupId: string,
+): CanvasElement[] | null {
 	const idx = elements.findIndex((e) => e.id === groupId);
 	if (idx === -1) return null;
 	const g = elements[idx];
@@ -170,6 +175,10 @@ export function ungroupElement(elements: CanvasElement[], groupId: string): Canv
 		};
 	});
 
-	const next = [...elements.slice(0, idx), ...absChildren, ...elements.slice(idx + 1)];
+	const next = [
+		...elements.slice(0, idx),
+		...absChildren,
+		...elements.slice(idx + 1),
+	];
 	return next;
 }

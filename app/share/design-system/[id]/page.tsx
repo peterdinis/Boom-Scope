@@ -40,9 +40,16 @@ export default async function ShareDesignSystemPage({ params }: Props) {
 				<div className="p-4 rounded-2xl bg-destructive/10 text-destructive border border-destructive/20">
 					<Sparkles className="size-10" />
 				</div>
-				<h1 className="text-3xl font-black tracking-tight">Design System nenájdený</h1>
-				<p className="text-muted-foreground">Tento design system nie je verejný alebo bol vymazaný.</p>
-				<Link href="/" className="text-primary underline underline-offset-4 font-bold text-sm">
+				<h1 className="text-3xl font-black tracking-tight">
+					Design System nenájdený
+				</h1>
+				<p className="text-muted-foreground">
+					Tento design system nie je verejný alebo bol vymazaný.
+				</p>
+				<Link
+					href="/"
+					className="text-primary underline underline-offset-4 font-bold text-sm"
+				>
 					Späť na Boom Scope
 				</Link>
 			</div>
@@ -73,7 +80,9 @@ export default async function ShareDesignSystemPage({ params }: Props) {
 						<div className="p-2 rounded-xl bg-foreground/5">
 							<Palette className="size-4 opacity-40" />
 						</div>
-						<h2 className="text-2xl font-black tracking-tight">Farebná paleta</h2>
+						<h2 className="text-2xl font-black tracking-tight">
+							Farebná paleta
+						</h2>
 					</div>
 					<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
 						{system.colors.map((color) => (
@@ -86,9 +95,15 @@ export default async function ShareDesignSystemPage({ params }: Props) {
 									style={{ backgroundColor: color.hex }}
 								/>
 								<div className="p-4 bg-background/60 backdrop-blur space-y-1">
-									<p className="text-xs font-black uppercase tracking-tight">{color.name}</p>
-									<p className="font-mono text-[10px] text-muted-foreground">{color.hex}</p>
-									<p className="font-mono text-[10px] text-muted-foreground">{color.rgb}</p>
+									<p className="text-xs font-black uppercase tracking-tight">
+										{color.name}
+									</p>
+									<p className="font-mono text-[10px] text-muted-foreground">
+										{color.hex}
+									</p>
+									<p className="font-mono text-[10px] text-muted-foreground">
+										{color.rgb}
+									</p>
 								</div>
 							</div>
 						))}
@@ -115,7 +130,10 @@ export default async function ShareDesignSystemPage({ params }: Props) {
 								<p className="text-2xl font-black" style={{ fontFamily: font }}>
 									{font}
 								</p>
-								<p className="text-sm opacity-50 mt-1" style={{ fontFamily: font }}>
+								<p
+									className="text-sm opacity-50 mt-1"
+									style={{ fontFamily: font }}
+								>
 									The quick brown fox jumps over the lazy dog
 								</p>
 							</div>

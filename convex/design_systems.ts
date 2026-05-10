@@ -125,7 +125,8 @@ export const update = mutation({
 		const userId = await getAuthUserId(ctx);
 		if (!userId) throw new Error("Unauthorized");
 		const existing = await ctx.db.get(args.id);
-		if (!existing || existing.userId !== userId) throw new Error("Unauthorized");
+		if (!existing || existing.userId !== userId)
+			throw new Error("Unauthorized");
 		const { id, ...rest } = args;
 		const patch: Record<string, unknown> = {};
 		if (rest.colors !== undefined) patch.colors = rest.colors;

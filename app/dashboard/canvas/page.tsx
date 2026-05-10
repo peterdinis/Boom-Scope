@@ -11,8 +11,8 @@ import {
 	Eye,
 	EyeOff,
 	FolderKanban,
-	Group,
 	Grid,
+	Group,
 	Image as ImageIcon,
 	Layers,
 	Lock,
@@ -33,10 +33,10 @@ import {
 	Tablet,
 	Trash2,
 	Type,
-	Upload,
-	Ungroup,
 	Undo2,
+	Ungroup,
 	Unlock,
+	Upload,
 	ZoomIn,
 	ZoomOut,
 } from "lucide-react";
@@ -47,13 +47,13 @@ import { toast } from "sonner";
 import { Dock } from "@/components/design/Dock";
 import type { CanvasElement } from "@/components/design/KonvaCanvas";
 import { ShareDialog } from "@/components/design/ShareDialog";
-import { QuickNoteDialog } from "@/components/notes/QuickNoteDialog";
 import {
 	FacebookIcon,
 	InstagramIcon,
 	LinkedinIcon,
 	TwitterIcon,
 } from "@/components/icons/SocialIcons";
+import { QuickNoteDialog } from "@/components/notes/QuickNoteDialog";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -144,7 +144,9 @@ export default function DesignPage() {
 	const [isShareOpen, setIsShareOpen] = useState(false);
 	const [sharedDesignId, setSharedDesignId] = useState<string | null>(null);
 	const [isProjectPickerOpen, setIsProjectPickerOpen] = useState(false);
-	const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+	const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+		null,
+	);
 	const [isSaving, setIsSaving] = useState(false);
 	const [isNoteOpen, setIsNoteOpen] = useState(false);
 
@@ -153,8 +155,12 @@ export default function DesignPage() {
 	const [historyIndex, setHistoryIndex] = useState(0);
 	const historyRef = useRef(history);
 	const historyIndexRef = useRef(historyIndex);
-	useEffect(() => { historyRef.current = history; }, [history]);
-	useEffect(() => { historyIndexRef.current = historyIndex; }, [historyIndex]);
+	useEffect(() => {
+		historyRef.current = history;
+	}, [history]);
+	useEffect(() => {
+		historyIndexRef.current = historyIndex;
+	}, [historyIndex]);
 
 	const clipboardRef = useRef<CanvasElement[] | null>(null);
 	const jsonImportRef = useRef<HTMLInputElement>(null);
@@ -206,7 +212,8 @@ export default function DesignPage() {
 	const elementToSvg = useCallback((el: CanvasElement): string => {
 		const op = el.opacity ?? 1;
 		const blend =
-			el.globalCompositeOperation && el.globalCompositeOperation !== "source-over"
+			el.globalCompositeOperation &&
+			el.globalCompositeOperation !== "source-over"
 				? ` style="mix-blend-mode: ${el.globalCompositeOperation}"`
 				: "";
 		if (el.type === "group" && el.children?.length) {
@@ -259,8 +266,13 @@ export default function DesignPage() {
 	// JSON export helper
 	const exportJSON = useCallback(() => {
 		const data = { elements: elementsRef.current, canvasSize, artboardColor };
-		const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-		const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "boom-scope-design.json"; link.click();
+		const blob = new Blob([JSON.stringify(data, null, 2)], {
+			type: "application/json",
+		});
+		const link = document.createElement("a");
+		link.href = URL.createObjectURL(blob);
+		link.download = "boom-scope-design.json";
+		link.click();
 		toast.success("JSON exportovaný!");
 	}, [canvasSize, artboardColor]);
 
@@ -390,8 +402,8 @@ export default function DesignPage() {
 					selectedIdsRef.current.includes(el.id),
 				);
 				if (picked.length) {
-					clipboardRef.current = picked.map((p) =>
-						JSON.parse(JSON.stringify(p)) as CanvasElement,
+					clipboardRef.current = picked.map(
+						(p) => JSON.parse(JSON.stringify(p)) as CanvasElement,
 					);
 					toast.success("Skopírované!");
 				}
@@ -424,12 +436,20 @@ export default function DesignPage() {
 			if (!mod && e.key.toLowerCase() === "r") setActiveTool("rect");
 			if (!mod && e.key.toLowerCase() === "c") setActiveTool("circle");
 			if (!mod && e.key.toLowerCase() === "t") setActiveTool("text");
-			if (!mod && e.key.toLowerCase() === "l" && selectedIdsRef.current.length === 1) {
+			if (
+				!mod &&
+				e.key.toLowerCase() === "l" &&
+				selectedIdsRef.current.length === 1
+			) {
 				const id = selectedIdsRef.current[0];
 				const el = elementsRef.current.find((x) => x.id === id);
 				if (el) updateSelectedElement({ isLocked: !el.isLocked });
 			}
-			if (!mod && e.key.toLowerCase() === "h" && selectedIdsRef.current.length === 1) {
+			if (
+				!mod &&
+				e.key.toLowerCase() === "h" &&
+				selectedIdsRef.current.length === 1
+			) {
 				const id = selectedIdsRef.current[0];
 				const el = elementsRef.current.find((x) => x.id === id);
 				if (el) updateSelectedElement({ isVisible: el.isVisible === false });
@@ -1133,8 +1153,8 @@ export default function DesignPage() {
 											max="1"
 											step="0.01"
 											value={
-												elements.find((e) => e.id === selectedIds[0])?.opacity ??
-												1
+												elements.find((e) => e.id === selectedIds[0])
+													?.opacity ?? 1
 											}
 											onChange={(e) =>
 												updateSelectedElement({
@@ -1508,20 +1528,42 @@ export default function DesignPage() {
 												Blend Mode
 											</p>
 											<Select
-												value={selectedElement.globalCompositeOperation ?? "source-over"}
-												onValueChange={(v) => updateSelectedElement({ globalCompositeOperation: v })}
+												value={
+													selectedElement.globalCompositeOperation ??
+													"source-over"
+												}
+												onValueChange={(v) =>
+													updateSelectedElement({ globalCompositeOperation: v })
+												}
 											>
 												<SelectTrigger className="h-9 rounded-xl bg-background border-border text-[10px] font-bold">
 													<SelectValue />
 												</SelectTrigger>
 												<SelectContent className="rounded-2xl border-border/50">
 													{[
-														"source-over", "multiply", "screen", "overlay",
-														"darken", "lighten", "color-dodge", "color-burn",
-														"hard-light", "soft-light", "difference", "exclusion",
+														"source-over",
+														"multiply",
+														"screen",
+														"overlay",
+														"darken",
+														"lighten",
+														"color-dodge",
+														"color-burn",
+														"hard-light",
+														"soft-light",
+														"difference",
+														"exclusion",
 													].map((mode) => (
-														<SelectItem key={mode} value={mode} className="rounded-xl text-[10px] font-bold">
-															{mode === "source-over" ? "Normal" : mode.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+														<SelectItem
+															key={mode}
+															value={mode}
+															className="rounded-xl text-[10px] font-bold"
+														>
+															{mode === "source-over"
+																? "Normal"
+																: mode
+																		.replace(/-/g, " ")
+																		.replace(/\b\w/g, (c) => c.toUpperCase())}
 														</SelectItem>
 													))}
 												</SelectContent>
@@ -1722,25 +1764,48 @@ export default function DesignPage() {
 									<div className="pt-6 border-t border-border space-y-4">
 										<div className="flex items-center gap-3">
 											<Download className="size-3.5 text-primary/60" />
-											<p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Export</p>
+											<p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">
+												Export
+											</p>
 										</div>
 										<div className="grid grid-cols-1 gap-2.5">
-											<Button variant="outline" className="h-10 rounded-2xl border-border bg-background hover:bg-accent gap-2 text-[9px] font-black uppercase" onClick={() => handleAction("download")}>
+											<Button
+												variant="outline"
+												className="h-10 rounded-2xl border-border bg-background hover:bg-accent gap-2 text-[9px] font-black uppercase"
+												onClick={() => handleAction("download")}
+											>
 												<Download className="size-3.5" /> PNG
 											</Button>
-											<Button variant="outline" className="h-10 rounded-2xl border-border bg-background hover:bg-accent gap-2 text-[9px] font-black uppercase" onClick={exportSVG}>
+											<Button
+												variant="outline"
+												className="h-10 rounded-2xl border-border bg-background hover:bg-accent gap-2 text-[9px] font-black uppercase"
+												onClick={exportSVG}
+											>
 												<Download className="size-3.5" /> SVG
 											</Button>
-											<Button variant="outline" className="h-10 rounded-2xl border-border bg-background hover:bg-accent gap-2 text-[9px] font-black uppercase" onClick={exportJSON}>
+											<Button
+												variant="outline"
+												className="h-10 rounded-2xl border-border bg-background hover:bg-accent gap-2 text-[9px] font-black uppercase"
+												onClick={exportJSON}
+											>
 												<Download className="size-3.5" /> JSON export
 											</Button>
-											<Button variant="outline" className="h-10 rounded-2xl border-border bg-background hover:bg-accent gap-2 text-[9px] font-black uppercase" onClick={() => jsonImportRef.current?.click()}>
+											<Button
+												variant="outline"
+												className="h-10 rounded-2xl border-border bg-background hover:bg-accent gap-2 text-[9px] font-black uppercase"
+												onClick={() => jsonImportRef.current?.click()}
+											>
 												<Upload className="size-3.5" /> JSON import
 											</Button>
 										</div>
 										<div className="flex items-center justify-between text-[9px] font-bold opacity-30 uppercase tracking-widest pt-1">
-											<span className="flex items-center gap-1.5"><Clipboard className="size-3" /> História zmien</span>
-											<span>krok {historyIndex + 1} / {history.length} ({history.length - 1} úprav)</span>
+											<span className="flex items-center gap-1.5">
+												<Clipboard className="size-3" /> História zmien
+											</span>
+											<span>
+												krok {historyIndex + 1} / {history.length} (
+												{history.length - 1} úprav)
+											</span>
 										</div>
 									</div>
 								</div>

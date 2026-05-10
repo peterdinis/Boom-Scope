@@ -1,8 +1,8 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import React from "react";
+import { toast } from "sonner";
 import { describe, expect, test, vi } from "vitest";
 import DesignSystemPage from "../app/dashboard/design-system/page";
-import { toast } from "sonner";
 
 // Mock Convex hooks so the page renders without a ConvexProvider in tests.
 vi.mock("convex/react", () => ({
