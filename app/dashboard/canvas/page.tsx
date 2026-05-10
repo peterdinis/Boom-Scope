@@ -13,6 +13,7 @@ import {
 	Layers,
 	Lock,
 	Maximize2,
+	NotebookPen,
 	Palette,
 	PanelLeft,
 	PanelRight,
@@ -37,6 +38,7 @@ import { toast } from "sonner";
 import { Dock } from "@/components/design/Dock";
 import type { CanvasElement } from "@/components/design/KonvaCanvas";
 import { ShareDialog } from "@/components/design/ShareDialog";
+import { QuickNoteDialog } from "@/components/notes/QuickNoteDialog";
 import {
 	FacebookIcon,
 	InstagramIcon,
@@ -130,6 +132,7 @@ export default function DesignPage() {
 	const [isProjectPickerOpen, setIsProjectPickerOpen] = useState(false);
 	const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
+	const [isNoteOpen, setIsNoteOpen] = useState(false);
 
 	const projects = useQuery(api.projects.list);
 	const saveDesign = useMutation(api.designs.saveDesign);
@@ -440,6 +443,12 @@ export default function DesignPage() {
 						<span className="flex items-center gap-2 uppercase">
 							<RefreshCw className="size-3" /> Auto-Save
 						</span>
+						<button
+							onClick={() => setIsNoteOpen(true)}
+							className="flex items-center gap-2 uppercase opacity-100 px-3 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors pointer-events-auto"
+						>
+							<NotebookPen className="size-3" /> Poznámka
+						</button>
 					</div>
 				</div>
 			</div>
@@ -1469,6 +1478,12 @@ export default function DesignPage() {
 				isOpen={isShareOpen}
 				onClose={() => setIsShareOpen(false)}
 				designId={sharedDesignId}
+			/>
+
+			<QuickNoteDialog
+				open={isNoteOpen}
+				onOpenChange={setIsNoteOpen}
+				defaultProjectId={selectedProjectId}
 			/>
 		</div>
 	);

@@ -6,6 +6,7 @@ import {
 	Copy,
 	Download,
 	Layout,
+	NotebookPen,
 	Palette,
 	RefreshCw,
 	Sparkles,
@@ -18,6 +19,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { QuickNoteDialog } from "@/components/notes/QuickNoteDialog";
 import { Button } from "@/components/ui/button";
 import {
 	Select,
@@ -56,6 +58,7 @@ export default function DesignSystemPage() {
 	const [isAnalyzing, setIsAnalyzing] = useState(false);
 	const [system, setSystem] = useState<GeneratedSystem | null>(null);
 	const [copiedColor, setCopiedColor] = useState<string | null>(null);
+	const [isNoteOpen, setIsNoteOpen] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
