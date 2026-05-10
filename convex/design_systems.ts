@@ -14,6 +14,9 @@ export const create = mutation({
 		),
 		fonts: v.array(v.string()),
 		description: v.optional(v.string()),
+		goodThings: v.optional(v.array(v.string())),
+		badThings: v.optional(v.array(v.string())),
+		suggestions: v.optional(v.array(v.string())),
 		isPublic: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
@@ -30,6 +33,9 @@ export const create = mutation({
 			colors: args.colors,
 			fonts: args.fonts,
 			description: args.description,
+			goodThings: args.goodThings,
+			badThings: args.badThings,
+			suggestions: args.suggestions,
 			isPublic: args.isPublic ?? false,
 		});
 	},
@@ -110,6 +116,9 @@ export const update = mutation({
 		),
 		fonts: v.optional(v.array(v.string())),
 		description: v.optional(v.string()),
+		goodThings: v.optional(v.array(v.string())),
+		badThings: v.optional(v.array(v.string())),
+		suggestions: v.optional(v.array(v.string())),
 		isPublic: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
@@ -122,6 +131,9 @@ export const update = mutation({
 		if (rest.colors !== undefined) patch.colors = rest.colors;
 		if (rest.fonts !== undefined) patch.fonts = rest.fonts;
 		if (rest.description !== undefined) patch.description = rest.description;
+		if (rest.goodThings !== undefined) patch.goodThings = rest.goodThings;
+		if (rest.badThings !== undefined) patch.badThings = rest.badThings;
+		if (rest.suggestions !== undefined) patch.suggestions = rest.suggestions;
 		if (rest.isPublic !== undefined) patch.isPublic = rest.isPublic;
 		await ctx.db.patch(id, patch);
 	},

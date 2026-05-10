@@ -2,10 +2,12 @@
 
 import { useAction, useMutation, useQuery } from "convex/react";
 import {
-	Check,
+	AlertCircle,
+	CheckCircle2,
 	Copy,
 	Download,
 	Layout,
+	Lightbulb,
 	Link2,
 	NotebookPen,
 	Palette,
@@ -46,6 +48,9 @@ const aiSystemSchema = z.object({
 	),
 	fonts: z.array(z.string()),
 	description: z.string().optional(),
+	goodThings: z.array(z.string()).optional(),
+	badThings: z.array(z.string()).optional(),
+	suggestions: z.array(z.string()).optional(),
 });
 
 type GeneratedSystem = z.infer<typeof aiSystemSchema>;
@@ -86,6 +91,9 @@ export default function DesignSystemPage() {
 			colors: [...baseColors, ...localColors],
 			fonts: [...baseFonts, ...localFonts],
 			description: system?.description,
+			goodThings: system?.goodThings,
+			badThings: system?.badThings,
+			suggestions: system?.suggestions,
 		};
 	}, [system, localColors, localFonts]);
 
@@ -119,6 +127,9 @@ export default function DesignSystemPage() {
 						: [{ name: "Neutral", hex: "#71717a", rgb: "rgb(113, 113, 122)" }],
 				fonts,
 				description: merged.description || "Design system",
+				goodThings: merged.goodThings,
+				badThings: merged.badThings,
+				suggestions: merged.suggestions,
 			});
 			setLastSavedId(id);
 			toast.success("Design system uložený!");
@@ -260,6 +271,9 @@ export default function DesignSystemPage() {
 				colors: mergedColors,
 				fonts: mergedFonts,
 				description: parsed.data.description,
+				goodThings: parsed.data.goodThings,
+				badThings: parsed.data.badThings,
+				suggestions: parsed.data.suggestions,
 			});
 
 			setLastSavedId(id);
@@ -542,6 +556,9 @@ export default function DesignSystemPage() {
 												colors: row.colors,
 												fonts: row.fonts,
 												description: row.description,
+												goodThings: row.goodThings,
+												badThings: row.badThings,
+												suggestions: row.suggestions,
 											});
 											setLocalColors([]);
 											setLocalFonts([]);
@@ -767,6 +784,73 @@ export default function DesignSystemPage() {
 											))}
 										</div>
 									</div>
+
+									{/* Design Audit Section */}
+									{(merged.goodThings || merged.badThings || merged.suggestions) && (
+										<div className="pt-8 border-t border-border/50 space-y-8">
+											<div className="flex items-center gap-4">
+												<div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+													<Sparkles className="size-4" />
+												</div>
+												<span className="text-[10px] font-black uppercase tracking-widest opacity-60">
+													Design Audit
+												</span>
+											</div>
+
+											<div className="space-y-6">
+												{merged.goodThings && merged.goodThings.length > 0 && (
+													<div className="space-y-3">
+														<div className="flex items-center gap-2 text-emerald-500">
+															<CheckCircle2 className="size-3.5" />
+															<span className="text-[9px] font-black uppercase tracking-widest">Silné stránky</span>
+														</div>
+														<ul className="space-y-2">
+															{merged.goodThings.map((item, i) => (
+																<li key={i} className="text-xs font-medium text-foreground/60 flex items-start gap-2">
+																	<span className="size-1 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+																	{item}
+																</li>
+															))}
+														</ul>
+													</div>
+												)}
+
+												{merged.badThings && merged.badThings.length > 0 && (
+													<div className="space-y-3">
+														<div className="flex items-center gap-2 text-red-500">
+															<AlertCircle className="size-3.5" />
+															<span className="text-[9px] font-black uppercase tracking-widest">Potenciálne chyby</span>
+														</div>
+														<ul className="space-y-2">
+															{merged.badThings.map((item, i) => (
+																<li key={i} className="text-xs font-medium text-foreground/60 flex items-start gap-2">
+																	<span className="size-1 rounded-full bg-red-500 mt-1.5 shrink-0" />
+																	{item}
+																</li>
+															))}
+														</ul>
+													</div>
+												)}
+
+												{merged.suggestions && merged.suggestions.length > 0 && (
+													<div className="space-y-3">
+														<div className="flex items-center gap-2 text-amber-500">
+															<Lightbulb className="size-3.5" />
+															<span className="text-[9px] font-black uppercase tracking-widest">Návrhy na zlepšenie</span>
+														</div>
+														<ul className="space-y-2">
+															{merged.suggestions.map((item, i) => (
+																<li key={i} className="text-xs font-medium text-foreground/60 flex items-start gap-2">
+																	<span className="size-1 rounded-full bg-amber-500 mt-1.5 shrink-0" />
+																	{item}
+																</li>
+															))}
+														</ul>
+													</div>
+												)}
+											</div>
+										</div>
+									)}
 
 									<div className="flex gap-3">
 										<Button

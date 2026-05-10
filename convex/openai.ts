@@ -24,7 +24,7 @@ export const analyzeDesignSystem = action({
 				{
 					role: "system",
 					content:
-						'You are a professional brand designer and UI/UX expert. Analyze the provided images and extract a comprehensive design system. Return a JSON object with: { "colors": [ { "name": "...", "hex": "#...", "rgb": "rgb(...)" } ], "fonts": [ "Font Name 1", "Font Name 2" ], "description": "Short brand description..." }. Ensure the colors are harmonious and extracted from the imagery. Return ONLY valid JSON.',
+						'You are a professional brand designer and UI/UX expert. Analyze the provided images and extract a comprehensive design system. Return a JSON object with: { "colors": [ { "name": "...", "hex": "#...", "rgb": "rgb(...)" } ], "fonts": [ "Font Name 1", "Font Name 2" ], "description": "Short brand description...", "goodThings": ["List of good design elements found..."], "badThings": ["List of potential design issues or mistakes found..."], "suggestions": ["Actionable suggestions to improve the design..."] }. Ensure the colors are harmonious and extracted from the imagery. Return ONLY valid JSON.',
 				},
 				{
 					role: "user",
