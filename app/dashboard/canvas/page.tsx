@@ -42,7 +42,8 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Dock } from "@/components/design/Dock";
 import type { CanvasElement } from "@/components/design/KonvaCanvas";
@@ -121,7 +122,7 @@ const FONTS = [
 	"Arial Black, sans-serif",
 ];
 
-export default function DesignPage() {
+function DesignPageContent() {
 	const [activeTool, setActiveTool] = useState("select");
 	const [elements, setElements] = useState<CanvasElement[]>([]);
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -168,6 +169,39 @@ export default function DesignPage() {
 	const projects = useQuery(api.projects.list);
 	const saveDesign = useMutation(api.designs.saveDesign);
 	const updateDesign = useMutation(api.designs.updateDesign);
+
+	const searchParams = useSearchParams();
+	const designIdParam = searchParams.get("designId");
+	const projectIdParam = searchParams.get("projectId");
+
+	const existingDesign = useQuery(
+		api.designs.getDesign,
+		designIdParam ? { designId: designIdParam as Id<"designs"> } : "skip",
+	);
+
+	useEffect(() => {
+		if (existingDesign) {
+			try {
+				const parsed = JSON.parse(existingDesign.elements);
+				setElements(parsed);
+				setHistory([parsed]);
+				setHistoryIndex(0);
+				if (existingDesign.canvasSize) setCanvasSize(existingDesign.canvasSize);
+				if (existingDesign.artboardColor)
+					setArtboardColor(existingDesign.artboardColor);
+				setSharedDesignId(existingDesign._id);
+				setSelectedProjectId(existingDesign.projectId);
+			} catch (e) {
+				console.error("Failed to parse design elements", e);
+			}
+		}
+	}, [existingDesign]);
+
+	useEffect(() => {
+		if (projectIdParam && !selectedProjectId && !designIdParam) {
+			setSelectedProjectId(projectIdParam);
+		}
+	}, [projectIdParam, selectedProjectId, designIdParam]);
 
 	const elementsRef = useRef(elements);
 	const activeToolRef = useRef(activeTool);
@@ -1976,5 +2010,19 @@ export default function DesignPage() {
 				defaultProjectId={selectedProjectId}
 			/>
 		</div>
+	);
+}
+
+export default function DesignPage() {
+	return (
+		<Suspense
+			fallback={
+				<div className="flex h-screen w-full items-center justify-center bg-background">
+					<div className="size-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+				</div>
+			}
+		>
+			<DesignPageContent />
+		</Suspense>
 	);
 }

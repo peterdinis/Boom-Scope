@@ -35,6 +35,26 @@ export default function ProjectDetailPage() {
 		projectId ? { projectId: projectId as Id<"projects"> } : "skip",
 	);
 
+	const designs = useQuery(
+		api.designs.listByProject,
+		projectId ? { projectId: projectId as Id<"projects"> } : "skip",
+	);
+
+	const designSystems = useQuery(
+		api.design_systems.getByProject,
+		projectId ? { projectId: projectId as Id<"projects"> } : "skip",
+	);
+
+	const notes = useQuery(
+		api.notes.list,
+		projectId
+			? {
+					projectId: projectId as Id<"projects">,
+					paginationOpts: { numItems: 100, cursor: null },
+				}
+			: "skip",
+	);
+
 	if (project === undefined) {
 		return (
 			<div className="flex h-screen items-center justify-center">
@@ -74,7 +94,7 @@ export default function ProjectDetailPage() {
 			icon: FileText,
 			color: "text-primary",
 			bgColor: "bg-primary/10",
-			count: 0,
+			count: notes?.page?.length || 0,
 			href: `/dashboard/notes?projectId=${projectId}`,
 		},
 		{
@@ -83,7 +103,7 @@ export default function ProjectDetailPage() {
 			icon: Palette,
 			color: "text-emerald-500",
 			bgColor: "bg-emerald-500/10",
-			count: 0,
+			count: designs?.length || 0,
 			href: `/dashboard/canvas?projectId=${projectId}`,
 		},
 		{
@@ -92,7 +112,7 @@ export default function ProjectDetailPage() {
 			icon: Sparkles,
 			color: "text-purple-500",
 			bgColor: "bg-purple-500/10",
-			count: 0,
+			count: designSystems?.length || 0,
 			href: `/dashboard/design-system?projectId=${projectId}`,
 		},
 	];

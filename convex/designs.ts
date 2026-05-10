@@ -70,3 +70,18 @@ export const updateDesign = mutation({
 		});
 	},
 });
+
+export const listByProject = query({
+	args: { projectId: v.id("projects") },
+	handler: async (ctx, args) => {
+		const userId = await auth.getUserId(ctx);
+		if (!userId) return [];
+
+		return await ctx.db
+			.query("designs")
+			.withIndex("by_projectId", (q) => q.eq("projectId", args.projectId))
+			.filter((q) => q.eq(q.field("userId"), userId))
+			.collect();
+	},
+});
+
