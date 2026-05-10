@@ -20,6 +20,7 @@ import {
 	Layer,
 	Line,
 	Rect,
+	RegularPolygon,
 	Stage,
 	Star,
 	Text,
@@ -105,6 +106,15 @@ export default function KonvaCanvas({
 		x: number;
 		y: number;
 		elementId: string;
+	} | null>(null);
+	const [selectionBox, setSelectionBox] = useState<{
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+		active: boolean;
+		startX: number;
+		startY: number;
 	} | null>(null);
 	const { resolvedTheme } = useTheme();
 	const isDark = resolvedTheme === "dark";
@@ -199,7 +209,28 @@ export default function KonvaCanvas({
 	const handleMouseDown = (e: KonvaEventObject<MouseEvent>) => {
 		if (readOnly) return;
 		const clickedOnStage = e.target === e.target.getStage();
-		if (clickedOnStage && (activeTool === "select" || activeTool === "hand")) {
+		
+		if (clickedOnStage && activeTool === "select") {
+			onSelectionChange([]);
+			const stage = e.target.getStage();
+			if (stage) {
+				const pos = stage.getRelativePointerPosition();
+				if (pos) {
+					setSelectionBox({
+						x: pos.x,
+						y: pos.y,
+						width: 0,
+						height: 0,
+						active: true,
+						startX: pos.x,
+						startY: pos.y,
+					});
+				}
+			}
+			return;
+		}
+
+		if (clickedOnStage && activeTool === "hand") {
 			onSelectionChange([]);
 			return;
 		}
@@ -260,10 +291,23 @@ export default function KonvaCanvas({
 	};
 
 	const handleMouseMove = (e: KonvaEventObject<MouseEvent>) => {
-		if (readOnly || !isDrawing || !newElement) return;
-
 		const stage = e.target.getStage();
 		if (!stage) return;
+
+		if (selectionBox?.active) {
+			const pos = stage.getRelativePointerPosition();
+			if (!pos) return;
+			setSelectionBox({
+				...selectionBox,
+				x: Math.min(pos.x, selectionBox.startX),
+				y: Math.min(pos.y, selectionBox.startY),
+				width: Math.abs(pos.x - selectionBox.startX),
+				height: Math.abs(pos.y - selectionBox.startY),
+			});
+			return;
+		}
+
+		if (readOnly || !isDrawing || !newElement) return;
 
 		const pos = stage.getRelativePointerPosition();
 		if (!pos) return;
@@ -274,15 +318,69 @@ export default function KonvaCanvas({
 				points: [...(newElement.points || []), pos.x, pos.y],
 			});
 		} else {
+			let width = snap(pos.x - newElement.x);
+			let height = snap(pos.y - newElement.y);
+
+			if (e.evt.shiftKey) {
+				const size = Math.max(Math.abs(width), Math.abs(height));
+				width = width < 0 ? -size : size;
+				height = height < 0 ? -size : size;
+			}
+
 			setNewElement({
 				...newElement,
-				width: snap(pos.x - newElement.x),
-				height: snap(pos.y - newElement.y),
+				width,
+				height,
 			});
 		}
 	};
 
 	const handleMouseUp = () => {
+		if (selectionBox?.active) {
+			const box = {
+				minX: selectionBox.x,
+				minY: selectionBox.y,
+				maxX: selectionBox.x + selectionBox.width,
+				maxY: selectionBox.y + selectionBox.height,
+			};
+
+			const newSelection = elementsRef.current.filter((el) => {
+				if (el.isLocked || el.isVisible === false) return false;
+				
+				if (el.type === "pencil" && el.points) {
+					for (let i = 0; i < el.points.length; i += 2) {
+						const px = el.points[i] + el.x;
+						const py = el.points[i + 1] + el.y;
+						if (px >= box.minX && px <= box.maxX && py >= box.minY && py <= box.maxY) {
+							return true;
+						}
+					}
+					return false;
+				}
+
+				const elMinX = el.x;
+				const elMinY = el.y;
+				const elMaxX = el.x + (el.width || 0);
+				const elMaxY = el.y + (el.height || 0);
+				
+				const nx1 = Math.min(elMinX, elMaxX);
+				const ny1 = Math.min(elMinY, elMaxY);
+				const nx2 = Math.max(elMinX, elMaxX);
+				const ny2 = Math.max(elMinY, elMaxY);
+
+				return !(
+					box.maxX < nx1 ||
+					box.minX > nx2 ||
+					box.maxY < ny1 ||
+					box.minY > ny2
+				);
+			}).map((el) => el.id);
+
+			onSelectionChange(newSelection);
+			setSelectionBox(null);
+			return;
+		}
+
 		if (!isDrawing || !newElement) return;
 
 		commitElements([...elementsRef.current, newElement]);
@@ -291,17 +389,46 @@ export default function KonvaCanvas({
 	};
 
 	const handleTransformEnd = (e: KonvaEventObject<Event>) => {
-		const node = e.target;
-		const id = node.id();
-		const scaleX = node.scaleX();
-		const scaleY = node.scaleY();
+		const transformer = transformerRef.current;
+		if (!transformer) return;
 
-		node.scaleX(1);
-		node.scaleY(1);
+		const nodes = transformer.nodes();
+		if (nodes.length === 0) return;
 
 		const updateNested = (items: CanvasElement[]): CanvasElement[] =>
 			items.map((el) => {
-				if (el.id === id) {
+				const node = nodes.find((n) => n.id() === el.id);
+				if (node) {
+					const scaleX = node.scaleX();
+					const scaleY = node.scaleY();
+
+					node.scaleX(1);
+					node.scaleY(1);
+
+					if (el.type === "pencil" && el.points) {
+						return {
+							...el,
+							x: snap(node.x()),
+							y: snap(node.y()),
+							rotation: node.rotation(),
+							points: el.points.map((p, i) =>
+								i % 2 === 0 ? p * scaleX : p * scaleY
+							),
+						};
+					}
+
+					if (el.type === "text") {
+						return {
+							...el,
+							x: snap(node.x()),
+							y: snap(node.y()),
+							rotation: node.rotation(),
+							width: el.width ? snap(Math.max(5, el.width * scaleX)) : undefined,
+							height: el.height ? snap(Math.max(5, el.height * scaleY)) : undefined,
+							fontSize: (el.fontSize || 24) * scaleY,
+						};
+					}
+
 					return {
 						...el,
 						x: snap(node.x()),
@@ -527,6 +654,19 @@ export default function KonvaCanvas({
 						/>
 					)}
 
+					{selectionBox?.active && (
+						<Rect
+							x={selectionBox.x}
+							y={selectionBox.y}
+							width={selectionBox.width}
+							height={selectionBox.height}
+							fill={getCSSVariable("--primary")}
+							opacity={0.1}
+							stroke={getCSSVariable("--primary")}
+							strokeWidth={1}
+						/>
+					)}
+
 					{activeTool === "select" && (
 						<Transformer
 							ref={transformerRef}
@@ -725,8 +865,39 @@ function RenderElement({
 	}
 
 	if (el.type === "circle") {
-		const radius = Math.sqrt((el.width || 0) ** 2 + (el.height || 0) ** 2);
-		return <Circle {...commonProps} radius={radius} />;
+		const radius = Math.max(Math.abs(el.width || 0), Math.abs(el.height || 0)) / 2;
+		return (
+			<Circle 
+				{...commonProps} 
+				radius={radius} 
+				offsetX={-(el.width || 0) / 2}
+				offsetY={-(el.height || 0) / 2}
+			/>
+		);
+	}
+
+	if (el.type === "triangle") {
+		return (
+			<RegularPolygon
+				{...commonProps}
+				sides={3}
+				radius={Math.max(Math.abs(el.width || 0), Math.abs(el.height || 0)) / 2}
+				offsetX={-(el.width || 0) / 2}
+				offsetY={-(el.height || 0) / 2}
+			/>
+		);
+	}
+
+	if (el.type === "polygon") {
+		return (
+			<RegularPolygon
+				{...commonProps}
+				sides={6}
+				radius={Math.max(Math.abs(el.width || 0), Math.abs(el.height || 0)) / 2}
+				offsetX={-(el.width || 0) / 2}
+				offsetY={-(el.height || 0) / 2}
+			/>
+		);
 	}
 
 	if (el.type === "pencil") {
@@ -768,12 +939,15 @@ function RenderElement({
 	}
 
 	if (el.type === "star") {
+		const outerRadius = Math.max(Math.abs(el.width || 0), Math.abs(el.height || 0)) / 2;
 		return (
 			<Star
 				{...commonProps}
-				innerRadius={Math.abs(el.width || 0) / 4}
-				outerRadius={Math.abs(el.width || 0) / 2}
+				innerRadius={outerRadius / 2}
+				outerRadius={outerRadius}
 				numPoints={5}
+				offsetX={-(el.width || 0) / 2}
+				offsetY={-(el.height || 0) / 2}
 			/>
 		);
 	}

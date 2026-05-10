@@ -525,6 +525,10 @@ export default function DesignPage() {
 		selectedIds.length === 1
 			? elements.find((el) => el.id === selectedIds[0])
 			: undefined;
+	const hasVisualConfigured = selectedElement
+		? (selectedElement.fill !== undefined && selectedElement.fill !== "none") ||
+			(selectedElement.strokeWidth ?? 0) > 0
+		: false;
 
 	const handleGroupSelection = useCallback(() => {
 		const ids = selectedIdsRef.current;
@@ -1377,6 +1381,30 @@ export default function DesignPage() {
 												Vizuál
 											</Label>
 										</div>
+
+										{!hasVisualConfigured && (
+											<div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-3">
+												<p className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-500/80">
+													Nikde nie je vizuál nastavený
+												</p>
+												<Button
+													variant="outline"
+													size="sm"
+													className="h-8 rounded-xl border-amber-500/30 bg-amber-500/10 text-[9px] font-black uppercase tracking-widest text-amber-500 hover:bg-amber-500/20 hover:text-amber-500"
+													onClick={() =>
+														updateSelectedElement({
+															fillType: "solid",
+															fill: "var(--primary)",
+															stroke: "var(--primary)",
+															strokeWidth: 2,
+															opacity: 1,
+														})
+													}
+												>
+													Nastaviť predvolený vizuál
+												</Button>
+											</div>
+										)}
 
 										{/* Fill / Gradient Toggle */}
 										<div className="space-y-5">

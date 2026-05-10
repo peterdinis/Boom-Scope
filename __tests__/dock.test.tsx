@@ -10,6 +10,8 @@ describe("Component: Dock", () => {
 		expect(screen.getByText(/Pero/i)).toBeDefined();
 		expect(screen.getByText(/Obdĺžnik/i)).toBeDefined();
 		expect(screen.getByText(/Text/i)).toBeDefined();
+		expect(screen.getByText(/Trojuholník/i)).toBeDefined();
+		expect(screen.getByText(/Mnohouholník/i)).toBeDefined();
 		expect(screen.getByText(/Uložiť/i)).toBeDefined();
 	});
 
