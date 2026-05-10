@@ -7,6 +7,11 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 
+async function getCachedNote(noteId: Id<"notes">, token: string | undefined) {
+	"use cache";
+	return fetchQuery(api.notes.get, { noteId }, { token });
+}
+
 export default async function EditNotePage({
 	params,
 }: {
@@ -15,11 +20,7 @@ export default async function EditNotePage({
 	const { noteId } = await params;
 	const token = await convexAuthNextjsToken();
 
-	const note = await fetchQuery(
-		api.notes.get,
-		{ noteId: noteId as Id<"notes"> },
-		{ token },
-	);
+	const note = await getCachedNote(noteId as Id<"notes">, token);
 
 	if (note === null) {
 		return (

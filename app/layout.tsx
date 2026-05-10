@@ -31,8 +31,6 @@ export const metadata: Metadata = {
 	description: "Boom Scope app",
 };
 
-// Convex Auth reads cookies in the root layout; avoid a cached shell without auth state.
-export const dynamic = "force-dynamic";
 
 export default function RootLayout({
 	children,
@@ -40,34 +38,36 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<ConvexAuthNextjsServerProvider>
-			<html
-				lang="sk"
-				suppressHydrationWarning
-				className={cn(
-					"h-full",
-					"antialiased",
-					geistSans.variable,
-					geistMono.variable,
-					"font-sans",
-					figtree.variable,
-					ralewayHeading.variable,
-				)}
-			>
-				<body className="min-h-full flex flex-col">
-					<ThemeProvider
-						attribute="class"
-						defaultTheme="system"
-						enableSystem
-						disableTransitionOnChange
-					>
-						<ConvexClientProvider>
-							<Suspense fallback={<GlobalLoading />}>{children}</Suspense>
-						</ConvexClientProvider>
-						<Toaster />
-					</ThemeProvider>
-				</body>
-			</html>
-		</ConvexAuthNextjsServerProvider>
+		<html
+			lang="sk"
+			suppressHydrationWarning
+			className={cn(
+				"h-full",
+				"antialiased",
+				geistSans.variable,
+				geistMono.variable,
+				"font-sans",
+				figtree.variable,
+				ralewayHeading.variable,
+			)}
+		>
+			<body className="min-h-full flex flex-col">
+				<ThemeProvider
+					attribute="class"
+					defaultTheme="system"
+					enableSystem
+					disableTransitionOnChange
+				>
+					<Suspense fallback={<GlobalLoading />}>
+						<ConvexAuthNextjsServerProvider>
+							<ConvexClientProvider>
+								{children}
+							</ConvexClientProvider>
+						</ConvexAuthNextjsServerProvider>
+					</Suspense>
+					<Toaster />
+				</ThemeProvider>
+			</body>
+		</html>
 	);
 }
