@@ -6,6 +6,7 @@ import {
 	Copy,
 	Download,
 	Layout,
+	Link2,
 	NotebookPen,
 	Palette,
 	RefreshCw,
@@ -16,11 +17,13 @@ import {
 	Wand2,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { QuickNoteDialog } from "@/components/notes/QuickNoteDialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -30,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { designSystemToFigmaTokensJson } from "@/lib/figma-tokens";
 import { cn } from "@/lib/utils";
 
 const aiSystemSchema = z.object({
@@ -48,8 +52,11 @@ type GeneratedSystem = z.infer<typeof aiSystemSchema>;
 
 export default function DesignSystemPage() {
 	const projects = useQuery(api.projects.list);
+	const historyList = useQuery(api.design_systems.listByUser);
 	const analyzeDesign = useAction(api.openai.analyzeDesignSystem);
 	const saveSystem = useMutation(api.design_systems.create);
+	const setPublicMutation = useMutation(api.design_systems.setPublic);
+	const deleteSystemMutation = useMutation(api.design_systems.remove);
 
 	const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
 		null,
@@ -57,9 +64,154 @@ export default function DesignSystemPage() {
 	const [images, setImages] = useState<{ id: string; url: string }[]>([]);
 	const [isAnalyzing, setIsAnalyzing] = useState(false);
 	const [system, setSystem] = useState<GeneratedSystem | null>(null);
+	const [localColors, setLocalColors] = useState<
+		{ name: string; hex: string; rgb: string }[]
+	>([]);
+	const [localFonts, setLocalFonts] = useState<string[]>([]);
+	const [newColorName, setNewColorName] = useState("");
+	const [newColorHex, setNewColorHex] = useState("#3b82f6");
+	const [newFont, setNewFont] = useState("");
+	const [lastSavedId, setLastSavedId] = useState<Id<"design_systems"> | null>(
+		null,
+	);
+	const [sharePublic, setSharePublic] = useState(false);
 	const [copiedColor, setCopiedColor] = useState<string | null>(null);
 	const [isNoteOpen, setIsNoteOpen] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	const merged = useMemo(() => {
+		const baseColors = system?.colors ?? [];
+		const baseFonts = system?.fonts ?? [];
+		return {
+			colors: [...baseColors, ...localColors],
+			fonts: [...baseFonts, ...localFonts],
+			description: system?.description,
+		};
+	}, [system, localColors, localFonts]);
+
+	function hexToRgb(hex: string): string {
+		const h = hex.replace("#", "");
+		if (h.length !== 6) return "rgb(0, 0, 0)";
+		const n = Number.parseInt(h, 16);
+		const r = (n >> 16) & 255;
+		const g = (n >> 8) & 255;
+		const b = n & 255;
+		return `rgb(${r}, ${g}, ${b})`;
+	}
+
+	const persistSystem = async () => {
+		if (!selectedProjectId) {
+			toast.error("Najprv vyberte projekt!");
+			return;
+		}
+		const fonts =
+			merged.fonts.length > 0 ? merged.fonts : ["Inter, sans-serif"];
+		if (merged.colors.length === 0 && merged.fonts.length === 0) {
+			toast.error("Pridajte aspoň jednu farbu alebo font.");
+			return;
+		}
+		try {
+			const id = await saveSystem({
+				projectId: selectedProjectId as Id<"projects">,
+				colors:
+					merged.colors.length > 0
+						? merged.colors
+						: [{ name: "Neutral", hex: "#71717a", rgb: "rgb(113, 113, 122)" }],
+				fonts,
+				description: merged.description || "Design system",
+			});
+			setLastSavedId(id);
+			toast.success("Design system uložený!");
+		} catch {
+			toast.error("Ukladanie zlyhalo.");
+		}
+	};
+
+	const addManualColor = () => {
+		let hex = newColorHex.trim();
+		if (!hex.startsWith("#")) hex = `#${hex}`;
+		if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+			toast.error("Zadajte platný HEX (#RRGGBB).");
+			return;
+		}
+		const rgb = hexToRgb(hex);
+		setLocalColors((prev) => [
+			...prev,
+			{ name: newColorName.trim() || hex, hex, rgb },
+		]);
+		setNewColorName("");
+		toast.success("Farba pridaná");
+	};
+
+	const addManualFont = () => {
+		const f = newFont.trim();
+		if (!f) return;
+		setLocalFonts((prev) => [...prev, f]);
+		setNewFont("");
+		toast.success("Font pridaný");
+	};
+
+	const exportFigmaJson = () => {
+		if (merged.colors.length === 0 && merged.fonts.length === 0) {
+			toast.error("Nie sú žiadne tokeny na export.");
+			return;
+		}
+		const json = designSystemToFigmaTokensJson(merged.colors, merged.fonts);
+		const blob = new Blob([json], { type: "application/json" });
+		const link = document.createElement("a");
+		link.href = URL.createObjectURL(blob);
+		link.download = "boom-scope-figma-tokens.json";
+		link.click();
+		toast.success("Figma / JSON tokeny stiahnuté!");
+	};
+
+	const exportPlainJson = () => {
+		const blob = new Blob(
+			[
+				JSON.stringify(
+					{
+						colors: merged.colors,
+						fonts: merged.fonts,
+						description: merged.description ?? null,
+					},
+					null,
+					2,
+				),
+			],
+			{ type: "application/json" },
+		);
+		const link = document.createElement("a");
+		link.href = URL.createObjectURL(blob);
+		link.download = "boom-scope-design-system.json";
+		link.click();
+		toast.success("JSON exportovaný!");
+	};
+
+	const copyShareLink = async () => {
+		if (!lastSavedId) {
+			toast.error("Najprv uložte design system.");
+			return;
+		}
+		const origin =
+			typeof window !== "undefined" ? window.location.origin : "";
+		const url = `${origin}/share/design-system/${lastSavedId}`;
+		await navigator.clipboard.writeText(url);
+		toast.success("Zdieľateľný link skopírovaný!");
+	};
+
+	const toggleSharePublic = async (next: boolean) => {
+		if (!lastSavedId) {
+			toast.error("Najprv uložte design system.");
+			return;
+		}
+		try {
+			await setPublicMutation({ id: lastSavedId, isPublic: next });
+			setSharePublic(next);
+			toast.success(next ? "Verejný náhľad zapnutý" : "Verejný náhľad vypnutý");
+		} catch {
+			toast.error("Nepodarilo sa aktualizovať nastavenie.");
+		}
+	};
 
 	const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const files = Array.from(e.target.files || []);
@@ -97,13 +249,22 @@ export default function DesignSystemPage() {
 
 			setSystem(parsed.data);
 
-			// Save to Convex
-			await saveSystem({
+			const mergedColors = [...parsed.data.colors, ...localColors];
+			const mergedFonts =
+				[...parsed.data.fonts, ...localFonts].length > 0
+					? [...parsed.data.fonts, ...localFonts]
+					: parsed.data.fonts;
+
+			const id = await saveSystem({
 				projectId: selectedProjectId as Id<"projects">,
-				colors: parsed.data.colors,
-				fonts: parsed.data.fonts,
+				colors: mergedColors,
+				fonts: mergedFonts,
 				description: parsed.data.description,
 			});
+
+			setLastSavedId(id);
+			setLocalColors([]);
+			setLocalFonts([]);
 
 			toast.success("Design System úspešne vygenerovaný a uložený!");
 		} catch (error) {
@@ -124,10 +285,10 @@ export default function DesignSystemPage() {
 	};
 
 	const copyAsCSS = () => {
-		if (!system) return;
+		if (merged.colors.length === 0 && merged.fonts.length === 0) return;
 		const css = `:root {
-  ${system.colors.map((c) => `--color-${c.name.toLowerCase().replace(/\s+/g, "-")}: ${c.hex};`).join("\n  ")}
-  ${system.fonts.map((f, i) => `--font-${i === 0 ? "primary" : "secondary"}: '${f}';`).join("\n  ")}
+  ${merged.colors.map((c) => `--color-${c.name.toLowerCase().replace(/\s+/g, "-")}: ${c.hex};`).join("\n  ")}
+  ${merged.fonts.map((f, i) => `--font-${i === 0 ? "primary" : `family-${i}`}: '${f}';`).join("\n  ")}
 }`;
 		navigator.clipboard.writeText(css);
 		toast.success("CSS variables copied!");
@@ -228,6 +389,198 @@ export default function DesignSystemPage() {
 					</div>
 				</section>
 
+				<section className="rounded-[40px] border border-border bg-background/40 backdrop-blur-xl p-8 space-y-8 shadow-xl">
+					<div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+						<div>
+							<h2 className="text-xl font-black tracking-tight">
+								Vlastné farby a fonty
+							</h2>
+							<p className="text-sm text-muted-foreground mt-1">
+								Pridajte tokeny ručne bez AI. Po uložení sa objavia v náhľade a v histórii.
+							</p>
+						</div>
+						<div className="flex flex-wrap gap-2">
+							<Button
+								variant="outline"
+								size="sm"
+								className="rounded-xl font-black uppercase text-[10px]"
+								onClick={persistSystem}
+								disabled={!selectedProjectId}
+							>
+								Uložiť snapshot
+							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								className="rounded-xl font-black uppercase text-[10px] gap-1.5"
+								onClick={exportFigmaJson}
+							>
+								<Download className="size-3.5" /> Figma tokeny JSON
+							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								className="rounded-xl font-black uppercase text-[10px] gap-1.5"
+								onClick={exportPlainJson}
+							>
+								<Download className="size-3.5" /> JSON
+							</Button>
+						</div>
+					</div>
+
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+						<div className="space-y-4">
+							<Label className="text-[10px] font-black uppercase tracking-widest opacity-50">
+								Nová farba
+							</Label>
+							<div className="flex flex-col sm:flex-row gap-3">
+								<Input
+									placeholder="Názov"
+									value={newColorName}
+									onChange={(e) => setNewColorName(e.target.value)}
+									className="rounded-xl h-11"
+								/>
+								<Input
+									placeholder="#RRGGBB"
+									value={newColorHex}
+									onChange={(e) => setNewColorHex(e.target.value)}
+									className="rounded-xl h-11 font-mono"
+								/>
+								<Button
+									type="button"
+									onClick={addManualColor}
+									className="rounded-xl font-black uppercase text-[10px]"
+								>
+									Pridať
+								</Button>
+							</div>
+						</div>
+						<div className="space-y-4">
+							<Label className="text-[10px] font-black uppercase tracking-widest opacity-50">
+								Nový font (CSS stack)
+							</Label>
+							<div className="flex flex-col sm:flex-row gap-3">
+								<Input
+									placeholder="napr. Inter, system-ui, sans-serif"
+									value={newFont}
+									onChange={(e) => setNewFont(e.target.value)}
+									className="rounded-xl h-11"
+								/>
+								<Button
+									type="button"
+									onClick={addManualFont}
+									variant="secondary"
+									className="rounded-xl font-black uppercase text-[10px]"
+								>
+									Pridať
+								</Button>
+							</div>
+						</div>
+					</div>
+
+					<div className="rounded-2xl border border-border/60 p-6 space-y-4 bg-accent/20">
+						<p className="text-[10px] font-black uppercase tracking-widest opacity-40">
+							Zdieľanie
+						</p>
+						<label className="flex items-center gap-3 cursor-pointer text-sm font-medium">
+							<input
+								type="checkbox"
+								className="size-4 rounded border-border"
+								checked={sharePublic}
+								onChange={(e) => toggleSharePublic(e.target.checked)}
+								disabled={!lastSavedId}
+							/>
+							Verejný odkaz (každý s URL môže čítať)
+						</label>
+						<div className="flex flex-wrap gap-2">
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								className="rounded-xl gap-2 font-bold text-xs"
+								onClick={copyShareLink}
+								disabled={!lastSavedId}
+							>
+								<Link2 className="size-3.5" /> Kopírovať link
+							</Button>
+							{lastSavedId && (
+								<Button
+									variant="ghost"
+									size="sm"
+									className="rounded-xl text-xs"
+									asChild
+								>
+									<a
+										href={`/share/design-system/${lastSavedId}`}
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										Otvoriť náhľad
+									</a>
+								</Button>
+							)}
+						</div>
+					</div>
+				</section>
+
+				{historyList && historyList.length > 0 && (
+					<section className="space-y-4">
+						<h2 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">
+							História uložených systémov
+						</h2>
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+							{historyList.map((row) => (
+								<div
+									key={row._id}
+									className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-accent/20 px-4 py-3"
+								>
+									<button
+										type="button"
+										className="text-left flex-1 min-w-0"
+										onClick={() => {
+											setSystem({
+												colors: row.colors,
+												fonts: row.fonts,
+												description: row.description,
+											});
+											setLocalColors([]);
+											setLocalFonts([]);
+											setLastSavedId(row._id);
+											setSharePublic(row.isPublic ?? false);
+											toast.success("Načítané z histórie");
+										}}
+									>
+										<p className="font-bold truncate text-sm">
+											{row.description || "Design system"}
+										</p>
+										<p className="text-[10px] text-muted-foreground truncate">
+											{row.projectName} ·{" "}
+											{new Date(row._creationTime).toLocaleString()}
+										</p>
+									</button>
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon-sm"
+										className="shrink-0 text-red-500"
+										onClick={async () => {
+											try {
+												await deleteSystemMutation({ id: row._id });
+												if (lastSavedId === row._id) setLastSavedId(null);
+												toast.success("Zmazané");
+											} catch {
+												toast.error("Nepodarilo sa zmazať.");
+											}
+										}}
+									>
+										<Trash2 className="size-4" />
+									</Button>
+								</div>
+							))}
+						</div>
+					</section>
+				)}
+
 				{/* Upload Area */}
 				<section>
 					<div
@@ -324,7 +677,10 @@ export default function DesignSystemPage() {
 						</motion.div>
 					)}
 
-					{system && !isAnalyzing && (
+					{!isAnalyzing &&
+						(system ||
+							localColors.length > 0 ||
+							localFonts.length > 0) && (
 						<motion.div
 							key="result"
 							initial={{ opacity: 0, y: 50 }}
@@ -339,7 +695,7 @@ export default function DesignSystemPage() {
 											Vizuálny Štýl
 										</p>
 										<h2 className="text-4xl font-black tracking-tight">
-											{system.description || "Nová Identita"}
+											{merged.description || "Nová Identita"}
 										</h2>
 									</div>
 
@@ -353,7 +709,7 @@ export default function DesignSystemPage() {
 											</span>
 										</div>
 										<div className="space-y-3">
-											{system.colors.map((color) => (
+											{merged.colors.map((color) => (
 												<button
 													key={color.hex}
 													onClick={() => copyToClipboard(color.hex)}
@@ -393,7 +749,7 @@ export default function DesignSystemPage() {
 											</span>
 										</div>
 										<div className="space-y-4">
-											{system.fonts.map((font, idx) => (
+											{merged.fonts.map((font, idx) => (
 												<div
 													key={font}
 													className="p-5 rounded-2xl bg-foreground/5 border border-border/50"
@@ -449,7 +805,7 @@ export default function DesignSystemPage() {
 											<div className="space-y-4">
 												<Button
 													className="h-14 w-full rounded-2xl text-white font-bold uppercase tracking-widest text-[10px] shadow-xl"
-													style={{ backgroundColor: system.colors[0]?.hex }}
+													style={{ backgroundColor: merged.colors[0]?.hex }}
 												>
 													Primary Action
 												</Button>
@@ -457,8 +813,8 @@ export default function DesignSystemPage() {
 													variant="outline"
 													className="h-14 w-full rounded-2xl border-2 font-bold uppercase tracking-widest text-[10px]"
 													style={{
-														borderColor: system.colors[1]?.hex,
-														color: system.colors[1]?.hex,
+														borderColor: merged.colors[1]?.hex,
+														color: merged.colors[1]?.hex,
 													}}
 												>
 													Secondary Option
@@ -475,7 +831,7 @@ export default function DesignSystemPage() {
 												<div className="relative">
 													<div
 														className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20"
-														style={{ color: system.colors[0]?.hex }}
+														style={{ color: merged.colors[0]?.hex }}
 													>
 														<Sparkles className="size-4" />
 													</div>
@@ -485,7 +841,7 @@ export default function DesignSystemPage() {
 													/>
 												</div>
 												<div className="flex gap-2">
-													{system.colors.map((c) => (
+													{merged.colors.map((c) => (
 														<div
 															key={`swatch-${c.hex}`}
 															className="size-6 rounded-lg shadow-sm"
@@ -503,26 +859,31 @@ export default function DesignSystemPage() {
 											</p>
 											<div
 												className="p-8 rounded-[32px] border border-border/50 space-y-6 shadow-2xl relative overflow-hidden"
-												style={{ backgroundColor: `${system.colors[0]}08` }}
+												style={{
+													backgroundColor: merged.colors[0]?.hex
+														? `${merged.colors[0].hex}14`
+														: undefined,
+												}}
 											>
 												<div className="flex items-center gap-4">
 													<div
 														className="size-12 rounded-2xl flex items-center justify-center text-white"
-														style={{ backgroundColor: system.colors[2]?.hex }}
+														style={{ backgroundColor: merged.colors[2]?.hex }}
 													>
 														<Layout className="size-6" />
 													</div>
 													<div>
 														<h4
 															className="font-black text-lg"
-															style={{ fontFamily: system.fonts[0] }}
+															style={{ fontFamily: merged.fonts[0] }}
 														>
 															Vizuálna Integrita
 														</h4>
 														<p
 															className="text-xs font-medium opacity-40"
 															style={{
-																fontFamily: system.fonts[1] || system.fonts[0],
+																fontFamily:
+																	merged.fonts[1] || merged.fonts[0],
 															}}
 														>
 															Harmonické farby extrahované z vašej inšpirácie.
@@ -532,11 +893,11 @@ export default function DesignSystemPage() {
 												<div className="flex gap-4">
 													<div
 														className="flex-1 h-2 rounded-full opacity-10"
-														style={{ backgroundColor: system.colors[0]?.hex }}
+														style={{ backgroundColor: merged.colors[0]?.hex }}
 													/>
 													<div
 														className="w-1/3 h-2 rounded-full opacity-10"
-														style={{ backgroundColor: system.colors[3]?.hex }}
+														style={{ backgroundColor: merged.colors[3]?.hex }}
 													/>
 												</div>
 											</div>

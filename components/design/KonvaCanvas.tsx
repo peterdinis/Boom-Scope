@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from "react";
 import {
 	Arrow,
 	Circle,
+	Group as KonvaGroup,
 	Image as KonvaImage,
 	Layer,
 	Line,
@@ -53,14 +54,19 @@ export interface CanvasElement {
 	gradientColors?: string[];
 	dash?: number[];
 	shadowBlur?: number;
+	children?: CanvasElement[];
 }
 
 interface KonvaCanvasProps {
 	activeTool?: string;
 	elements: CanvasElement[];
-	setElements: React.Dispatch<React.SetStateAction<CanvasElement[]>>;
-	selectedId: string | null;
-	onSelect: (id: string | null) => void;
+	commitElements: (next: CanvasElement[]) => void;
+	selectedIds: string[];
+	onSelectionChange: (ids: string[]) => void;
+	onElementPointer: (
+		id: string,
+		opts: { shiftKey: boolean },
+	) => void;
 	strokeColor?: string;
 	fillColor?: string;
 	strokeWidth?: number;
@@ -77,9 +83,10 @@ const GRID_SIZE = 20;
 export default function KonvaCanvas({
 	activeTool = "select",
 	elements,
-	setElements,
-	selectedId,
-	onSelect,
+	commitElements,
+	selectedIds,
+	onSelectionChange,
+	onElementPointer,
 	strokeColor = "#3b82f6",
 	fillColor = "none",
 	strokeWidth = 2,
@@ -156,22 +163,29 @@ export default function KonvaCanvas({
 
 	// Handle transformer selection
 	useEffect(() => {
-		if (transformerRef.current && selectedId && stageRef.current) {
-			const selectedNode = stageRef.current.findOne(`#${selectedId}`);
-			const element = elementsRef.current.find((el) => el.id === selectedId);
+		if (transformerRef.current && selectedIds.length > 0 && stageRef.current) {
+			const nodes = selectedIds
+				.map((sid) => stageRef.current?.findOne(`#${sid}`))
+				.filter(
+					(n): n is NonNullable<typeof n> =>
+						n !== null && n !== undefined,
+				);
+			const locked = selectedIds.some((sid) => {
+				const element = elementsRef.current.find((el) => el.id === sid);
+				return element?.isLocked || element?.isVisible === false;
+			});
 
-			// Don't show transformer for locked or hidden elements
-			if (selectedNode && !element?.isLocked && element?.isVisible !== false) {
+			if (nodes.length > 0 && !locked) {
 				if (typeof transformerRef.current.nodes === "function") {
-					transformerRef.current.nodes([selectedNode]);
+					transformerRef.current.nodes(nodes);
 					transformerRef.current.getLayer()!.batchDraw();
 				}
 			} else {
 				if (typeof transformerRef.current.nodes === "function") {
 					transformerRef.current.nodes([]);
 				}
-				if (element?.isLocked || element?.isVisible === false) {
-					onSelect(null);
+				if (locked) {
+					onSelectionChange([]);
 				}
 			}
 		} else if (transformerRef.current) {
@@ -179,7 +193,7 @@ export default function KonvaCanvas({
 				transformerRef.current.nodes([]);
 			}
 		}
-	}, [selectedId, onSelect]);
+	}, [selectedIds, onSelectionChange]);
 
 	const snap = (val: number) => {
 		return snapToGrid ? Math.round(val / GRID_SIZE) * GRID_SIZE : val;
@@ -189,13 +203,13 @@ export default function KonvaCanvas({
 		if (readOnly) return;
 		const clickedOnStage = e.target === e.target.getStage();
 		if (clickedOnStage && (activeTool === "select" || activeTool === "hand")) {
-			onSelect(null);
+			onSelectionChange([]);
 			return;
 		}
 
 		if (activeTool === "select" || activeTool === "hand") return;
 
-		onSelect(null);
+		onSelectionChange([]);
 		const stage = e.target.getStage();
 		if (!stage) return;
 
@@ -235,8 +249,8 @@ export default function KonvaCanvas({
 			element.fontSize = 24;
 			element.fontFamily = "Inter, sans-serif";
 			setIsDrawing(false);
-			setElements((prev) => [...prev, element]);
-			onSelect(id);
+			commitElements([...elementsRef.current, element]);
+			onSelectionChange([id]);
 			return;
 		} else {
 			element.width = 0;
@@ -272,7 +286,7 @@ export default function KonvaCanvas({
 	const handleMouseUp = () => {
 		if (!isDrawing || !newElement) return;
 
-		setElements((prev) => [...prev, newElement]);
+		commitElements([...elementsRef.current, newElement]);
 		setNewElement(null);
 		setIsDrawing(false);
 	};
@@ -280,45 +294,54 @@ export default function KonvaCanvas({
 	const handleTransformEnd = (e: KonvaEventObject<Event>) => {
 		const node = e.target;
 		const id = node.id();
-		setElements((prev) =>
-			prev.map((el) => {
+		const scaleX = node.scaleX();
+		const scaleY = node.scaleY();
+
+		node.scaleX(1);
+		node.scaleY(1);
+
+		const updateNested = (items: CanvasElement[]): CanvasElement[] =>
+			items.map((el) => {
 				if (el.id === id) {
-					const scaleX = node.scaleX();
-					const scaleY = node.scaleY();
-
-					node.scaleX(1);
-					node.scaleY(1);
-
 					return {
 						...el,
 						x: snap(node.x()),
 						y: snap(node.y()),
 						rotation: node.rotation(),
-						width: el.width ? snap(Math.max(5, el.width * scaleX)) : el.width,
+						width: el.width
+							? snap(Math.max(5, el.width * scaleX))
+							: el.width,
 						height: el.height
 							? snap(Math.max(5, el.height * scaleY))
 							: el.height,
 					};
 				}
+				if (el.type === "group" && el.children?.length) {
+					return { ...el, children: updateNested(el.children) };
+				}
 				return el;
-			}),
-		);
+			});
+
+		commitElements(updateNested(elementsRef.current));
 	};
 
 	const handleDragEnd = (e: KonvaEventObject<DragEvent>) => {
 		const id = e.target.id();
-		setElements((prev) =>
-			prev.map((el) => {
+		const nx = snap(e.target.x());
+		const ny = snap(e.target.y());
+
+		const updateNested = (items: CanvasElement[]): CanvasElement[] =>
+			items.map((el) => {
 				if (el.id === id) {
-					return {
-						...el,
-						x: snap(e.target.x()),
-						y: snap(e.target.y()),
-					};
+					return { ...el, x: nx, y: ny };
+				}
+				if (el.type === "group" && el.children?.length) {
+					return { ...el, children: updateNested(el.children) };
 				}
 				return el;
-			}),
-		);
+			});
+
+		commitElements(updateNested(elementsRef.current));
 	};
 
 	const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
@@ -380,7 +403,7 @@ export default function KonvaCanvas({
 					y: pointer.y,
 					elementId: id,
 				});
-				onSelect(id);
+				onSelectionChange([id]);
 			}
 		} else {
 			setContextMenu(null);
@@ -480,14 +503,15 @@ export default function KonvaCanvas({
 						<RenderElement
 							key={el.id}
 							element={el}
-							isSelected={selectedId === el.id}
-							onSelect={() => {
+							isSelected={selectedIds.includes(el.id)}
+							activeTool={activeTool}
+							reportSelect={(shiftKey) => {
 								if (
 									activeTool === "select" &&
 									!el.isLocked &&
 									el.isVisible !== false
 								) {
-									onSelect(el.id);
+									onElementPointer(el.id, { shiftKey });
 								}
 							}}
 							onDragEnd={handleDragEnd}
@@ -499,7 +523,11 @@ export default function KonvaCanvas({
 						/>
 					))}
 					{newElement && (
-						<RenderElement element={newElement} isSelected={false} />
+						<RenderElement
+							element={newElement}
+							isSelected={false}
+							activeTool={activeTool}
+						/>
 					)}
 
 					{activeTool === "select" && (
@@ -534,10 +562,13 @@ export default function KonvaCanvas({
 						className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-500 transition-all group"
 						onClick={(e) => {
 							e.stopPropagation();
-							setElements((prev) =>
-								prev.filter((el) => el.id !== contextMenu.elementId),
+							commitElements(
+								elementsRef.current.filter(
+									(el) => el.id !== contextMenu.elementId,
+								),
 							);
-							if (selectedId === contextMenu.elementId) onSelect(null);
+							if (selectedIds.includes(contextMenu.elementId))
+								onSelectionChange([]);
 							setContextMenu(null);
 						}}
 					>
@@ -555,19 +586,31 @@ export default function KonvaCanvas({
 function RenderElement({
 	element: el,
 	isSelected,
-	onSelect,
+	activeTool = "select",
+	reportSelect,
 	onDragEnd,
 	draggable,
 }: {
 	element: CanvasElement;
 	isSelected: boolean;
-	onSelect?: () => void;
+	activeTool?: string;
+	reportSelect?: (shiftKey: boolean) => void;
 	onDragEnd?: (e: KonvaEventObject<DragEvent>) => void;
 	draggable?: boolean;
 }) {
 	const [image] = useImage(el.src || "");
 
 	if (el.isVisible === false) return null;
+
+	const clickSelect =
+		reportSelect &&
+		((ev: KonvaEventObject<Event>) => {
+			ev.cancelBubble = true;
+			const e = ev.evt as MouseEvent | PointerEvent | KeyboardEvent;
+			const shift =
+				"shiftKey" in e ? Boolean(e.shiftKey) : false;
+			reportSelect(shift);
+		});
 
 	const commonProps = {
 		id: el.id,
@@ -601,8 +644,8 @@ function RenderElement({
 		dash: el.dash,
 		rotation: el.rotation || 0,
 		opacity: el.opacity ?? 1,
-		onClick: onSelect,
-		onTap: onSelect,
+		onClick: clickSelect,
+		onTap: clickSelect,
 		draggable: draggable,
 		onDragEnd: onDragEnd,
 		shadowColor: isSelected ? "#3b82f6" : "#000000",
@@ -611,6 +654,60 @@ function RenderElement({
 		globalCompositeOperation:
 			el.globalCompositeOperation as GlobalCompositeOperation,
 	};
+
+	if (el.type === "group" && el.children?.length) {
+		return (
+			<KonvaGroup
+				id={el.id}
+				x={el.x}
+				y={el.y}
+				rotation={el.rotation || 0}
+				opacity={el.opacity ?? 1}
+				draggable={draggable}
+				onDragEnd={onDragEnd}
+				onClick={
+					reportSelect
+						? (ev: KonvaEventObject<Event>) => {
+								ev.cancelBubble = true;
+								const e = ev.evt as MouseEvent | PointerEvent;
+								reportSelect("shiftKey" in e ? Boolean(e.shiftKey) : false);
+							}
+						: undefined
+				}
+				onTap={
+					reportSelect
+						? (ev: KonvaEventObject<Event>) => {
+								ev.cancelBubble = true;
+								const e = ev.evt as MouseEvent | PointerEvent | TouchEvent;
+								reportSelect("shiftKey" in e ? Boolean(e.shiftKey) : false);
+							}
+						: undefined
+				}
+				globalCompositeOperation={
+					el.globalCompositeOperation as GlobalCompositeOperation
+				}
+			>
+				{el.children.map((child) => (
+					<RenderElement
+						key={child.id}
+						element={child}
+						isSelected={false}
+						activeTool={activeTool}
+						reportSelect={(shiftKey) => {
+							if (
+								activeTool === "select" &&
+								!child.isLocked &&
+								child.isVisible !== false
+							) {
+								reportSelect?.(shiftKey);
+							}
+						}}
+						draggable={false}
+					/>
+				))}
+			</KonvaGroup>
+		);
+	}
 
 	if (el.type === "rect") {
 		return (

@@ -5,9 +5,13 @@ import {
 	ArrowDown,
 	ArrowUp,
 	Circle,
+	Clipboard,
+	Copy,
+	Download,
 	Eye,
 	EyeOff,
 	FolderKanban,
+	Group,
 	Grid,
 	Image as ImageIcon,
 	Layers,
@@ -18,6 +22,7 @@ import {
 	PanelLeft,
 	PanelRight,
 	Pencil,
+	Redo,
 	RefreshCw,
 	RotateCw,
 	Settings2,
@@ -28,6 +33,8 @@ import {
 	Tablet,
 	Trash2,
 	Type,
+	Upload,
+	Ungroup,
 	Undo2,
 	Unlock,
 } from "lucide-react";
@@ -65,6 +72,11 @@ import {
 } from "@/components/ui/select";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import {
+	cloneElementsForPaste,
+	groupElementsAtIndices,
+	ungroupElement,
+} from "@/lib/canvas-elements";
 import { CANVAS_PRESETS } from "@/lib/canvas-presets";
 import { cn } from "@/lib/utils";
 
@@ -110,7 +122,7 @@ const FONTS = [
 export default function DesignPage() {
 	const [activeTool, setActiveTool] = useState("select");
 	const [elements, setElements] = useState<CanvasElement[]>([]);
-	const [selectedId, setSelectedId] = useState<string | null>(null);
+	const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
 	const [strokeColor, setStrokeColor] = useState("#3b82f6");
 	const [fillColor] = useState("none");
@@ -134,32 +146,148 @@ export default function DesignPage() {
 	const [isSaving, setIsSaving] = useState(false);
 	const [isNoteOpen, setIsNoteOpen] = useState(false);
 
+	// Undo/Redo history stack
+	const [history, setHistory] = useState<CanvasElement[][]>([[]]);
+	const [historyIndex, setHistoryIndex] = useState(0);
+	const historyRef = useRef(history);
+	const historyIndexRef = useRef(historyIndex);
+	useEffect(() => { historyRef.current = history; }, [history]);
+	useEffect(() => { historyIndexRef.current = historyIndex; }, [historyIndex]);
+
+	const clipboardRef = useRef<CanvasElement[] | null>(null);
+	const jsonImportRef = useRef<HTMLInputElement>(null);
+
 	const projects = useQuery(api.projects.list);
 	const saveDesign = useMutation(api.designs.saveDesign);
 
 	const elementsRef = useRef(elements);
 	const activeToolRef = useRef(activeTool);
 	const previousToolRef = useRef(previousTool);
-	const selectedIdRef = useRef(selectedId);
+	const selectedIdsRef = useRef(selectedIds);
 
 	useEffect(() => {
 		elementsRef.current = elements;
 		activeToolRef.current = activeTool;
 		previousToolRef.current = previousTool;
-		selectedIdRef.current = selectedId;
-	}, [elements, activeTool, previousTool, selectedId]);
+		selectedIdsRef.current = selectedIds;
+	}, [elements, activeTool, previousTool, selectedIds]);
+
+	const commitElements = useCallback((newElements: CanvasElement[]) => {
+		setHistory((prev) => {
+			const sliced = prev.slice(0, historyIndexRef.current + 1);
+			return [...sliced, newElements];
+		});
+		setHistoryIndex((i) => i + 1);
+		setElements(newElements);
+	}, []);
+
+	const onElementPointer = useCallback(
+		(id: string, opts: { shiftKey: boolean }) => {
+			setSelectedIds((prev) => {
+				if (opts.shiftKey) {
+					if (prev.includes(id)) return prev.filter((x) => x !== id);
+					return [...prev, id];
+				}
+				return [id];
+			});
+		},
+		[],
+	);
+
+	const escapeXml = (s: string) =>
+		s
+			.replace(/&/g, "&amp;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;")
+			.replace(/"/g, "&quot;");
+
+	const elementToSvg = useCallback((el: CanvasElement): string => {
+		const op = el.opacity ?? 1;
+		const blend =
+			el.globalCompositeOperation && el.globalCompositeOperation !== "source-over"
+				? ` style="mix-blend-mode: ${el.globalCompositeOperation}"`
+				: "";
+		if (el.type === "group" && el.children?.length) {
+			const inner = el.children.map(elementToSvg).join("\n");
+			const rot = el.rotation ?? 0;
+			const cx = (el.width ?? 0) / 2;
+			const cy = (el.height ?? 0) / 2;
+			return `<g transform="translate(${el.x},${el.y}) rotate(${rot},${cx},${cy})" opacity="${op}"${blend}>${inner}</g>`;
+		}
+		if (el.type === "rect") {
+			const rot = el.rotation ?? 0;
+			const cx = el.x + (el.width ?? 0) / 2;
+			const cy = el.y + (el.height ?? 0) / 2;
+			return `<rect x="${el.x}" y="${el.y}" width="${el.width ?? 0}" height="${el.height ?? 0}" fill="${el.fill === "none" ? "none" : el.fill}" stroke="${el.stroke}" stroke-width="${el.strokeWidth}" opacity="${op}" transform="rotate(${rot},${cx},${cy})"${blend}/>`;
+		}
+		if (el.type === "circle") {
+			const r = Math.sqrt((el.width ?? 0) ** 2 + (el.height ?? 0) ** 2);
+			return `<ellipse cx="${el.x}" cy="${el.y}" rx="${r}" ry="${r}" fill="${el.fill === "none" ? "none" : el.fill}" stroke="${el.stroke}" stroke-width="${el.strokeWidth}" opacity="${op}"${blend}/>`;
+		}
+		if (el.type === "pencil" && el.points?.length) {
+			const pts: string[] = [];
+			for (let i = 0; i < el.points.length; i += 2) {
+				pts.push(`${el.points[i]},${el.points[i + 1]}`);
+			}
+			return `<polyline points="${pts.join(" ")}" fill="none" stroke="${el.stroke}" stroke-width="${el.strokeWidth}" stroke-linecap="round" opacity="${op}"${blend}/>`;
+		}
+		if (el.type === "text") {
+			return `<text x="${el.x}" y="${el.y}" font-size="${el.fontSize ?? 24}" font-family="${escapeXml(el.fontFamily ?? "Inter, sans-serif")}" fill="${el.stroke}" opacity="${op}"${blend}>${escapeXml(el.text ?? "")}</text>`;
+		}
+		if (el.type === "image" && el.src) {
+			return `<image href="${escapeXml(el.src)}" x="${el.x}" y="${el.y}" width="${el.width ?? 0}" height="${el.height ?? 0}" opacity="${op}" preserveAspectRatio="none"${blend}/>`;
+		}
+		return "";
+	}, []);
+
+	const exportSVG = useCallback(() => {
+		const els = elementsRef.current;
+		const w = canvasSize?.width ?? 1920;
+		const h = canvasSize?.height ?? 1080;
+		const svgEls = els.map(elementToSvg).join("\n");
+		const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">\n${svgEls}\n</svg>`;
+		const blob = new Blob([svg], { type: "image/svg+xml" });
+		const link = document.createElement("a");
+		link.href = URL.createObjectURL(blob);
+		link.download = "boom-scope-design.svg";
+		link.click();
+		toast.success("SVG exportovaný!");
+	}, [canvasSize, elementToSvg]);
+
+	// JSON export helper
+	const exportJSON = useCallback(() => {
+		const data = { elements: elementsRef.current, canvasSize, artboardColor };
+		const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+		const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "boom-scope-design.json"; link.click();
+		toast.success("JSON exportovaný!");
+	}, [canvasSize, artboardColor]);
 
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const handleAction = useCallback(
 		(toolId: string) => {
 			if (toolId === "undo") {
-				setElements((prev) => prev.slice(0, -1));
+				const idx = historyIndexRef.current;
+				if (idx > 0) {
+					const newIdx = idx - 1;
+					setHistoryIndex(newIdx);
+					setElements(historyRef.current[newIdx]);
+				}
+				return;
+			}
+			if (toolId === "redo") {
+				const idx = historyIndexRef.current;
+				const hist = historyRef.current;
+				if (idx < hist.length - 1) {
+					const newIdx = idx + 1;
+					setHistoryIndex(newIdx);
+					setElements(hist[newIdx]);
+				}
 				return;
 			}
 			if (toolId === "trash") {
-				setElements([]);
-				setSelectedId(null);
+				commitElements([]);
+				setSelectedIds([]);
 				return;
 			}
 			if (toolId === "image") {
@@ -192,10 +320,10 @@ export default function DesignPage() {
 			}
 			setActiveTool(toolId);
 			if (toolId !== "select") {
-				setSelectedId(null);
+				setSelectedIds([]);
 			}
 		},
-		[projects, saveDesign, canvasSize, artboardColor],
+		[projects, commitElements],
 	);
 
 	const handleSaveToProject = useCallback(async () => {
@@ -225,12 +353,15 @@ export default function DesignPage() {
 
 	const updateSelectedElement = useCallback(
 		(updates: Partial<CanvasElement>) => {
-			if (!selectedId) return;
-			setElements((prev) =>
-				prev.map((el) => (el.id === selectedId ? { ...el, ...updates } : el)),
+			const ids = selectedIdsRef.current;
+			if (ids.length === 0) return;
+			commitElements(
+				elementsRef.current.map((el) =>
+					ids.includes(el.id) ? { ...el, ...updates } : el,
+				),
 			);
 		},
-		[selectedId, setElements],
+		[commitElements],
 	);
 
 	// Keyboard Shortcuts
@@ -242,15 +373,42 @@ export default function DesignPage() {
 			)
 				return;
 
-			if ((e.metaKey || e.ctrlKey) && e.key === "z") {
+			const mod = e.metaKey || e.ctrlKey;
+
+			if (mod && e.key === "z" && !e.shiftKey) {
 				e.preventDefault();
 				handleAction("undo");
 			}
+			if (mod && (e.key === "y" || (e.key === "z" && e.shiftKey))) {
+				e.preventDefault();
+				handleAction("redo");
+			}
+			if (mod && e.key.toLowerCase() === "c") {
+				const picked = elementsRef.current.filter((el) =>
+					selectedIdsRef.current.includes(el.id),
+				);
+				if (picked.length) {
+					clipboardRef.current = picked.map((p) =>
+						JSON.parse(JSON.stringify(p)) as CanvasElement,
+					);
+					toast.success("Skopírované!");
+				}
+			}
+			if (mod && e.key.toLowerCase() === "v") {
+				const clip = clipboardRef.current;
+				if (clip?.length) {
+					const pasted = cloneElementsForPaste(clip);
+					commitElements([...elementsRef.current, ...pasted]);
+					setSelectedIds(pasted.map((p) => p.id));
+				}
+			}
 			if (e.key === "Delete" || e.key === "Backspace") {
-				if (selectedIdRef.current) {
-					const idToDelete = selectedIdRef.current;
-					setElements((prev) => prev.filter((el) => el.id !== idToDelete));
-					setSelectedId(null);
+				const ids = selectedIdsRef.current;
+				if (ids.length) {
+					commitElements(
+						elementsRef.current.filter((el) => !ids.includes(el.id)),
+					);
+					setSelectedIds([]);
 				}
 			}
 
@@ -258,22 +416,20 @@ export default function DesignPage() {
 				setPreviousTool(activeToolRef.current);
 				setActiveTool("hand");
 			}
-			if (e.key === "v") setActiveTool("select");
-			if (e.key === "p") setActiveTool("pencil");
-			if (e.key === "e") setActiveTool("eraser");
-			if (e.key === "r") setActiveTool("rect");
-			if (e.key === "c") setActiveTool("circle");
-			if (e.key === "t") setActiveTool("text");
-			if (e.key === "l" && selectedIdRef.current) {
-				const el = elementsRef.current.find(
-					(el) => el.id === selectedIdRef.current,
-				);
+			if (!mod && e.key.toLowerCase() === "v") setActiveTool("select");
+			if (!mod && e.key.toLowerCase() === "p") setActiveTool("pencil");
+			if (!mod && e.key.toLowerCase() === "e") setActiveTool("eraser");
+			if (!mod && e.key.toLowerCase() === "r") setActiveTool("rect");
+			if (!mod && e.key.toLowerCase() === "c") setActiveTool("circle");
+			if (!mod && e.key.toLowerCase() === "t") setActiveTool("text");
+			if (!mod && e.key.toLowerCase() === "l" && selectedIdsRef.current.length === 1) {
+				const id = selectedIdsRef.current[0];
+				const el = elementsRef.current.find((x) => x.id === id);
 				if (el) updateSelectedElement({ isLocked: !el.isLocked });
 			}
-			if (e.key === "h" && selectedIdRef.current) {
-				const el = elementsRef.current.find(
-					(el) => el.id === selectedIdRef.current,
-				);
+			if (!mod && e.key.toLowerCase() === "h" && selectedIdsRef.current.length === 1) {
+				const id = selectedIdsRef.current[0];
+				const el = elementsRef.current.find((x) => x.id === id);
 				if (el) updateSelectedElement({ isVisible: el.isVisible === false });
 			}
 		};
@@ -291,7 +447,7 @@ export default function DesignPage() {
 			window.removeEventListener("keydown", handleKeyDown);
 			window.removeEventListener("keyup", handleKeyUp);
 		};
-	}, [handleAction, updateSelectedElement]);
+	}, [handleAction, updateSelectedElement, commitElements]);
 
 	const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -314,21 +470,77 @@ export default function DesignPage() {
 				isVisible: true,
 				isLocked: false,
 			};
-			setElements([...elements, newImg]);
-			setSelectedId(id);
+			commitElements([...elementsRef.current, newImg]);
+			setSelectedIds([id]);
 			setActiveTool("select");
 		};
 		reader.readAsDataURL(file);
 	};
 
-	const selectedElement = elements.find((el) => el.id === selectedId);
+	const selectedElement =
+		selectedIds.length === 1
+			? elements.find((el) => el.id === selectedIds[0])
+			: undefined;
+
+	const handleGroupSelection = useCallback(() => {
+		const ids = selectedIdsRef.current;
+		if (ids.length < 2) return;
+		const indices = ids
+			.map((id) => elementsRef.current.findIndex((e) => e.id === id))
+			.filter((i) => i >= 0)
+			.sort((a, b) => a - b);
+		const next = groupElementsAtIndices(elementsRef.current, indices);
+		if (next) {
+			commitElements(next);
+			const g = next[next.length - 1];
+			setSelectedIds([g.id]);
+			toast.success("Skupina vytvorená");
+		}
+	}, [commitElements]);
+
+	const handleUngroupSelection = useCallback(() => {
+		if (selectedIdsRef.current.length !== 1) return;
+		const id = selectedIdsRef.current[0];
+		const next = ungroupElement(elementsRef.current, id);
+		if (next) {
+			commitElements(next);
+			setSelectedIds([]);
+			toast.success("Skupina rozdelená");
+		}
+	}, [commitElements]);
+
+	const handleJsonImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+		const reader = new FileReader();
+		reader.onload = () => {
+			try {
+				const data = JSON.parse(reader.result as string) as {
+					elements?: CanvasElement[];
+					canvasSize?: { width: number; height: number };
+					artboardColor?: string | null;
+				};
+				if (!data.elements || !Array.isArray(data.elements)) throw new Error();
+				commitElements(data.elements);
+				if (data.canvasSize) setCanvasSize(data.canvasSize);
+				if (data.artboardColor !== undefined)
+					setArtboardColor(data.artboardColor);
+				setSelectedIds([]);
+				toast.success("JSON importovaný!");
+			} catch {
+				toast.error("Neplatný JSON súbor.");
+			}
+		};
+		reader.readAsText(file);
+		e.target.value = "";
+	};
 
 	const toggleElementProperty = (
 		id: string,
 		prop: "isLocked" | "isVisible",
 	) => {
-		setElements((prev) =>
-			prev.map((el) => {
+		commitElements(
+			elementsRef.current.map((el) => {
 				if (el.id === id) {
 					if (prop === "isVisible") {
 						return { ...el, isVisible: el.isVisible === false };
@@ -356,15 +568,23 @@ export default function DesignPage() {
 				className="hidden"
 				accept="image/*"
 			/>
+			<input
+				type="file"
+				ref={jsonImportRef}
+				onChange={handleJsonImport}
+				className="hidden"
+				accept="application/json,.json"
+			/>
 
 			{/* Canvas Area */}
 			<div className="absolute inset-0 h-full w-full">
 				<KonvaCanvas
 					activeTool={activeTool}
 					elements={elements}
-					setElements={setElements}
-					selectedId={selectedId}
-					onSelect={setSelectedId}
+					commitElements={commitElements}
+					selectedIds={selectedIds}
+					onSelectionChange={setSelectedIds}
+					onElementPointer={onElementPointer}
 					strokeColor={strokeColor}
 					fillColor={fillColor}
 					strokeWidth={strokeWidth}
@@ -546,10 +766,20 @@ export default function DesignPage() {
 										.map((el) => (
 											<div key={el.id} className="relative group">
 												<button
-													onClick={() => setSelectedId(el.id)}
+													onClick={(ev) => {
+														if (ev.shiftKey) {
+															setSelectedIds((prev) =>
+																prev.includes(el.id)
+																	? prev.filter((x) => x !== el.id)
+																	: [...prev, el.id],
+															);
+														} else {
+															setSelectedIds([el.id]);
+														}
+													}}
 													className={cn(
 														"w-full flex items-center justify-between px-5 py-4 rounded-2xl text-xs transition-all duration-500",
-														selectedId === el.id
+														selectedIds.includes(el.id)
 															? "bg-primary text-white shadow-[0_15px_30px_rgba(37,99,235,0.3)] scale-[1.02]"
 															: "hover:bg-accent text-foreground/50 hover:text-foreground",
 													)}
@@ -558,11 +788,14 @@ export default function DesignPage() {
 														<div
 															className={cn(
 																"size-8 rounded-xl flex items-center justify-center border border-border/50",
-																selectedId === el.id
+																selectedIds.includes(el.id)
 																	? "bg-white/20"
 																	: "bg-background/40",
 															)}
 														>
+															{el.type === "group" && (
+																<Group className="size-4" />
+															)}
 															{el.type === "rect" && (
 																<Square className="size-4" />
 															)}
@@ -601,7 +834,7 @@ export default function DesignPage() {
 												<div
 													className={cn(
 														"absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity",
-														selectedId === el.id && "opacity-100",
+														selectedIds.includes(el.id) && "opacity-100",
 													)}
 												>
 													<button
@@ -635,10 +868,14 @@ export default function DesignPage() {
 														size="icon-xs"
 														onClick={(e) => {
 															e.stopPropagation();
-															setElements((prev) =>
-																prev.filter((item) => item.id !== el.id),
+															commitElements(
+																elementsRef.current.filter(
+																	(item) => item.id !== el.id,
+																),
 															);
-															if (selectedId === el.id) setSelectedId(null);
+															setSelectedIds((prev) =>
+																prev.filter((id) => id !== el.id),
+															);
 														}}
 														className="hover:bg-red-500 hover:text-white rounded-lg transition-all duration-300"
 													>
@@ -854,7 +1091,59 @@ export default function DesignPage() {
 						</div>
 
 						<div className="space-y-10 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-							{selectedElement ? (
+							{selectedIds.length > 1 ? (
+								<div className="space-y-8">
+									<p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60">
+										Výber: {selectedIds.length} vrstvy
+									</p>
+									<div className="grid grid-cols-2 gap-3">
+										<Button
+											variant="outline"
+											size="sm"
+											className="rounded-xl gap-2 text-[9px] font-black uppercase"
+											onClick={handleGroupSelection}
+										>
+											<Group className="size-3" /> Skupina
+										</Button>
+										<Button
+											variant="outline"
+											size="sm"
+											className="rounded-xl gap-2 text-[9px] font-black uppercase text-red-500"
+											onClick={() => {
+												commitElements(
+													elementsRef.current.filter(
+														(el) => !selectedIds.includes(el.id),
+													),
+												);
+												setSelectedIds([]);
+											}}
+										>
+											<Trash2 className="size-3" /> Vymazať
+										</Button>
+									</div>
+									<div className="space-y-3">
+										<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">
+											Priehľadnosť (všetky)
+										</p>
+										<input
+											type="range"
+											min="0"
+											max="1"
+											step="0.01"
+											value={
+												elements.find((e) => e.id === selectedIds[0])?.opacity ??
+												1
+											}
+											onChange={(e) =>
+												updateSelectedElement({
+													opacity: parseFloat(e.target.value),
+												})
+											}
+											className="w-full accent-primary bg-foreground/10 rounded-full h-1 appearance-none cursor-pointer"
+										/>
+									</div>
+								</div>
+							) : selectedElement ? (
 								<>
 									{/* Visibility & Lock Quick Controls */}
 									<div className="grid grid-cols-2 gap-3 p-1 rounded-2xl bg-accent border border-border shadow-inner">
@@ -916,6 +1205,16 @@ export default function DesignPage() {
 											)}
 										</button>
 									</div>
+
+									{selectedElement.type === "group" && (
+										<Button
+											variant="outline"
+											className="w-full rounded-2xl border-border gap-2 text-[9px] font-black uppercase"
+											onClick={handleUngroupSelection}
+										>
+											<Ungroup className="size-3.5" /> Rozdeliť skupinu
+										</Button>
+									)}
 
 									{/* Geometry Section */}
 									<div className="space-y-6">
@@ -1201,6 +1500,32 @@ export default function DesignPage() {
 											/>
 										</div>
 
+										{/* Blend Mode */}
+										<div className="space-y-3">
+											<p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-20">
+												Blend Mode
+											</p>
+											<Select
+												value={selectedElement.globalCompositeOperation ?? "source-over"}
+												onValueChange={(v) => updateSelectedElement({ globalCompositeOperation: v })}
+											>
+												<SelectTrigger className="h-9 rounded-xl bg-background border-border text-[10px] font-bold">
+													<SelectValue />
+												</SelectTrigger>
+												<SelectContent className="rounded-2xl border-border/50">
+													{[
+														"source-over", "multiply", "screen", "overlay",
+														"darken", "lighten", "color-dodge", "color-burn",
+														"hard-light", "soft-light", "difference", "exclusion",
+													].map((mode) => (
+														<SelectItem key={mode} value={mode} className="rounded-xl text-[10px] font-bold">
+															{mode === "source-over" ? "Normal" : mode.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+										</div>
+
 										{/* Text Specifics */}
 										{selectedElement.type === "text" && (
 											<div className="space-y-6 pt-6 border-t border-border animate-in fade-in duration-500">
@@ -1245,14 +1570,19 @@ export default function DesignPage() {
 												size="sm"
 												className="rounded-xl border-border bg-background hover:bg-accent gap-2 text-[9px] font-black uppercase"
 												onClick={() => {
-													setElements((prev) => {
-														const el = prev.find((e) => e.id === selectedId);
-														if (!el) return prev;
-														const otherElements = prev.filter(
-															(e) => e.id !== selectedId,
-														);
-														return [...otherElements, el];
-													});
+													const sid = selectedIds[0];
+													if (!sid) return;
+													commitElements(
+														(() => {
+															const prev = elementsRef.current;
+															const el = prev.find((e) => e.id === sid);
+															if (!el) return prev;
+															const otherElements = prev.filter(
+																(e) => e.id !== sid,
+															);
+															return [...otherElements, el];
+														})(),
+													);
 												}}
 											>
 												<ArrowUp className="size-3" /> Dopredu
@@ -1262,14 +1592,19 @@ export default function DesignPage() {
 												size="sm"
 												className="rounded-xl border-border bg-background hover:bg-accent gap-2 text-[9px] font-black uppercase"
 												onClick={() => {
-													setElements((prev) => {
-														const el = prev.find((e) => e.id === selectedId);
-														if (!el) return prev;
-														const otherElements = prev.filter(
-															(e) => e.id !== selectedId,
-														);
-														return [el, ...otherElements];
-													});
+													const sid = selectedIds[0];
+													if (!sid) return;
+													commitElements(
+														(() => {
+															const prev = elementsRef.current;
+															const el = prev.find((e) => e.id === sid);
+															if (!el) return prev;
+															const otherElements = prev.filter(
+																(e) => e.id !== sid,
+															);
+															return [el, ...otherElements];
+														})(),
+													);
 												}}
 											>
 												<ArrowDown className="size-3" /> Dozadu
@@ -1279,10 +1614,12 @@ export default function DesignPage() {
 											variant="ghost"
 											className="w-full gap-4 text-[9px] font-black uppercase tracking-[0.3em] h-14 rounded-2xl bg-red-500/5 text-red-500/60 hover:bg-red-500/10 hover:text-red-500 border border-red-500/10 transition-all shadow-sm"
 											onClick={() => {
-												setElements(
-													elements.filter((el) => el.id !== selectedId),
+												commitElements(
+													elementsRef.current.filter(
+														(el) => !selectedIds.includes(el.id),
+													),
 												);
-												setSelectedId(null);
+												setSelectedIds([]);
 											}}
 										>
 											<Trash2 className="size-4" /> Vymazať objekt
@@ -1378,23 +1715,59 @@ export default function DesignPage() {
 											globálne parametre projektu vyššie.
 										</p>
 									</div>
+
+									{/* Export */}
+									<div className="pt-6 border-t border-border space-y-4">
+										<div className="flex items-center gap-3">
+											<Download className="size-3.5 text-primary/60" />
+											<p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Export</p>
+										</div>
+										<div className="grid grid-cols-1 gap-2.5">
+											<Button variant="outline" className="h-10 rounded-2xl border-border bg-background hover:bg-accent gap-2 text-[9px] font-black uppercase" onClick={() => handleAction("download")}>
+												<Download className="size-3.5" /> PNG
+											</Button>
+											<Button variant="outline" className="h-10 rounded-2xl border-border bg-background hover:bg-accent gap-2 text-[9px] font-black uppercase" onClick={exportSVG}>
+												<Download className="size-3.5" /> SVG
+											</Button>
+											<Button variant="outline" className="h-10 rounded-2xl border-border bg-background hover:bg-accent gap-2 text-[9px] font-black uppercase" onClick={exportJSON}>
+												<Download className="size-3.5" /> JSON export
+											</Button>
+											<Button variant="outline" className="h-10 rounded-2xl border-border bg-background hover:bg-accent gap-2 text-[9px] font-black uppercase" onClick={() => jsonImportRef.current?.click()}>
+												<Upload className="size-3.5" /> JSON import
+											</Button>
+										</div>
+										<div className="flex items-center justify-between text-[9px] font-bold opacity-30 uppercase tracking-widest pt-1">
+											<span className="flex items-center gap-1.5"><Clipboard className="size-3" /> História zmien</span>
+											<span>krok {historyIndex + 1} / {history.length} ({history.length - 1} úprav)</span>
+										</div>
+									</div>
 								</div>
 							)}
 						</div>
 
 						{/* Quick Controls Footer */}
-						<div className="mt-10 pt-8 border-t border-border grid grid-cols-2 gap-4">
+						<div className="mt-10 pt-8 border-t border-border grid grid-cols-3 gap-3">
 							<Button
 								variant="outline"
 								className="h-14 rounded-2xl bg-background border-border hover:bg-accent transition-all shadow-sm"
 								onClick={() => handleAction("undo")}
+								title="Späť"
 							>
 								<Undo2 className="size-5 opacity-40" />
 							</Button>
 							<Button
 								variant="outline"
+								className="h-14 rounded-2xl bg-background border-border hover:bg-accent transition-all shadow-sm"
+								onClick={() => handleAction("redo")}
+								title="Dopredu"
+							>
+								<Redo className="size-5 opacity-40" />
+							</Button>
+							<Button
+								variant="outline"
 								className="h-14 rounded-2xl bg-background border-border hover:bg-accent transition-all group shadow-sm"
 								onClick={() => handleAction("trash")}
+								title="Vymazať plátno"
 							>
 								<Trash2 className="size-5 opacity-20 group-hover:opacity-60 text-red-500 transition-all" />
 							</Button>

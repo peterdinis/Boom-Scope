@@ -46,9 +46,10 @@ export default function SharePage() {
 
 			<KonvaCanvas
 				elements={elements}
-				setElements={() => {}} // No-op for read only
-				selectedId={null}
-				onSelect={() => {}}
+				commitElements={() => {}}
+				selectedIds={[]}
+				onSelectionChange={() => {}}
+				onElementPointer={() => {}}
 				zoom={zoom}
 				setZoom={setZoom}
 				canvasSize={design.canvasSize || { width: 1920, height: 1080 }}
